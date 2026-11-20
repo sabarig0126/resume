@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { Check, Search, X } from 'lucide-react';
 import { CERTIFICATION_TRACKS, PROFILE } from '../../data/projects';
 import { AnimatedCounter } from '../AnimatedCounter';
+import { GlassCard } from '../GlassCard';
 import { TiltCard } from '../TiltCard';
 
 export function CertificationsView() {
@@ -71,7 +72,7 @@ export function CertificationsView() {
       </div>
 
       {filteredTracks.length === 0 ? (
-        <div className="mt-10 rounded-2xl border border-white/10 bg-[#0A132C] px-6 py-14 text-center">
+        <GlassCard className="mt-10 rounded-2xl px-6 py-14 text-center">
           <p className="font-caveat text-2xl font-normal text-[#FFFF00]">
             No matching certification tracks found
           </p>
@@ -82,7 +83,7 @@ export function CertificationsView() {
           >
             Reset Filter — Show All 7 Tracks
           </button>
-        </div>
+        </GlassCard>
       ) : (
         <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-12">
           {/* Left Track Selector */}
@@ -99,10 +100,10 @@ export function CertificationsView() {
                   <button
                     type="button"
                     onClick={() => setSelectedTrackIndex(idx)}
-                    className={`touch-press flex min-h-[56px] w-full items-center justify-between gap-4 rounded-xl border px-4 py-3.5 text-left backdrop-blur-md cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                    className={`touch-press glass-surface flex min-h-[56px] w-full items-center justify-between gap-4 rounded-xl px-4 py-3.5 text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                       isSelected
-                        ? 'border-blue-400/70 bg-[#0E1E4A]/90 text-white shadow-lg shadow-blue-950/50'
-                        : 'glass-surface text-slate-300 hover:border-cyan-400/40 hover:text-white'
+                        ? 'glass-accent-blue text-white'
+                        : 'glass-interactive text-slate-300 hover:text-white'
                     }`}
                   >
                     <div className="flex items-center gap-3.5 min-w-0">
@@ -148,7 +149,7 @@ export function CertificationsView() {
                     maxTiltDeg={2.2}
                     glowColor="blue"
                     scaleOnHover={1.005}
-                    className="glass-surface-strong flex h-full flex-col justify-between rounded-2xl bg-gradient-to-br from-[#0D1C46]/85 via-[#091434]/85 to-[#050A18]/85 p-6 sm:p-8"
+                    className="glass-surface-strong glass-interactive glass-accent-blue flex h-full flex-col justify-between rounded-2xl p-6 sm:p-8"
                   >
                     <div>
                       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-5">
@@ -180,7 +181,7 @@ export function CertificationsView() {
                                 delay: courseIdx * 0.025,
                                 ease: [0.16, 1, 0.3, 1],
                               }}
-                              className="flex items-start gap-2.5 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-3 text-sm text-slate-100 transition-colors hover:border-white/20"
+                              className="flex items-start gap-2.5 rounded-xl border border-white/12 bg-white/[0.045] px-3.5 py-3 text-sm text-slate-100 transition-[border-color,background-color] duration-200 hover:border-cyan-300/30 hover:bg-white/[0.08]"
                             >
                               <Check
                                 aria-hidden="true"

@@ -51,7 +51,7 @@ export function ContactView() {
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
         className="mt-10"
       >
-        <GlassCard strong className="rounded-2xl p-6 sm:p-8">
+        <GlassCard strong accent="blue" className="rounded-2xl p-6 sm:p-8">
         <div className="border-b border-white/10 pb-6">
           <h2 className="font-caveat text-2xl font-normal tracking-wide text-[#FFFF00]">
             Direct Channels
@@ -62,7 +62,7 @@ export function ContactView() {
         </div>
 
         <dl className="mt-6 grid grid-cols-1 gap-6 text-sm sm:grid-cols-2 lg:grid-cols-4">
-          <div className="glass-surface rounded-xl p-5 transition-[border-color,box-shadow] duration-200 hover:border-sky-400/35 hover:shadow-[0_18px_40px_-16px_rgba(37,99,235,0.32)]">
+          <div className="glass-surface glass-interactive rounded-xl p-5">
             <dt className="flex items-center gap-2 text-xs text-slate-400">
               <Mail className="h-3.5 w-3.5 text-blue-400" />
               <span>Email</span>

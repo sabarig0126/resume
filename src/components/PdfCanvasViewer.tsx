@@ -305,7 +305,7 @@ export function PdfCanvasViewer({
         className="glass-surface-strong mt-8 overflow-hidden rounded-2xl"
       >
         {/* Top Viewer Controls */}
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 bg-[#070E22]/90 px-4 py-3 sm:px-6">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 bg-[#070E22]/55 px-4 py-3 sm:px-6">
           <div className="flex items-center gap-2">
             {!singlePageOnly && (
               <button
@@ -384,7 +384,7 @@ export function PdfCanvasViewer({
         {/* Canvas Viewport */}
         <div
           ref={containerRef}
-          className="relative flex min-h-[420px] w-full touch-pan-x touch-pan-y overflow-auto bg-[#050A18]/90 p-4 sm:p-6"
+          className="relative flex min-h-[420px] w-full touch-pan-x touch-pan-y overflow-auto bg-[#050A18]/45 p-4 sm:p-6"
         >
           {loading ? (
             <div className="m-auto flex flex-col items-center gap-3 py-16 text-slate-300">
@@ -421,7 +421,7 @@ export function PdfCanvasViewer({
 
         {/* Page Jump Strip for Multi-Page PDFs */}
         {!singlePageOnly && numPages > 1 && (
-          <div className="flex flex-wrap items-center justify-center gap-1.5 border-t border-white/10 bg-[#070E22]/90 px-4 py-3">
+          <div className="flex flex-wrap items-center justify-center gap-1.5 border-t border-white/10 bg-[#070E22]/55 px-4 py-3">
             {Array.from({ length: numPages }, (_, i) => i + 1).map((pageNum) => {
               const isActive = pageNum === currentPage;
               return (

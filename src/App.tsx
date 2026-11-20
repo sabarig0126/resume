@@ -41,44 +41,21 @@ export default function App() {
   const [activeFeature, setActiveFeature] = useState<FeatureId>(readFeatureFromHash);
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
 
-  const [introDurationMs] = useState<number>(() => {
-    if (
-      typeof window !== 'undefined' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    ) {
-      return 1200;
-    }
-    return 3600;
-  });
+  const handleIntroComplete = useCallback(() => {
+    setShowIntro(false);
+  }, []);
 
   useEffect(() => {
-    const startTime = Date.now();
-    let dismissed = false;
-
-    const finishIntro = () => {
-      if (dismissed) return;
-      dismissed = true;
+    if (!showIntro) return;
+    // Outer hard fail-safe so the main portfolio is never blocked indefinitely
+    const outerFailSafe = window.setTimeout(() => {
       setShowIntro(false);
-    };
-
-    const timer = window.setTimeout(finishIntro, introDurationMs);
-    // Hard fail-safe in case primary timer is delayed by main-thread/WebGL init
-    const failSafeTimer = window.setTimeout(finishIntro, introDurationMs + 750);
-
-    const handleVisibility = () => {
-      if (!document.hidden && Date.now() - startTime >= introDurationMs) {
-        finishIntro();
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibility);
+    }, 6500);
 
     return () => {
-      window.clearTimeout(timer);
-      window.clearTimeout(failSafeTimer);
-      document.removeEventListener('visibilitychange', handleVisibility);
+      window.clearTimeout(outerFailSafe);
     };
-  }, [introDurationMs]);
+  }, [showIntro]);
 
   // Support browser back/forward navigation cleanly via URL hash
   useEffect(() => {
@@ -168,17 +145,6 @@ export default function App() {
     [allItems]
   );
 
-  const certificationsList = useMemo(
-    () => allItems.filter((item) => item.category === 'Certifications'),
-    [allItems]
-  );
-
-  const activeLightboxPool = useMemo(() => {
-    if (activeFeature === 'achievements') return achievementsList;
-    if (activeFeature === 'certifications') return certificationsList;
-    return allItems;
-  }, [activeFeature, achievementsList, certificationsList, allItems]);
-
   return (
     <MotionConfig reducedMotion="user">
       <div className="relative flex min-h-screen flex-col bg-[#050A18] text-slate-50">
@@ -187,7 +153,7 @@ export default function App() {
 
         <IntroLoader
           isVisible={showIntro}
-          durationMs={introDurationMs}
+          onComplete={handleIntroComplete}
         />
 
         <Header
@@ -228,9 +194,7 @@ export default function App() {
 
         <ProjectLightbox
           item={selectedItem}
-          items={activeLightboxPool}
           onClose={() => setSelectedItem(null)}
-          onNavigate={(item) => setSelectedItem(item)}
         />
       </div>
     </MotionConfig>

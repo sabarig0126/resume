@@ -6,23 +6,12 @@ import { ResilientImage } from './ResilientImage';
 
 interface ProjectLightboxProps {
   item: PortfolioItem | null;
-  items: PortfolioItem[];
   onClose: () => void;
-  onNavigate: (item: PortfolioItem) => void;
 }
 
-export function ProjectLightbox({
-  item,
-  items,
-  onClose,
-  onNavigate,
-}: ProjectLightboxProps) {
+export function ProjectLightbox({ item, onClose }: ProjectLightboxProps) {
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
-
-  const currentIndex = item
-    ? items.findIndex((p) => p.id === item.id)
-    : -1;
 
   useEffect(() => {
     if (!item) return;
@@ -41,12 +30,6 @@ export function ProjectLightbox({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose();
-      } else if (e.key === 'ArrowRight' && items.length > 1 && currentIndex >= 0) {
-        const nextIdx = (currentIndex + 1) % items.length;
-        onNavigate(items[nextIdx]);
-      } else if (e.key === 'ArrowLeft' && items.length > 1 && currentIndex >= 0) {
-        const prevIdx = (currentIndex - 1 + items.length) % items.length;
-        onNavigate(items[prevIdx]);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -56,7 +39,7 @@ export function ProjectLightbox({
       document.body.style.overflow = prevOverflow;
       previousFocusRef.current?.focus?.();
     };
-  }, [item, items, currentIndex, onClose, onNavigate]);
+  }, [item, onClose]);
 
   if (!item) return null;
 
@@ -70,31 +53,35 @@ export function ProjectLightbox({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="glass-surface-strong relative flex max-h-[92dvh] w-full max-w-[1120px] flex-col overflow-y-auto overscroll-contain rounded-2xl text-white lg:grid lg:grid-cols-12 lg:overflow-hidden"
+        className="glass-surface-strong glass-accent-blue relative flex max-h-[92dvh] w-full max-w-[1120px] flex-col overflow-hidden rounded-2xl text-white"
       >
         <button
           ref={closeButtonRef}
           type="button"
           onClick={onClose}
           aria-label="Close item viewer"
-          className="touch-press absolute right-4 top-4 z-10 inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-black/55 text-white hover:border-cyan-400/60 hover:bg-white hover:text-[#08122E] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          className="touch-press absolute right-4 top-4 z-20 inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-black/55 text-white hover:border-cyan-400/60 hover:bg-white hover:text-[#08122E] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
         >
           <X className="h-5 w-5" />
         </button>
 
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain lg:grid lg:grid-cols-12 lg:overflow-hidden">
+
         {/* Left Plate: Uploaded Image OR Typographic Slide Plate */}
-        <div className="flex flex-col justify-between bg-gradient-to-br from-[#0A1A44] via-[#0E245E] to-[#133280] p-6 sm:p-10 lg:col-span-6">
+        <div
+          className={`flex flex-col bg-gradient-to-br from-[#0A1A44]/72 via-[#0E245E]/66 to-[#133280]/72 p-6 sm:p-10 lg:col-span-6 ${
+            item.imageUrl ? 'justify-center' : 'justify-between'
+          }`}
+        >
           {item.imageUrl ? (
             <ProjectImageReveal
-              overlayTitle={item.title}
-              overlaySubtitle={item.organization}
-              className="aspect-[4/3] w-full rounded-xl border border-white/15 bg-black/30"
+              className="aspect-[16/10] w-full rounded-xl border border-cyan-300/20 bg-[#050C20]/90 shadow-[0_20px_50px_-16px_rgba(2,6,23,0.85)]"
             >
               <ResilientImage
                 src={item.imageUrl}
                 alt={item.imageAlt ?? item.title}
                 fallbackTitle={item.title}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-contain"
               />
             </ProjectImageReveal>
           ) : (
@@ -128,7 +115,7 @@ export function ProjectLightbox({
         </div>
 
         {/* Right: Structured Details */}
-        <div className="flex min-h-0 flex-col justify-between bg-[#070E24] p-6 sm:p-8 lg:col-span-6 lg:overflow-y-auto">
+        <div className="flex min-h-0 flex-col justify-between bg-[#070E24]/78 p-6 sm:p-8 lg:col-span-6 lg:overflow-y-auto">
           <div>
             <div className="flex flex-wrap items-center gap-2 pr-10 font-kalam text-xs text-slate-400">
               <span className="font-kalam tabular-nums text-blue-300">
@@ -209,6 +196,7 @@ export function ProjectLightbox({
           <div className="mt-8 border-t border-white/10 pt-5 font-kalam text-xs text-slate-400">
             <span>Verified Portfolio Record</span>
           </div>
+        </div>
         </div>
       </div>
     </div>

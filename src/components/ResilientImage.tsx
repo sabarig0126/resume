@@ -25,10 +25,10 @@ export function ResilientImage({
       <div
         role="img"
         aria-label={alt}
-        className={`flex flex-col items-center justify-center bg-gradient-to-br from-zinc-200 via-zinc-100 to-stone-200 p-6 text-center text-zinc-600 ${className}`}
+        className={`flex flex-col items-center justify-center bg-gradient-to-br from-[#0A1638] via-[#060E24] to-[#0D1A42] p-6 text-center text-slate-300 ${className}`}
       >
-        <ImageOff className="mb-2 h-6 w-6 text-zinc-400" strokeWidth={1.5} />
-        <span className="font-kalam text-sm font-normal text-zinc-700">
+        <ImageOff className="mb-2 h-6 w-6 text-cyan-400/70" strokeWidth={1.5} />
+        <span className="font-kalam text-sm font-normal text-slate-200">
           {fallbackTitle}
         </span>
       </div>

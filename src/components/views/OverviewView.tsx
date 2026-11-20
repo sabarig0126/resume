@@ -16,7 +16,7 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
     <section className="relative overflow-hidden">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-[#050A18]/35 to-[#050A18]/75"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-[#050A18]/20 to-[#050A18]/50"
       />
 
       <div className="relative mx-auto max-w-[1280px] px-6 py-12 md:px-10 md:py-16">
@@ -70,6 +70,7 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
             <GlassCard
               strong
               interactive
+              accent="blue"
               className="flex w-full flex-col justify-between rounded-2xl p-6 text-white sm:p-8 lg:min-h-[430px]"
             >
               <div>
@@ -173,9 +174,14 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
         </div>
         </SectionReveal>
 
-        <p className="mt-6 text-center text-xs leading-relaxed text-slate-400">
-          Use the <span className="font-semibold text-white">Menu</span> at the top right to explore Achievements, Technical Skills, Certifications, Education, Projects, Resume PDF, Portfolio PDF, and Contact.
-        </p>
+        <div className="mt-7 flex justify-center">
+          <p className="nav-hint-glass relative mx-auto max-w-full rounded-xl px-4 py-3 text-center text-xs leading-relaxed text-amber-100/90 sm:px-6 sm:py-3.5 sm:text-[13px]">
+            <span aria-hidden="true" className="nav-hint-sweep" />
+            <span className="relative z-10">
+              Use the <span className="nav-hint-menu">Menu</span> at the top right to explore Achievements, Technical Skills, Certifications, Education, Projects, Resume PDF, Portfolio PDF, and Contact.
+            </span>
+          </p>
+        </div>
       </div>
     </section>
   );

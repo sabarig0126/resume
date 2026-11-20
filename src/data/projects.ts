@@ -59,6 +59,8 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItem[] = [
     organization: 'NPTEL – IIT Madras',
     timeframe: 'Elite · 63%',
     location: 'IIT Madras (Online)',
+    imageUrl: '/assets/achievements/nptel-design-thinking.svg',
+    imageAlt: 'NPTEL IIT Madras Design Thinking Elite certification visual emblem and iterative process diagram',
     summary:
       'Earned the NPTEL Elite Certification in Design Thinking – A Primer (IIT Madras) with a proctored evaluation score of 63%.',
     details:
@@ -84,6 +86,8 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItem[] = [
     organization: 'Sri Ramakrishna Institute of Technology',
     timeframe: '2026',
     location: 'Coimbatore',
+    imageUrl: '/assets/achievements/sih-hackathon-srit.svg',
+    imageAlt: 'Smart India Hackathon 2026 SRIT internal qualifier circuit emblem and solution workflow schematic',
     summary:
       'Competed in the institutional internal selection round for the Smart India Hackathon (SIH), scoping technical solutions to national problem statements.',
     details:
@@ -108,6 +112,8 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItem[] = [
     organization: 'IIT Bombay',
     timeframe: 'Bootcamp',
     location: 'IIT Bombay',
+    imageUrl: '/assets/achievements/illuminate-iit-bombay.svg',
+    imageAlt: 'IIT Bombay Illuminate Entrepreneurship Bootcamp beacon prism and venture growth trajectory graphic',
     summary:
       'Completed the Illuminate Entrepreneurship Bootcamp organized by IIT Bombay, focused on technology venture ideation and product validation.',
     details:
@@ -132,6 +138,8 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItem[] = [
     organization: 'Sri Ramakrishna Institute of Technology',
     timeframe: 'Event',
     location: 'Coimbatore',
+    imageUrl: '/assets/achievements/tedxsrit-human-in-the-loop.svg',
+    imageAlt: 'TEDxSRIT Human in the Loop AI ethics and human oversight orbital diagram',
     summary:
       'Participated in TEDxSRIT centered on “Human in the Loop,” examining ethical governance and human-centered oversight in AI systems.',
     details:

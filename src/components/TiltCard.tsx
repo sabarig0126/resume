@@ -9,10 +9,15 @@ interface TiltCardProps {
 }
 
 const GLOW_STYLES: Record<NonNullable<TiltCardProps['glowColor']>, string> = {
-  blue: 'radial-gradient(360px circle at var(--tilt-mx, 50%) var(--tilt-my, 50%), rgba(59, 130, 246, 0.16), rgba(34, 211, 238, 0.08) 42%, transparent 72%)',
-  cyan: 'radial-gradient(360px circle at var(--tilt-mx, 50%) var(--tilt-my, 50%), rgba(34, 211, 238, 0.17), rgba(59, 130, 246, 0.08) 42%, transparent 72%)',
-  amber: 'radial-gradient(360px circle at var(--tilt-mx, 50%) var(--tilt-my, 50%), rgba(245, 158, 11, 0.14), rgba(59, 130, 246, 0.08) 45%, transparent 74%)',
+  blue: 'radial-gradient(360px circle at var(--tilt-mx, 50%) var(--tilt-my, 50%), rgba(59, 130, 246, 0.16), rgba(168, 85, 247, 0.08) 42%, rgba(236, 72, 153, 0.04) 60%, transparent 76%)',
+  cyan: 'radial-gradient(360px circle at var(--tilt-mx, 50%) var(--tilt-my, 50%), rgba(34, 211, 238, 0.16), rgba(139, 92, 246, 0.08) 42%, rgba(236, 72, 153, 0.04) 60%, transparent 76%)',
+  amber: 'radial-gradient(360px circle at var(--tilt-mx, 50%) var(--tilt-my, 50%), rgba(245, 158, 11, 0.15), rgba(59, 130, 246, 0.08) 44%, rgba(168, 85, 247, 0.04) 62%, transparent 76%)',
 };
+
+const HOVER_TRANSITION =
+  'transform 110ms cubic-bezier(0.16, 1, 0.3, 1), border-color 220ms ease, box-shadow 240ms ease, background 220ms ease';
+const RESET_TRANSITION =
+  'transform 340ms cubic-bezier(0.16, 1, 0.3, 1), border-color 220ms ease, box-shadow 240ms ease, background 220ms ease';
 
 export function TiltCard({
   children,
@@ -24,6 +29,7 @@ export function TiltCard({
   const cardRef = useRef<HTMLDivElement | null>(null);
   const glowRef = useRef<HTMLDivElement | null>(null);
   const rafRef = useRef(0);
+  const resetTimerRef = useRef(0);
   const enabledRef = useRef(false);
   const lastCoordsRef = useRef({ clientX: 0, clientY: 0 });
 
@@ -42,6 +48,8 @@ export function TiltCard({
       enabledRef.current = hoverQuery.matches && !motionQuery.matches && !lowSpec;
       if (!enabledRef.current && cardRef.current) {
         cardRef.current.style.transform = '';
+        cardRef.current.style.transition = '';
+        cardRef.current.style.willChange = '';
         if (glowRef.current) {
           glowRef.current.style.opacity = '0';
         }
@@ -56,6 +64,9 @@ export function TiltCard({
       hoverQuery.removeEventListener('change', syncCapability);
       if (rafRef.current) {
         window.cancelAnimationFrame(rafRef.current);
+      }
+      if (resetTimerRef.current) {
+        window.clearTimeout(resetTimerRef.current);
       }
     };
   }, []);
@@ -75,7 +86,8 @@ export function TiltCard({
     const rotateY = (px - 0.5) * 2 * maxTiltDeg;
     const rotateX = (0.5 - py) * 2 * maxTiltDeg;
 
-    el.style.transition = 'transform 110ms cubic-bezier(0.16, 1, 0.3, 1)';
+    el.style.willChange = 'transform';
+    el.style.transition = HOVER_TRANSITION;
     el.style.transform = `perspective(960px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale3d(${scaleOnHover}, ${scaleOnHover}, 1)`;
 
     if (glowRef.current) {
@@ -87,6 +99,10 @@ export function TiltCard({
 
   const handlePointerEnter = (e: PointerEvent<HTMLDivElement>) => {
     if (!enabledRef.current || e.pointerType !== 'mouse') return;
+    if (resetTimerRef.current) {
+      window.clearTimeout(resetTimerRef.current);
+      resetTimerRef.current = 0;
+    }
     lastCoordsRef.current = { clientX: e.clientX, clientY: e.clientY };
     if (!rafRef.current) {
       rafRef.current = window.requestAnimationFrame(applyTilt);
@@ -106,10 +122,22 @@ export function TiltCard({
       window.cancelAnimationFrame(rafRef.current);
       rafRef.current = 0;
     }
+    if (resetTimerRef.current) {
+      window.clearTimeout(resetTimerRef.current);
+      resetTimerRef.current = 0;
+    }
     const el = cardRef.current;
     if (el) {
-      el.style.transition = 'transform 340ms cubic-bezier(0.16, 1, 0.3, 1)';
+      el.style.transition = RESET_TRANSITION;
       el.style.transform = 'perspective(960px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+      resetTimerRef.current = window.setTimeout(() => {
+        resetTimerRef.current = 0;
+        if (cardRef.current) {
+          cardRef.current.style.transform = '';
+          cardRef.current.style.transition = '';
+          cardRef.current.style.willChange = '';
+        }
+      }, 360);
     }
     if (glowRef.current) {
       glowRef.current.style.opacity = '0';
@@ -124,14 +152,13 @@ export function TiltCard({
       onPointerMove={handlePointerMove}
       onPointerLeave={resetTilt}
       onPointerCancel={resetTilt}
-      style={{ willChange: 'transform' }}
-      className={`relative ${className}`.trim()}
+      className={`relative overflow-hidden ${className}`.trim()}
     >
       {children}
       <div
         ref={glowRef}
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 rounded-[inherit] opacity-0 transition-opacity duration-300"
+        className="pointer-events-none absolute inset-0 z-10 rounded-[inherit] opacity-0 transition-opacity duration-300"
         style={{
           background: GLOW_STYLES[glowColor],
         }}

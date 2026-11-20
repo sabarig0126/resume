@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300" fill="none">
+  <defs>
+    <linearGradient id="bg04" x1="0" y1="0" x2="480" y2="300" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#07112B" />
+      <stop offset="55%" stop-color="#04091B" />
+      <stop offset="100%" stop-color="#11153A" />
+    </linearGradient>
+    <radialGradient id="spotlight04" cx="50%" cy="50%" r="48%">
+      <stop offset="0%" stop-color="#EF4444" stop-opacity="0.22" />
+      <stop offset="45%" stop-color="#3B82F6" stop-opacity="0.16" />
+      <stop offset="100%" stop-color="#04091B" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="goldCenter04" cx="50%" cy="50%" r="28%">
+      <stop offset="0%" stop-color="#FBBF24" stop-opacity="0.28" />
+      <stop offset="100%" stop-color="#04091B" stop-opacity="0" />
+    </radialGradient>
+    <pattern id="grid04" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M 24 0 L 0 0 0 24" stroke="#93C5FD" stroke-opacity="0.05" stroke-width="1" />
+    </pattern>
+  </defs>
+
+  <rect width="480" height="300" fill="url(#bg04)" />
+  <rect width="480" height="300" fill="url(#grid04)" />
+  <rect width="480" height="300" fill="url(#spotlight04)" />
+  <rect width="480" height="300" fill="url(#goldCenter04)" />
+
+  <!-- Centered Pure-Geometric Human-in-the-Loop Orbital Diagram (No Text) -->
+  <g transform="translate(240, 150)">
+    <!-- Outer & Inner Governance Orbital Rings -->
+    <circle cx="0" cy="0" r="106" stroke="#38BDF8" stroke-opacity="0.18" stroke-width="1" stroke-dasharray="6 6" />
+    <circle cx="0" cy="0" r="80" stroke="#38BDF8" stroke-opacity="0.34" stroke-width="1.5" stroke-dasharray="12 6" />
+    <circle cx="0" cy="0" r="58" stroke="#FBBF24" stroke-opacity="0.45" stroke-width="1.6" />
+
+    <!-- Intertwined Dual Feedback Loops -->
+    <path d="M-132 0 C-132 -54, -52 -54, 0 0 C52 54, 132 54, 132 0" stroke="#38BDF8" stroke-width="2.5" stroke-linecap="round" />
+    <path d="M-132 0 C-132 54, -52 54, 0 0 C52 -54, 132 -54, 132 0" stroke="#EF4444" stroke-opacity="0.88" stroke-width="2.5" stroke-linecap="round" />
+
+    <!-- Orbital Accent Nodes -->
+    <circle cx="0" cy="-80" r="3" fill="#38BDF8" />
+    <circle cx="0" cy="80" r="3" fill="#EF4444" />
+    <circle cx="-58" cy="0" r="2.5" fill="#FBBF24" />
+    <circle cx="58" cy="0" r="2.5" fill="#FBBF24" />
+
+    <!-- Left Node: AI Compute Core -->
+    <circle cx="-132" cy="0" r="19" fill="#071330" stroke="#38BDF8" stroke-width="2" />
+    <rect x="-139" y="-7" width="14" height="14" rx="3" stroke="#7DD3FC" stroke-width="1.6" />
+    <circle cx="-132" cy="0" r="2.8" fill="#38BDF8" />
+
+    <!-- Center Core: Golden Human Oversight Node -->
+    <circle cx="0" cy="0" r="26" fill="#091536" stroke="#FBBF24" stroke-width="2.2" />
+    <circle cx="0" cy="-7" r="5.5" fill="#FDE68A" />
+    <path d="M-10 11 C-10 4, 10 4, 10 11" stroke="#FBBF24" stroke-width="2.2" stroke-linecap="round" />
+
+    <!-- Right Node: Verified Ethical Output -->
+    <circle cx="132" cy="0" r="19" fill="#071330" stroke="#EF4444" stroke-width="2" />
+    <path d="M125 0.5L130 5.5L140 -4.5" stroke="#FCA5A5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+</svg>

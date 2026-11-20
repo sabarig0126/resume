@@ -16,7 +16,7 @@ export function DomainArtwork({
       aria-hidden="true"
       className={`relative w-full overflow-hidden border-b border-white/10 ${
         isLead ? 'h-44 sm:h-52' : 'h-36'
-      } bg-[#071028]`}
+      } bg-[#071028]/40`}
     >
       {/* Radial depth glow */}
       <div

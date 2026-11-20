@@ -5,6 +5,7 @@ import {
   PROFILE,
 } from '../../data/projects';
 import { AnimatedCounter } from '../AnimatedCounter';
+import { GlassCard } from '../GlassCard';
 import { SectionReveal } from '../SectionReveal';
 import { TiltCard } from '../TiltCard';
 
@@ -31,7 +32,7 @@ export function EducationView() {
           <TiltCard
             maxTiltDeg={3}
             glowColor="blue"
-            className="h-full rounded-2xl border border-blue-500/40 bg-gradient-to-br from-[#0D1E4B]/90 to-[#081028]/90 p-6 sm:p-8 text-white backdrop-blur-md transition-colors hover:border-blue-400/60"
+            className="glass-surface-strong glass-interactive glass-accent-blue h-full rounded-2xl p-6 sm:p-8 text-white"
           >
             <p className="font-caveat text-base font-normal tracking-wide text-[#FFFF00]">
               Undergraduate Degree
@@ -175,14 +176,14 @@ export function EducationView() {
             ))}
           </div>
 
-          <div className="glass-surface mt-6 rounded-xl p-5">
+          <GlassCard interactive className="mt-6 rounded-xl p-5">
             <p className="font-caveat text-base font-normal tracking-wide text-[#FFFF00]">
               Learning Goal
             </p>
             <p className="mt-1.5 font-kalam text-[15px] leading-relaxed text-slate-200">
               {PROFILE.learningGoal}
             </p>
-          </div>
+          </GlassCard>
         </motion.div>
       </div>
       </SectionReveal>

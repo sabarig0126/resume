@@ -46,13 +46,13 @@ export function SectionReveal({
     <div
       ref={ref}
       style={{
-        transitionProperty: 'opacity, transform',
+        transitionProperty: 'opacity, transform, translate',
         transitionDuration: '480ms',
         transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
         transitionDelay: `${delayMs}ms`,
       }}
       className={`${
-        visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
+        visible ? 'opacity-100' : 'opacity-0 translate-y-3'
       } ${className}`.trim()}
     >
       {children}

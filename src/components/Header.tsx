@@ -277,15 +277,16 @@ export function Header({ activeFeature, onSelectFeature }: HeaderProps) {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -6, scale: 0.98 }}
                   transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
-                  className="glass-surface-strong pointer-events-auto max-h-[calc(100dvh-6rem)] w-full max-w-sm overflow-y-auto overscroll-contain rounded-2xl p-2.5"
+                  className="glass-surface-strong glass-accent-blue pointer-events-auto flex max-h-[calc(100dvh-6rem)] w-full max-w-sm flex-col overflow-hidden rounded-2xl p-2.5"
                 >
-                  <div className="border-b border-white/10 px-3 py-2.5">
+                  <div className="shrink-0 border-b border-white/10 px-3 py-2.5">
                     <p className="font-caveat text-sm font-normal tracking-wide text-[#FFFF00]">
                       Portfolio Sections
                     </p>
                   </div>
 
-                  <ul className="mt-1.5 space-y-1">
+                  <div className="mt-1.5 min-h-0 flex-1 overflow-y-auto overscroll-contain">
+                  <ul className="space-y-1">
                     {MENU_FEATURES.map((item, idx) => {
                       const isActive = activeFeature === item.id;
                       const IconComponent = item.icon;
@@ -357,6 +358,7 @@ export function Header({ activeFeature, onSelectFeature }: HeaderProps) {
                       );
                     })}
                   </ul>
+                  </div>
                 </motion.nav>
               </div>
             </div>

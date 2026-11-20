@@ -29,7 +29,7 @@ export function ProjectsView({ onNavigateFeature }: ProjectsViewProps) {
           maxTiltDeg={2.5}
           glowColor="cyan"
           scaleOnHover={1.006}
-          className="glass-surface-strong glass-interactive rounded-2xl px-6 py-12 sm:p-10"
+          className="glass-surface-strong glass-interactive glass-accent-blue rounded-2xl px-6 py-12 sm:p-10"
         >
         <div className="mx-auto max-w-2xl text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl border border-cyan-400/25 bg-blue-500/10 text-blue-300 shadow-inner">
