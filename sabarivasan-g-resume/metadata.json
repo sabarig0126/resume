@@ -1,0 +1,6 @@
+{
+  "name": "Atelier Vesper — Portfolio Showcase",
+  "description": "A curated editorial portfolio showcase and interactive fullscreen work presenter for visual design, spatial architecture, and photography.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
