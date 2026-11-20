@@ -171,7 +171,7 @@ export function DomainArtwork({
       )}
 
       {/* Corner Index Tag */}
-      <div className="absolute left-5 top-4 font-mono text-xs font-medium text-blue-300/90 tabular-nums">
+      <div className="absolute left-5 top-4 font-kalam text-xs font-bold text-blue-300/90 tabular-nums">
         {indexNumber}
       </div>
     </div>

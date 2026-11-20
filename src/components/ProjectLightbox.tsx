@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { PortfolioItem } from '../types/portfolio';
 import { ProjectImageReveal } from './ProjectImageReveal';
@@ -17,25 +17,45 @@ export function ProjectLightbox({
   onClose,
   onNavigate,
 }: ProjectLightboxProps) {
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
   const currentIndex = item
     ? items.findIndex((p) => p.id === item.id)
     : -1;
 
   useEffect(() => {
     if (!item) return;
+
+    previousFocusRef.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const focusTimer = window.requestAnimationFrame(() => {
+      closeButtonRef.current?.focus();
+    });
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose();
-      } else if (e.key === 'ArrowRight' && items.length > 1) {
+      } else if (e.key === 'ArrowRight' && items.length > 1 && currentIndex >= 0) {
         const nextIdx = (currentIndex + 1) % items.length;
         onNavigate(items[nextIdx]);
-      } else if (e.key === 'ArrowLeft' && items.length > 1) {
+      } else if (e.key === 'ArrowLeft' && items.length > 1 && currentIndex >= 0) {
         const prevIdx = (currentIndex - 1 + items.length) % items.length;
         onNavigate(items[prevIdx]);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      window.cancelAnimationFrame(focusTimer);
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+      previousFocusRef.current?.focus?.();
+    };
   }, [item, items, currentIndex, onClose, onNavigate]);
 
   if (!item) return null;
@@ -50,9 +70,10 @@ export function ProjectLightbox({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="glass-surface-strong relative flex max-h-[92vh] w-full max-w-[1120px] flex-col overflow-hidden rounded-2xl text-white lg:grid lg:grid-cols-12"
+        className="glass-surface-strong relative flex max-h-[92dvh] w-full max-w-[1120px] flex-col overflow-y-auto overscroll-contain rounded-2xl text-white lg:grid lg:grid-cols-12 lg:overflow-hidden"
       >
         <button
+          ref={closeButtonRef}
           type="button"
           onClick={onClose}
           aria-label="Close item viewer"
@@ -79,27 +100,27 @@ export function ProjectLightbox({
           ) : (
             <div className="flex h-full flex-col justify-between py-2">
               <div className="flex items-center justify-between border-b border-white/15 pb-4">
-                <span className="font-mono text-xs text-blue-200 tabular-nums">
+                <span className="font-kalam text-xs text-blue-200 tabular-nums">
                   Record {item.indexNumber}
                 </span>
-                <span className="text-xs font-medium text-blue-200">
+                <span className="font-caveat text-sm font-normal tracking-wide text-[#FFFF00]">
                   {item.category}
                 </span>
               </div>
 
               <div className="my-8">
-                <p className="text-xs font-medium text-blue-300">
+                <p className="font-caveat text-sm font-normal tracking-wide text-[#FFFF00]">
                   {item.organization}
                 </p>
-                <h3 className="mt-2 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl [text-wrap:balance]">
+                <h3 className="mt-2 font-road-rage text-4xl font-normal tracking-wide text-[#FF0000] sm:text-5xl [text-wrap:balance]">
                   {item.title}
                 </h3>
-                <p className="mt-4 text-sm leading-relaxed text-blue-100/90">
+                <p className="mt-4 font-kalam text-sm leading-relaxed text-blue-100/90">
                   {item.summary}
                 </p>
               </div>
 
-              <div className="border-t border-white/15 pt-4 font-mono text-xs text-blue-200 tabular-nums">
+              <div className="border-t border-white/15 pt-4 font-kalam text-xs text-blue-200 tabular-nums">
                 {item.specs.credentialOrOutcome} · {item.location}
               </div>
             </div>
@@ -107,39 +128,39 @@ export function ProjectLightbox({
         </div>
 
         {/* Right: Structured Details */}
-        <div className="flex flex-col justify-between overflow-y-auto bg-[#070E24] p-6 sm:p-8 lg:col-span-6">
+        <div className="flex min-h-0 flex-col justify-between bg-[#070E24] p-6 sm:p-8 lg:col-span-6 lg:overflow-y-auto">
           <div>
-            <div className="flex flex-wrap items-center gap-2 pr-10 text-xs text-slate-400">
-              <span className="font-mono tabular-nums text-blue-300">
+            <div className="flex flex-wrap items-center gap-2 pr-10 font-kalam text-xs text-slate-400">
+              <span className="font-kalam tabular-nums text-blue-300">
                 {item.indexNumber}
               </span>
               <span aria-hidden="true">·</span>
               <span>{item.category}</span>
               <span aria-hidden="true">·</span>
-              <span className="font-mono tabular-nums">{item.timeframe}</span>
+              <span className="font-kalam tabular-nums">{item.timeframe}</span>
             </div>
 
             <h2
               id="lightbox-title"
-              className="mt-3 font-display text-2xl font-bold tracking-tight text-white sm:text-3xl [text-wrap:balance]"
+              className="mt-3 font-road-rage text-3xl font-normal tracking-wide text-[#FF0000] sm:text-4xl [text-wrap:balance]"
             >
               {item.title}
             </h2>
 
-            <p className="mt-1 text-sm text-slate-400">
+            <p className="mt-1 font-kalam text-sm text-slate-400">
               {item.organization} — {item.location}
             </p>
 
-            <p className="mt-6 text-sm leading-relaxed text-slate-200">
+            <p className="mt-6 font-kalam text-sm leading-relaxed text-slate-200">
               {item.details}
             </p>
 
             {/* Key Highlights */}
             <div className="mt-6 border-t border-white/10 pt-5">
-              <h3 className="text-xs font-semibold text-slate-400">
+              <h3 className="font-caveat text-base font-normal tracking-wide text-[#FFFF00]">
                 Key Highlights
               </h3>
-              <ul className="mt-3 space-y-2 text-sm text-slate-100">
+              <ul className="mt-3 space-y-2 font-kalam text-sm text-slate-100">
                 {item.highlights.map((hl) => (
                   <li key={hl} className="flex items-start gap-2.5">
                     <span aria-hidden="true" className="text-blue-400">
@@ -153,31 +174,31 @@ export function ProjectLightbox({
 
             {/* Credential Metadata */}
             <div className="mt-6 border-t border-white/10 pt-5">
-              <h3 className="text-xs font-semibold text-slate-400">
+              <h3 className="font-caveat text-base font-normal tracking-wide text-[#FFFF00]">
                 Credential &amp; Context
               </h3>
-              <dl className="mt-3 grid grid-cols-1 gap-3 text-xs sm:grid-cols-2">
+              <dl className="mt-3 grid grid-cols-1 gap-3 font-kalam text-xs sm:grid-cols-2">
                 <div>
-                  <dt className="text-slate-500">Issuer / Institution</dt>
-                  <dd className="mt-0.5 font-mono text-slate-200">
+                  <dt className="font-kalam text-slate-500">Issuer / Institution</dt>
+                  <dd className="mt-0.5 font-kalam text-slate-200">
                     {item.specs.issuerOrContext}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-slate-500">Focus Area</dt>
-                  <dd className="mt-0.5 font-mono text-slate-200">
+                  <dt className="font-kalam text-slate-500">Focus Area</dt>
+                  <dd className="mt-0.5 font-kalam text-slate-200">
                     {item.specs.focusArea}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-slate-500">Outcome / Scope</dt>
-                  <dd className="mt-0.5 font-mono text-slate-200 tabular-nums">
+                  <dt className="font-kalam text-slate-500">Outcome / Scope</dt>
+                  <dd className="mt-0.5 font-kalam text-slate-200 tabular-nums">
                     {item.specs.credentialOrOutcome}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-slate-500">Location</dt>
-                  <dd className="mt-0.5 font-mono text-slate-200">
+                  <dt className="font-kalam text-slate-500">Location</dt>
+                  <dd className="mt-0.5 font-kalam text-slate-200">
                     {item.specs.location}
                   </dd>
                 </div>
@@ -185,8 +206,8 @@ export function ProjectLightbox({
             </div>
           </div>
 
-          <div className="mt-8 border-t border-white/10 pt-5 text-xs text-slate-400">
-            <span>Official Portfolio Record</span>
+          <div className="mt-8 border-t border-white/10 pt-5 font-kalam text-xs text-slate-400">
+            <span>Verified Portfolio Record</span>
           </div>
         </div>
       </div>

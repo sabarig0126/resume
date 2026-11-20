@@ -41,14 +41,44 @@ export default function App() {
   const [activeFeature, setActiveFeature] = useState<FeatureId>(readFeatureFromHash);
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
 
-  const INTRO_DURATION_MS = 3600;
+  const [introDurationMs] = useState<number>(() => {
+    if (
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      return 1200;
+    }
+    return 3600;
+  });
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
+    const startTime = Date.now();
+    let dismissed = false;
+
+    const finishIntro = () => {
+      if (dismissed) return;
+      dismissed = true;
       setShowIntro(false);
-    }, INTRO_DURATION_MS);
-    return () => window.clearTimeout(timer);
-  }, []);
+    };
+
+    const timer = window.setTimeout(finishIntro, introDurationMs);
+    // Hard fail-safe in case primary timer is delayed by main-thread/WebGL init
+    const failSafeTimer = window.setTimeout(finishIntro, introDurationMs + 750);
+
+    const handleVisibility = () => {
+      if (!document.hidden && Date.now() - startTime >= introDurationMs) {
+        finishIntro();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      window.clearTimeout(timer);
+      window.clearTimeout(failSafeTimer);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [introDurationMs]);
 
   // Support browser back/forward navigation cleanly via URL hash
   useEffect(() => {
@@ -60,6 +90,60 @@ export default function App() {
     return () => {
       window.removeEventListener('hashchange', handleHashOrPop);
       window.removeEventListener('popstate', handleHashOrPop);
+    };
+  }, []);
+
+  // Lightweight delegated touch feedback for mobile/pen taps with instant release
+  useEffect(() => {
+    let activeTapEl: HTMLElement | null = null;
+    let startX = 0;
+    let startY = 0;
+
+    const clearTap = () => {
+      if (activeTapEl) {
+        activeTapEl.removeAttribute('data-tap');
+        activeTapEl = null;
+      }
+    };
+
+    const handlePointerDown = (e: PointerEvent) => {
+      if (e.pointerType === 'mouse') return;
+      const target = e.target instanceof Element ? e.target.closest('.touch-press') : null;
+      if (!(target instanceof HTMLElement)) return;
+      if (target.hasAttribute('disabled') || target.getAttribute('aria-disabled') === 'true') {
+        return;
+      }
+      clearTap();
+      activeTapEl = target;
+      startX = e.clientX;
+      startY = e.clientY;
+      target.setAttribute('data-tap', 'true');
+    };
+
+    const handlePointerMove = (e: PointerEvent) => {
+      if (!activeTapEl || e.pointerType === 'mouse') return;
+      if (Math.hypot(e.clientX - startX, e.clientY - startY) > 8) {
+        clearTap();
+      }
+    };
+
+    const noopTouch = () => {};
+
+    document.addEventListener('touchstart', noopTouch, { passive: true });
+    window.addEventListener('pointerdown', handlePointerDown, { passive: true });
+    window.addEventListener('pointermove', handlePointerMove, { passive: true });
+    window.addEventListener('pointerup', clearTap, { passive: true });
+    window.addEventListener('pointercancel', clearTap, { passive: true });
+    window.addEventListener('blur', clearTap);
+
+    return () => {
+      clearTap();
+      document.removeEventListener('touchstart', noopTouch);
+      window.removeEventListener('pointerdown', handlePointerDown);
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', clearTap);
+      window.removeEventListener('pointercancel', clearTap);
+      window.removeEventListener('blur', clearTap);
     };
   }, []);
 
@@ -103,7 +187,7 @@ export default function App() {
 
         <IntroLoader
           isVisible={showIntro}
-          durationMs={INTRO_DURATION_MS}
+          durationMs={introDurationMs}
         />
 
         <Header

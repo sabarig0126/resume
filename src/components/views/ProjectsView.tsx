@@ -11,11 +11,11 @@ export function ProjectsView({ onNavigateFeature }: ProjectsViewProps) {
   return (
     <section className="mx-auto max-w-[1280px] px-6 py-12 md:px-10 md:py-16">
       <div className="border-b border-white/10 pb-8">
-        <p className="font-mono text-xs text-amber-400 tabular-nums">
-          06 · Projects
+        <p className="font-kalam text-xs text-amber-400 tabular-nums">
+          06 · Projects &amp; Applied Builds
         </p>
-        <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl [text-wrap:balance]">
-          Upcoming &amp; in-progress work
+        <h1 className="mt-2 font-road-rage text-4xl font-normal tracking-wide text-[#FF0000] sm:text-5xl [text-wrap:balance]">
+          Engineering projects &amp; applied builds in development
         </h1>
       </div>
 
@@ -35,11 +35,11 @@ export function ProjectsView({ onNavigateFeature }: ProjectsViewProps) {
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl border border-cyan-400/25 bg-blue-500/10 text-blue-300 shadow-inner">
             <FolderKanban className="h-6 w-6" />
           </div>
-          <h2 className="mt-4 font-display text-2xl font-bold text-white">
-            Coming Soon — Currently Building
+          <h2 className="mt-4 font-road-rage text-3xl font-normal tracking-wide text-[#FF0000] sm:text-4xl">
+            In Active Development — Publishing Soon
           </h2>
           <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-slate-300">
-            Currently focused on 2nd-year B.Tech Artificial Intelligence &amp; Data Science coursework, certified technical modules, and campus hackathons. Projects will be published here only once completed.
+            Currently advancing second-year B.Tech Artificial Intelligence &amp; Data Science coursework, completing certified technical tracks across Python, MATLAB, and databases, and competing in campus hackathons. Full project case studies will be published here upon completion.
           </p>
         </div>
 

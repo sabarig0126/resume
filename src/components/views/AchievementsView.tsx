@@ -8,7 +8,6 @@ import { TiltCard } from '../TiltCard';
 interface AchievementsViewProps {
   achievements: PortfolioItem[];
   onSelectItem: (item: PortfolioItem) => void;
-  onStartSlideshow?: () => void;
 }
 
 export function AchievementsView({
@@ -19,11 +18,11 @@ export function AchievementsView({
     <section className="mx-auto max-w-[1280px] px-6 py-12 md:px-10 md:py-16">
       <div className="border-b border-white/10 pb-8">
         <div>
-          <p className="font-mono text-xs text-amber-400 tabular-nums">
-            02 · Achievements &amp; Participation
+          <p className="font-kalam text-xs text-amber-400 tabular-nums">
+            02 · Achievements &amp; Milestones
           </p>
-          <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl [text-wrap:balance]">
-            Honors, bootcamps, and hackathons
+          <h1 className="mt-2 font-road-rage text-4xl font-normal tracking-wide text-[#FF0000] sm:text-5xl [text-wrap:balance]">
+            Academic honors, hackathons, and entrepreneurship milestones
           </h1>
         </div>
       </div>
@@ -45,7 +44,7 @@ export function AchievementsView({
               <TiltCard
                 maxTiltDeg={2.5}
                 glowColor={isLead ? 'amber' : 'cyan'}
-                className={`glass-surface glass-interactive group overflow-hidden rounded-2xl ${
+                className={`glass-surface glass-interactive touch-press group overflow-hidden rounded-2xl ${
                   isLead
                     ? 'border-amber-400/40 bg-gradient-to-br from-[#0D1B44]/85 to-[#081028]/85 hover:border-amber-400/70'
                     : 'hover:border-cyan-400/45'
@@ -55,7 +54,7 @@ export function AchievementsView({
               <button
                 type="button"
                 onClick={() => onSelectItem(item)}
-                className="touch-press flex w-full flex-col text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 md:flex-row md:items-stretch"
+                className="flex w-full flex-col text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 md:flex-row md:items-stretch"
               >
                 <ProjectImageReveal
                   delayMs={idx * 50}
@@ -70,10 +69,10 @@ export function AchievementsView({
 
                 <div className="flex flex-1 flex-col justify-between p-6">
                   <div>
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
+                    <div className="flex flex-wrap items-center gap-2 font-kalam text-xs text-slate-400">
                       <span className="text-slate-300">{item.organization}</span>
                       <span aria-hidden="true">·</span>
-                      <span className="font-mono text-amber-400 tabular-nums">
+                      <span className="font-kalam text-amber-400 tabular-nums">
                         {item.timeframe}
                       </span>
                       <span aria-hidden="true">·</span>
@@ -82,8 +81,8 @@ export function AchievementsView({
 
                     <div className="mt-2.5 flex items-start justify-between gap-4">
                       <h2
-                        className={`font-display font-bold tracking-tight text-white transition-colors group-hover:text-blue-300 ${
-                          isLead ? 'text-2xl sm:text-[1.6rem]' : 'text-xl'
+                        className={`font-road-rage font-normal tracking-wide text-[#FF0000] ${
+                          isLead ? 'text-3xl sm:text-[2rem]' : 'text-2xl sm:text-[1.65rem]'
                         }`}
                       >
                         {item.title}
@@ -94,12 +93,12 @@ export function AchievementsView({
                       />
                     </div>
 
-                    <p className="mt-2.5 text-sm leading-relaxed text-slate-300">
+                    <p className="mt-2.5 font-kalam text-sm leading-relaxed text-slate-300">
                       {item.summary}
                     </p>
                   </div>
 
-                  <div className="mt-5 border-t border-white/10 pt-3.5 text-xs text-blue-200">
+                  <div className="mt-5 border-t border-white/10 pt-3.5 font-kalam text-xs text-blue-200">
                     {item.highlights.join(' · ')}
                   </div>
                 </div>

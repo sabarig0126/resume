@@ -8,6 +8,11 @@ const GLOW_RADIUS_PX = 210;
 const RING_RADIUS_PX = 18;
 const DOT_RADIUS_PX = 4;
 
+// Frame-rate-independent exponential smoothing speeds (1/s)
+const DOT_FOLLOW_SPEED = 60;
+const RING_FOLLOW_SPEED = 20;
+const GLOW_FOLLOW_SPEED = 11;
+
 const INTERACTIVE_SELECTOR =
   'button:not(:disabled), a[href], [role="button"]:not([aria-disabled="true"]), label[for], [data-cursor-dim="true"], .glass-interactive, .cursor-pointer';
 
@@ -35,6 +40,10 @@ const SPECIAL_NATIVE_CURSORS = new Set([
   'zoom-out',
 ]);
 
+function formatTranslate(x: number, y: number, offset: number): string {
+  return `translate3d(${(x - offset).toFixed(2)}px, ${(y - offset).toFixed(2)}px, 0)`;
+}
+
 export function CursorGlow({ disabled = false }: CursorGlowProps) {
   const glowRef = useRef<HTMLDivElement | null>(null);
   const ringRef = useRef<HTMLDivElement | null>(null);
@@ -42,6 +51,7 @@ export function CursorGlow({ disabled = false }: CursorGlowProps) {
   const dotRef = useRef<HTMLDivElement | null>(null);
   const dotVisualRef = useRef<HTMLSpanElement | null>(null);
   const disabledRef = useRef(disabled);
+  const syncVisualRef = useRef<(() => void) | null>(null);
   disabledRef.current = disabled;
 
   useEffect(() => {
@@ -65,6 +75,8 @@ export function CursorGlow({ disabled = false }: CursorGlowProps) {
 
     let targetX = window.innerWidth * 0.5;
     let targetY = window.innerHeight * 0.5;
+    let dotX = targetX;
+    let dotY = targetY;
     let ringX = targetX;
     let ringY = targetY;
     let glowX = targetX;
@@ -74,10 +86,23 @@ export function CursorGlow({ disabled = false }: CursorGlowProps) {
     let isNativeCursorMode = false;
     let isHoveringInteractive = false;
     let isPressed = false;
-    let lastTargetEl: Element | null = null;
+    let hasCustomCursorClass = false;
+    let pendingTarget: EventTarget | null = null;
+    let lastInspectedEl: Element | null = null;
+    let needsScrollInspect = false;
+
     let rafId = 0;
+    let lastFrameTime = 0;
+
+    // Cached visual state to avoid redundant DOM writes
+    let prevShowCursor: boolean | null = null;
+    let prevShowGlowOpacity: string | null = null;
+    let prevReducedMotion: boolean | null = null;
+    let prevInteractionState: string | null = null;
 
     const setHtmlCursorClass = (active: boolean) => {
+      if (hasCustomCursorClass === active) return;
+      hasCustomCursorClass = active;
       document.documentElement.classList.toggle('has-custom-cursor', active);
     };
 
@@ -85,8 +110,12 @@ export function CursorGlow({ disabled = false }: CursorGlowProps) {
       const showCursor =
         canUseCustomCursor && isVisible && !isNativeCursorMode && !document.hidden;
 
-      dotEl.style.opacity = showCursor ? '1' : '0';
-      ringEl.style.opacity = showCursor ? '1' : '0';
+      if (prevShowCursor !== showCursor) {
+        prevShowCursor = showCursor;
+        const opacityStr = showCursor ? '1' : '0';
+        dotEl.style.opacity = opacityStr;
+        ringEl.style.opacity = opacityStr;
+      }
 
       const showGlow =
         canAnimateAmbientGlow &&
@@ -94,91 +123,71 @@ export function CursorGlow({ disabled = false }: CursorGlowProps) {
         isVisible &&
         !document.hidden;
 
-      glowEl.style.opacity = showGlow
+      const nextGlowOpacity = showGlow
         ? isHoveringInteractive
           ? '0.32'
           : '0.82'
         : '0';
 
-      if (prefersReducedMotion) {
-        ringVisualEl.style.transition = 'none';
-        dotVisualEl.style.transition = 'none';
-      } else {
-        ringVisualEl.style.transition =
-          'transform 180ms cubic-bezier(0.16, 1, 0.3, 1), border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease';
-        dotVisualEl.style.transition =
-          'transform 140ms cubic-bezier(0.16, 1, 0.3, 1)';
+      if (prevShowGlowOpacity !== nextGlowOpacity) {
+        prevShowGlowOpacity = nextGlowOpacity;
+        glowEl.style.opacity = nextGlowOpacity;
       }
 
-      if (isPressed) {
-        ringVisualEl.style.transform = 'scale(0.84)';
-        dotVisualEl.style.transform = 'scale(1.22)';
-      } else if (isHoveringInteractive) {
-        ringVisualEl.style.transform = 'scale(1.42)';
-        dotVisualEl.style.transform = 'scale(0.82)';
-      } else {
-        ringVisualEl.style.transform = 'scale(1)';
-        dotVisualEl.style.transform = 'scale(1)';
+      if (prevReducedMotion !== prefersReducedMotion) {
+        prevReducedMotion = prefersReducedMotion;
+        if (prefersReducedMotion) {
+          ringVisualEl.style.transition = 'none';
+          dotVisualEl.style.transition = 'none';
+        } else {
+          ringVisualEl.style.transition =
+            'transform 180ms cubic-bezier(0.16, 1, 0.3, 1), border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease';
+          dotVisualEl.style.transition =
+            'transform 140ms cubic-bezier(0.16, 1, 0.3, 1)';
+        }
       }
 
-      if (isHoveringInteractive) {
-        ringVisualEl.style.borderColor = 'rgba(34, 211, 238, 0.82)';
-        ringVisualEl.style.backgroundColor = 'rgba(37, 99, 235, 0.12)';
-        ringVisualEl.style.boxShadow =
-          '0 0 20px rgba(34, 211, 238, 0.32), inset 0 0 10px rgba(59, 130, 246, 0.16)';
-      } else {
-        ringVisualEl.style.borderColor = 'rgba(56, 189, 248, 0.54)';
-        ringVisualEl.style.backgroundColor = 'rgba(37, 99, 235, 0.05)';
-        ringVisualEl.style.boxShadow =
-          '0 0 14px rgba(34, 211, 238, 0.18), inset 0 0 8px rgba(59, 130, 246, 0.1)';
-      }
-    };
+      const interactionKey = `${isPressed ? 1 : 0}:${isHoveringInteractive ? 1 : 0}`;
+      if (prevInteractionState !== interactionKey) {
+        prevInteractionState = interactionKey;
 
-    const tick = () => {
-      rafId = 0;
-      if (!canUseCustomCursor || !isVisible || document.hidden) {
-        applyVisualStates();
-        return;
-      }
+        if (isPressed) {
+          ringVisualEl.style.transform = 'scale(0.84)';
+          dotVisualEl.style.transform = 'scale(1.22)';
+        } else if (isHoveringInteractive) {
+          ringVisualEl.style.transform = 'scale(1.42)';
+          dotVisualEl.style.transform = 'scale(0.82)';
+        } else {
+          ringVisualEl.style.transform = 'scale(1)';
+          dotVisualEl.style.transform = 'scale(1)';
+        }
 
-      const ringDx = targetX - ringX;
-      const ringDy = targetY - ringY;
-      ringX += ringDx * 0.28;
-      ringY += ringDy * 0.28;
-      ringEl.style.transform = `translate3d(${(ringX - RING_RADIUS_PX).toFixed(1)}px, ${(ringY - RING_RADIUS_PX).toFixed(1)}px, 0)`;
-
-      let glowMoving = false;
-      if (canAnimateAmbientGlow && !disabledRef.current) {
-        const glowDx = targetX - glowX;
-        const glowDy = targetY - glowY;
-        glowX += glowDx * 0.18;
-        glowY += glowDy * 0.18;
-        glowEl.style.transform = `translate3d(${(glowX - GLOW_RADIUS_PX).toFixed(1)}px, ${(glowY - GLOW_RADIUS_PX).toFixed(1)}px, 0)`;
-        glowMoving = Math.abs(glowDx) > 0.35 || Math.abs(glowDy) > 0.35;
-      }
-
-      const ringMoving = Math.abs(ringDx) > 0.25 || Math.abs(ringDy) > 0.25;
-      if (ringMoving || glowMoving) {
-        rafId = window.requestAnimationFrame(tick);
+        if (isHoveringInteractive) {
+          ringVisualEl.style.borderColor = 'rgba(34, 211, 238, 0.82)';
+          ringVisualEl.style.backgroundColor = 'rgba(37, 99, 235, 0.12)';
+          ringVisualEl.style.boxShadow =
+            '0 0 20px rgba(34, 211, 238, 0.32), inset 0 0 10px rgba(59, 130, 246, 0.16)';
+        } else {
+          ringVisualEl.style.borderColor = 'rgba(56, 189, 248, 0.54)';
+          ringVisualEl.style.backgroundColor = 'rgba(37, 99, 235, 0.05)';
+          ringVisualEl.style.boxShadow =
+            '0 0 14px rgba(34, 211, 238, 0.18), inset 0 0 8px rgba(59, 130, 246, 0.1)';
+        }
       }
     };
 
-    const scheduleTick = () => {
-      if (prefersReducedMotion) {
-        ringX = targetX;
-        ringY = targetY;
-        ringEl.style.transform = `translate3d(${(ringX - RING_RADIUS_PX).toFixed(1)}px, ${(ringY - RING_RADIUS_PX).toFixed(1)}px, 0)`;
-        return;
+    syncVisualRef.current = () => {
+      if (!disabledRef.current && isVisible && canAnimateAmbientGlow) {
+        glowX = targetX;
+        glowY = targetY;
+        glowEl.style.transform = formatTranslate(glowX, glowY, GLOW_RADIUS_PX);
       }
-      if (!rafId && canUseCustomCursor && isVisible && !document.hidden) {
-        rafId = window.requestAnimationFrame(tick);
-      }
+      applyVisualStates();
     };
 
-    const inspectTarget = (target: EventTarget | null) => {
-      const el = target instanceof Element ? target : null;
-      if (el === lastTargetEl) return;
-      lastTargetEl = el;
+    const inspectElement = (el: Element | null) => {
+      if (el === lastInspectedEl) return;
+      lastInspectedEl = el;
 
       if (!el) {
         isNativeCursorMode = false;
@@ -186,8 +195,21 @@ export function CursorGlow({ disabled = false }: CursorGlowProps) {
         return;
       }
 
-      const isTextTarget = Boolean(el.closest(NATIVE_TEXT_SELECTOR));
-      if (isTextTarget) {
+      if (el.closest(NATIVE_TEXT_SELECTOR)) {
+        isNativeCursorMode = true;
+        isHoveringInteractive = false;
+        return;
+      }
+
+      if (el.closest('button:disabled, [aria-disabled="true"]')) {
+        isNativeCursorMode = true;
+        isHoveringInteractive = false;
+        return;
+      }
+
+      const inlineCursor =
+        el instanceof HTMLElement ? el.style.cursor : '';
+      if (inlineCursor && SPECIAL_NATIVE_CURSORS.has(inlineCursor)) {
         isNativeCursorMode = true;
         isHoveringInteractive = false;
         return;
@@ -204,23 +226,136 @@ export function CursorGlow({ disabled = false }: CursorGlowProps) {
       isHoveringInteractive = Boolean(el.closest(INTERACTIVE_SELECTOR));
     };
 
+    const snapAllToTarget = () => {
+      dotX = targetX;
+      dotY = targetY;
+      ringX = targetX;
+      ringY = targetY;
+      glowX = targetX;
+      glowY = targetY;
+
+      dotEl.style.transform = formatTranslate(dotX, dotY, DOT_RADIUS_PX);
+      ringEl.style.transform = formatTranslate(ringX, ringY, RING_RADIUS_PX);
+      glowEl.style.transform = formatTranslate(glowX, glowY, GLOW_RADIUS_PX);
+    };
+
+    const stopLoop = () => {
+      if (rafId) {
+        window.cancelAnimationFrame(rafId);
+        rafId = 0;
+      }
+      lastFrameTime = 0;
+    };
+
+    const tick = (now: number) => {
+      rafId = 0;
+
+      if (!canUseCustomCursor || !isVisible || document.hidden) {
+        lastFrameTime = 0;
+        applyVisualStates();
+        return;
+      }
+
+      if (needsScrollInspect) {
+        needsScrollInspect = false;
+        pendingTarget = document.elementFromPoint(targetX, targetY);
+      }
+
+      if (pendingTarget !== undefined) {
+        const el = pendingTarget instanceof Element ? pendingTarget : null;
+        inspectElement(el);
+      }
+
+      applyVisualStates();
+
+      if (prefersReducedMotion) {
+        snapAllToTarget();
+        lastFrameTime = 0;
+        return;
+      }
+
+      const rawDt = lastFrameTime ? (now - lastFrameTime) / 1000 : 1 / 60;
+      const dt = Math.min(Math.max(rawDt, 0.001), 0.05);
+      lastFrameTime = now;
+
+      // Smooth frame-rate-independent interpolation for dot, ring, and glow
+      const dotFactor = 1 - Math.exp(-DOT_FOLLOW_SPEED * dt);
+      const ringFactor = 1 - Math.exp(-RING_FOLLOW_SPEED * dt);
+
+      const dotDx = targetX - dotX;
+      const dotDy = targetY - dotY;
+      const dotSettled = Math.abs(dotDx) <= 0.04 && Math.abs(dotDy) <= 0.04;
+      if (dotSettled) {
+        dotX = targetX;
+        dotY = targetY;
+      } else {
+        dotX += dotDx * dotFactor;
+        dotY += dotDy * dotFactor;
+      }
+      dotEl.style.transform = formatTranslate(dotX, dotY, DOT_RADIUS_PX);
+
+      const ringDx = targetX - ringX;
+      const ringDy = targetY - ringY;
+      const ringSettled = Math.abs(ringDx) <= 0.06 && Math.abs(ringDy) <= 0.06;
+      if (ringSettled) {
+        ringX = targetX;
+        ringY = targetY;
+      } else {
+        ringX += ringDx * ringFactor;
+        ringY += ringDy * ringFactor;
+      }
+      ringEl.style.transform = formatTranslate(ringX, ringY, RING_RADIUS_PX);
+
+      let glowSettled = true;
+      if (canAnimateAmbientGlow) {
+        if (disabledRef.current) {
+          glowX = targetX;
+          glowY = targetY;
+        } else {
+          const glowFactor = 1 - Math.exp(-GLOW_FOLLOW_SPEED * dt);
+          const glowDx = targetX - glowX;
+          const glowDy = targetY - glowY;
+          glowSettled = Math.abs(glowDx) <= 0.1 && Math.abs(glowDy) <= 0.1;
+          if (glowSettled) {
+            glowX = targetX;
+            glowY = targetY;
+          } else {
+            glowX += glowDx * glowFactor;
+            glowY += glowDy * glowFactor;
+          }
+          glowEl.style.transform = formatTranslate(glowX, glowY, GLOW_RADIUS_PX);
+        }
+      }
+
+      if (!dotSettled || !ringSettled || !glowSettled) {
+        rafId = window.requestAnimationFrame(tick);
+      } else {
+        lastFrameTime = 0;
+      }
+    };
+
+    const scheduleTick = () => {
+      if (!canUseCustomCursor || !isVisible || document.hidden) return;
+      if (!rafId) {
+        rafId = window.requestAnimationFrame(tick);
+      }
+    };
+
     const deactivateForTouch = () => {
       setHtmlCursorClass(false);
       isVisible = false;
       isPressed = false;
       isHoveringInteractive = false;
       isNativeCursorMode = false;
-      lastTargetEl = null;
-      if (rafId) {
-        window.cancelAnimationFrame(rafId);
-        rafId = 0;
-      }
+      lastInspectedEl = null;
+      pendingTarget = null;
+      stopLoop();
       applyVisualStates();
     };
 
     const handlePointerMove = (e: PointerEvent) => {
       if (e.pointerType !== 'mouse' || !canUseCustomCursor) {
-        if (isVisible || document.documentElement.classList.contains('has-custom-cursor')) {
+        if (isVisible || hasCustomCursorClass) {
           deactivateForTouch();
         }
         return;
@@ -230,22 +365,13 @@ export function CursorGlow({ disabled = false }: CursorGlowProps) {
 
       targetX = e.clientX;
       targetY = e.clientY;
-
-      // Keep core dot 1:1 responsive with zero lag
-      dotEl.style.transform = `translate3d(${(targetX - DOT_RADIUS_PX).toFixed(1)}px, ${(targetY - DOT_RADIUS_PX).toFixed(1)}px, 0)`;
+      pendingTarget = e.target;
 
       if (!isVisible) {
-        ringX = targetX;
-        ringY = targetY;
-        glowX = targetX;
-        glowY = targetY;
-        ringEl.style.transform = `translate3d(${(ringX - RING_RADIUS_PX).toFixed(1)}px, ${(ringY - RING_RADIUS_PX).toFixed(1)}px, 0)`;
-        glowEl.style.transform = `translate3d(${(glowX - GLOW_RADIUS_PX).toFixed(1)}px, ${(glowY - GLOW_RADIUS_PX).toFixed(1)}px, 0)`;
         isVisible = true;
+        snapAllToTarget();
       }
 
-      inspectTarget(e.target);
-      applyVisualStates();
       scheduleTick();
     };
 
@@ -254,8 +380,20 @@ export function CursorGlow({ disabled = false }: CursorGlowProps) {
         deactivateForTouch();
         return;
       }
-      if (!canUseCustomCursor || isNativeCursorMode) return;
-      isPressed = true;
+      if (!canUseCustomCursor) return;
+
+      targetX = e.clientX;
+      targetY = e.clientY;
+      pendingTarget = e.target;
+      if (!isVisible) {
+        isVisible = true;
+        snapAllToTarget();
+      }
+      inspectElement(e.target instanceof Element ? e.target : null);
+
+      if (!isNativeCursorMode) {
+        isPressed = true;
+      }
       applyVisualStates();
     };
 
@@ -271,12 +409,29 @@ export function CursorGlow({ disabled = false }: CursorGlowProps) {
       setHtmlCursorClass(false);
       isVisible = false;
       isPressed = false;
-      lastTargetEl = null;
-      if (rafId) {
-        window.cancelAnimationFrame(rafId);
-        rafId = 0;
-      }
+      lastInspectedEl = null;
+      pendingTarget = null;
+      stopLoop();
       applyVisualStates();
+    };
+
+    const handlePointerOut = (e: PointerEvent) => {
+      if (e.pointerType === 'mouse' && e.relatedTarget === null) {
+        handleMouseLeave();
+      }
+    };
+
+    const handleScroll = () => {
+      if (!canUseCustomCursor || !isVisible || document.hidden) return;
+      needsScrollInspect = true;
+      scheduleTick();
+    };
+
+    const handleResize = () => {
+      if (!isVisible) return;
+      targetX = Math.min(Math.max(targetX, 0), window.innerWidth);
+      targetY = Math.min(Math.max(targetY, 0), window.innerHeight);
+      scheduleTick();
     };
 
     const handleCapabilityChange = () => {
@@ -289,16 +444,14 @@ export function CursorGlow({ disabled = false }: CursorGlowProps) {
         deactivateForTouch();
       } else {
         applyVisualStates();
+        if (isVisible) scheduleTick();
       }
     };
 
     const handleVisibilityChange = () => {
       if (document.hidden) {
         setHtmlCursorClass(false);
-        if (rafId) {
-          window.cancelAnimationFrame(rafId);
-          rafId = 0;
-        }
+        stopLoop();
       }
       applyVisualStates();
     };
@@ -306,22 +459,27 @@ export function CursorGlow({ disabled = false }: CursorGlowProps) {
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
     window.addEventListener('pointerdown', handlePointerDown, { passive: true });
     window.addEventListener('pointerup', handlePointerUp, { passive: true });
-    document.addEventListener('mouseleave', handleMouseLeave);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleResize, { passive: true });
     window.addEventListener('blur', handleMouseLeave);
+    document.addEventListener('pointerout', handlePointerOut, { passive: true });
+    document.addEventListener('mouseleave', handleMouseLeave);
     document.addEventListener('visibilitychange', handleVisibilityChange);
     hoverQuery.addEventListener('change', handleCapabilityChange);
     motionQuery.addEventListener('change', handleCapabilityChange);
 
     return () => {
+      syncVisualRef.current = null;
       setHtmlCursorClass(false);
-      if (rafId) {
-        window.cancelAnimationFrame(rafId);
-      }
+      stopLoop();
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerdown', handlePointerDown);
       window.removeEventListener('pointerup', handlePointerUp);
-      document.removeEventListener('mouseleave', handleMouseLeave);
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
       window.removeEventListener('blur', handleMouseLeave);
+      document.removeEventListener('pointerout', handlePointerOut);
+      document.removeEventListener('mouseleave', handleMouseLeave);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       hoverQuery.removeEventListener('change', handleCapabilityChange);
       motionQuery.removeEventListener('change', handleCapabilityChange);
@@ -329,11 +487,7 @@ export function CursorGlow({ disabled = false }: CursorGlowProps) {
   }, []);
 
   useEffect(() => {
-    const glowEl = glowRef.current;
-    if (!glowEl) return;
-    if (disabled) {
-      glowEl.style.opacity = '0';
-    }
+    syncVisualRef.current?.();
   }, [disabled]);
 
   return (
@@ -346,7 +500,9 @@ export function CursorGlow({ disabled = false }: CursorGlowProps) {
         style={{
           width: `${GLOW_RADIUS_PX * 2}px`,
           height: `${GLOW_RADIUS_PX * 2}px`,
+          transform: 'translate3d(-999px, -999px, 0)',
           willChange: 'transform, opacity',
+          backfaceVisibility: 'hidden',
           background:
             'radial-gradient(circle, rgba(34, 211, 238, 0.11) 0%, rgba(59, 130, 246, 0.08) 34%, rgba(139, 92, 246, 0.04) 58%, transparent 74%)',
         }}
@@ -360,7 +516,9 @@ export function CursorGlow({ disabled = false }: CursorGlowProps) {
         style={{
           width: `${RING_RADIUS_PX * 2}px`,
           height: `${RING_RADIUS_PX * 2}px`,
+          transform: 'translate3d(-999px, -999px, 0)',
           willChange: 'transform, opacity',
+          backfaceVisibility: 'hidden',
         }}
       >
         <span
@@ -369,7 +527,7 @@ export function CursorGlow({ disabled = false }: CursorGlowProps) {
         />
       </div>
 
-      {/* Zero-lag 1:1 glowing blue/cyan precision cursor dot */}
+      {/* Smooth precision glowing blue/cyan cursor dot */}
       <div
         ref={dotRef}
         aria-hidden="true"
@@ -377,7 +535,9 @@ export function CursorGlow({ disabled = false }: CursorGlowProps) {
         style={{
           width: `${DOT_RADIUS_PX * 2}px`,
           height: `${DOT_RADIUS_PX * 2}px`,
+          transform: 'translate3d(-999px, -999px, 0)',
           willChange: 'transform, opacity',
+          backfaceVisibility: 'hidden',
         }}
       >
         <span

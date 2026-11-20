@@ -9,7 +9,6 @@ import { TiltCard } from '../TiltCard';
 
 interface OverviewViewProps {
   onNavigateFeature: (feature: FeatureId) => void;
-  onStartSlideshow?: () => void;
 }
 
 export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
@@ -30,13 +29,13 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
             className="flex flex-col justify-center lg:col-span-7"
           >
             <div>
-              <h1 className="font-display text-4xl font-bold tracking-[-0.03em] leading-[1.05] text-white sm:text-5xl lg:text-[3.4rem] [text-wrap:balance]">
+              <h1 className="font-road-rage text-5xl font-normal tracking-[0.02em] leading-[1.05] text-[#FF0000] sm:text-6xl lg:text-[4rem] [text-wrap:balance]">
                 Sabarivasan&apos;s Profile
               </h1>
 
               <div className="mt-6 space-y-5">
                 <div>
-                  <h2 className="text-xs font-semibold text-blue-300">
+                  <h2 className="font-caveat text-base font-normal tracking-wide text-[#FFFF00]">
                     About Me
                   </h2>
                   <p className="mt-1.5 max-w-[60ch] text-base leading-relaxed text-slate-200">
@@ -45,7 +44,7 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
                 </div>
 
                 <div className="border-t border-white/10 pt-5">
-                  <h2 className="text-xs font-semibold text-blue-300">
+                  <h2 className="font-caveat text-base font-normal tracking-wide text-[#FFFF00]">
                     Career Objective
                   </h2>
                   <p className="mt-1.5 max-w-[60ch] text-sm leading-relaxed text-slate-300">
@@ -71,13 +70,13 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
             <GlassCard
               strong
               interactive
-              className="flex w-full flex-col justify-between rounded-2xl p-6 text-white sm:p-8 lg:h-[430.548px]"
+              className="flex w-full flex-col justify-between rounded-2xl p-6 text-white sm:p-8 lg:min-h-[430px]"
             >
               <div>
-                <p className="text-xs font-medium text-blue-300">
-                  Personal Details
+                <p className="font-caveat text-base font-normal tracking-wide text-[#FFFF00]">
+                  Candidate Profile
                 </p>
-                <h2 className="mt-1 font-display text-2xl font-bold tracking-tight text-white">
+                <h2 className="mt-1 font-caveat text-3xl font-normal tracking-wide text-[#FFFF00]">
                   {PROFILE.name}
                 </h2>
 
@@ -159,17 +158,13 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
                 glowColor={idx === 1 || idx === 2 ? 'amber' : 'cyan'}
                 className="glass-surface glass-interactive h-full space-y-1.5 rounded-xl p-5"
               >
-                <div
-                  className={`font-display text-3xl font-bold tracking-tight tabular-nums ${
-                    idx === 1 || idx === 2 ? 'text-amber-400' : 'text-white'
-                  }`}
-                >
+                <div className="font-road-rage text-4xl font-normal tracking-wide text-[#FF0000] tabular-nums">
                   <AnimatedCounter value={metric.value} />
                 </div>
-                <div className="text-sm font-semibold text-slate-100">
+                <div className="font-kalam text-sm font-bold text-slate-100">
                   {metric.label}
                 </div>
-                <p className="text-xs leading-relaxed text-slate-400">
+                <p className="font-kalam text-[13px] leading-relaxed text-slate-300">
                   {metric.context}
                 </p>
               </TiltCard>
@@ -179,7 +174,7 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
         </SectionReveal>
 
         <p className="mt-6 text-center text-xs leading-relaxed text-slate-400">
-          Click the <span className="font-semibold text-white">Menu</span> button at the top right to view all sections — Achievements, Technical Skills, Certifications, Education, Projects, Resume PDF, Portfolio PDF, and Contact.
+          Use the <span className="font-semibold text-white">Menu</span> at the top right to explore Achievements, Technical Skills, Certifications, Education, Projects, Resume PDF, Portfolio PDF, and Contact.
         </p>
       </div>
     </section>

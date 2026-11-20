@@ -50,10 +50,19 @@ export function PdfCanvasViewer({
   const [errorMsg, setErrorMsg] = useState('');
   const [downloaded, setDownloaded] = useState(false);
 
+  const downloadTimerRef = useRef<number>(0);
+
   const handleDownloadFeedback = () => {
     setDownloaded(true);
-    window.setTimeout(() => setDownloaded(false), 2400);
+    window.clearTimeout(downloadTimerRef.current);
+    downloadTimerRef.current = window.setTimeout(() => setDownloaded(false), 2400);
   };
+
+  useEffect(() => {
+    return () => {
+      window.clearTimeout(downloadTimerRef.current);
+    };
+  }, []);
 
   // Load PDF document whenever pdfUrl changes
   useEffect(() => {
@@ -87,9 +96,9 @@ export function PdfCanvasViewer({
 
     return () => {
       cancelled = true;
-      loadingTask.destroy();
+      void Promise.resolve(loadingTask.destroy()).catch(() => {});
       if (pdfDocRef.current) {
-        pdfDocRef.current.cleanup();
+        void Promise.resolve(pdfDocRef.current.cleanup()).catch(() => {});
         pdfDocRef.current = null;
       }
     };
@@ -130,7 +139,8 @@ export function PdfCanvasViewer({
           if (cancelled) return;
 
           const baseViewport = page.getViewport({ scale: 1 });
-          const availableWidth = Math.max(container.clientWidth - 48, 280);
+          const horizontalPadding = container.clientWidth < 640 ? 24 : 48;
+          const availableWidth = Math.max(container.clientWidth - horizontalPadding, 200);
           const fitScale = Math.min(availableWidth / baseViewport.width, 2.2);
           const targetScale = fitScale * zoomMultiplier;
           const viewport = page.getViewport({ scale: targetScale });
@@ -220,6 +230,15 @@ export function PdfCanvasViewer({
   useEffect(() => {
     if (singlePageOnly || numPages <= 1) return;
     const onKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
       if (e.key === 'ArrowRight') {
         setCurrentPage((p) => (p < numPages ? p + 1 : 1));
       } else if (e.key === 'ArrowLeft') {
@@ -234,10 +253,10 @@ export function PdfCanvasViewer({
     <section className="mx-auto max-w-[1280px] px-6 py-12 md:px-10 md:py-16">
       <div className="flex flex-col gap-6 border-b border-white/10 pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="font-mono text-xs text-amber-400 tabular-nums">
+          <p className="font-kalam text-xs text-amber-400 tabular-nums">
             {sectionLabel}
           </p>
-          <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          <h1 className="mt-2 font-road-rage text-4xl font-normal tracking-wide text-[#FF0000] sm:text-5xl">
             {heading}
           </h1>
         </div>
@@ -302,7 +321,7 @@ export function PdfCanvasViewer({
               </button>
             )}
 
-            <span className="px-2 font-mono text-xs text-slate-200 tabular-nums">
+            <span className="px-2 font-kalam text-xs text-slate-200 tabular-nums">
               {numPages > 0
                 ? singlePageOnly
                   ? 'Page 01 / 01'
@@ -343,7 +362,7 @@ export function PdfCanvasViewer({
             <button
               type="button"
               onClick={() => setZoomMultiplier(1)}
-              className="touch-press h-11 sm:h-9 rounded-lg border border-white/15 bg-white/5 px-3 font-mono text-xs text-slate-200 tabular-nums hover:border-cyan-400/50 hover:bg-white/15 cursor-pointer"
+              className="touch-press h-11 sm:h-9 rounded-lg border border-white/15 bg-white/5 px-3 font-kalam text-xs text-slate-200 tabular-nums hover:border-cyan-400/50 hover:bg-white/15 cursor-pointer"
             >
               {Math.round(zoomMultiplier * 100)}%
             </button>
@@ -378,7 +397,8 @@ export function PdfCanvasViewer({
               <a
                 href={pdfUrl}
                 download={downloadFilename}
-                className="mt-4 inline-flex min-h-[40px] items-center gap-2 rounded-lg bg-[#2563EB] px-4 py-2 text-xs font-semibold text-white hover:bg-blue-500"
+                onClick={handleDownloadFeedback}
+                className="touch-press mt-4 inline-flex min-h-[40px] items-center gap-2 rounded-lg bg-[#2563EB] px-4 py-2 text-xs font-semibold text-white hover:bg-blue-500"
               >
                 <Download className="h-3.5 w-3.5" />
                 <span>{downloadLabel}</span>
@@ -411,7 +431,7 @@ export function PdfCanvasViewer({
                   onClick={() => setCurrentPage(pageNum)}
                   aria-label={`Go to page ${pageNum}`}
                   aria-current={isActive ? 'page' : undefined}
-                  className={`touch-press h-10 min-w-[40px] sm:h-8 sm:min-w-[32px] rounded-md px-2 font-mono text-xs tabular-nums cursor-pointer ${
+                  className={`touch-press h-10 min-w-[40px] sm:h-8 sm:min-w-[32px] rounded-md px-2 font-kalam text-xs tabular-nums cursor-pointer ${
                     isActive
                       ? 'bg-[#2563EB] font-semibold text-white'
                       : 'bg-white/5 text-slate-400 hover:bg-white/15 hover:text-white'

@@ -18,23 +18,24 @@ export const PROFILE = {
   location: 'Coimbatore',
   email: 'gsabarivasan007@gmail.com',
   mobile: '9688283942',
+  linkedinUrl: 'https://www.linkedin.com/in/sabarivasan-g-774ba6375',
   aboutLead:
-    'I am Sabarivasan G, a second-year B.Tech student in Artificial Intelligence and Data Science at Sri Ramakrishna Institute of Technology. I am passionate about programming, data and innovation, continuously building my skills through certified courses, hands-on practice and new technologies.',
+    'Second-year B.Tech Artificial Intelligence & Data Science undergraduate at Sri Ramakrishna Institute of Technology focused on software engineering, statistical modeling, and data-driven problem solving. Building strong technical depth across Python and C programming, relational and NoSQL databases, mathematical computing in MATLAB, and 25+ industry-recognized certifications.',
   careerObjective:
-    'To build a successful career in technology by applying my knowledge of programming, data analysis and mathematics to Artificial Intelligence and Data Science. I aim to grow into a skilled professional through continuous learning, dedication and hands-on practice.',
+    'Aspiring AI and Data Science engineer seeking opportunities to apply strong foundations in algorithms, data analysis, statistical inference, and mathematical modeling to real-world engineering challenges—while advancing practical production skills through collaborative builds, hackathons, and technical internships.',
   learningGoal:
-    'To strengthen my theoretical foundation and turn it into practical technical skills through continuous, hands-on learning.',
+    'Translating core academic foundations in algorithms, probability, linear algebra, and database systems into structured, applied engineering workflows.',
 };
 
 export const PROOF_METRICS: ProofMetric[] = [
   {
     value: '25+',
-    label: 'Certified Courses',
-    context: 'Completed across MathWorks, IBM, NPTEL, Python & SQL',
+    label: 'Certified Modules',
+    context: 'Completed across MathWorks, IBM, NPTEL, Python, SQL & Data Science',
   },
   {
     value: '85.5%',
-    label: 'Higher Secondary',
+    label: 'Higher Secondary (HSC)',
     context: 'Thanappa Gounder Matric Higher Secondary School, Dharmapuri',
   },
   {
@@ -59,13 +60,13 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItem[] = [
     timeframe: 'Elite · 63%',
     location: 'IIT Madras (Online)',
     summary:
-      'Earned the NPTEL Elite certificate in Design Thinking – A Primer with a verified score of 63%.',
+      'Earned the NPTEL Elite Certification in Design Thinking – A Primer (IIT Madras) with a proctored evaluation score of 63%.',
     details:
-      'Completed structured coursework and proctored evaluation from IIT Madras focused on human-centered problem framing, iterative ideation, prototyping, and translating user insights into practical technical solutions.',
+      'Completed structured coursework and proctored national assessment under IIT Madras covering human-centered problem framing, iterative ideation, rapid prototyping, and translating user insights into practical, engineering-ready solutions.',
     highlights: [
-      'Elite Certification Tier (63% Score)',
-      'Human-Centered Problem Framing',
-      'Iterative Prototyping Methodology',
+      'NPTEL Elite Certification Tier (63% Proctored Score)',
+      'Human-Centered Problem Framing & Ideation',
+      'Iterative Prototyping & Solution Validation',
     ],
     featured: true,
     specs: {
@@ -84,13 +85,13 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItem[] = [
     timeframe: '2026',
     location: 'Coimbatore',
     summary:
-      'Participated in the college-level internal selection round for the Smart India Hackathon.',
+      'Competed in the institutional internal selection round for the Smart India Hackathon (SIH), scoping technical solutions to national problem statements.',
     details:
-      'Collaborated on rapid problem analysis, technical feasibility scoping, and solution presentation for national-level hackathon problem statements during the institutional Smart India Hackathon screening.',
+      'Collaborated within a multidisciplinary team to deconstruct national-level hackathon problem statements, assess technical feasibility, structure solution architectures, and deliver technical pitches during the institutional SIH screening round.',
     highlights: [
-      'Team Problem Framing & Pitching',
-      'Technical Feasibility Scoping',
-      'National Hackathon Qualifier Round',
+      'Collaborative Problem Framing & Technical Pitching',
+      'Technical Feasibility Scoping & Workflow Design',
+      'Institutional National Hackathon Qualifier Round',
     ],
     specs: {
       issuerOrContext: 'Smart India Hackathon (SIH)',
@@ -108,13 +109,13 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItem[] = [
     timeframe: 'Bootcamp',
     location: 'IIT Bombay',
     summary:
-      'Took part in the Illuminate Entrepreneurship Bootcamp organized by IIT Bombay.',
+      'Completed the Illuminate Entrepreneurship Bootcamp organized by IIT Bombay, focused on technology venture ideation and product validation.',
     details:
-      'Engaged in structured entrepreneurship workshops covering opportunity discovery, value proposition design, early-stage validation, and technology-driven product thinking.',
+      'Engaged in structured entrepreneurship and product-strategy workshops led under IIT Bombay’s Illuminate initiative, covering market opportunity discovery, value proposition design, early-stage validation, and technology-driven product thinking.',
     highlights: [
-      'Technology Venture Ideation',
-      'Value Proposition & Validation',
-      'Collaborative Workshop Execution',
+      'Technology Venture Ideation & Opportunity Discovery',
+      'Value Proposition & Product-Validation Frameworks',
+      'Team-Based Workshop Execution',
     ],
     specs: {
       issuerOrContext: 'IIT Bombay (Illuminate)',
@@ -132,13 +133,13 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItem[] = [
     timeframe: 'Event',
     location: 'Coimbatore',
     summary:
-      'Participated in TEDxSRIT centered on the theme “Human in the Loop”.',
+      'Participated in TEDxSRIT centered on “Human in the Loop,” examining ethical governance and human-centered oversight in AI systems.',
     details:
-      'Explored perspectives at the intersection of artificial intelligence, ethical decision-making, and human oversight in modern autonomous and data-driven systems.',
+      'Explored cross-disciplinary perspectives at the intersection of artificial intelligence, responsible decision-making, and human-in-the-loop supervision across modern autonomous and data-driven architectures.',
     highlights: [
       'Theme: Human in the Loop',
-      'AI & Human-Centered Systems',
-      'Campus Knowledge Exchange',
+      'Responsible AI & Human-Centered Oversight',
+      'Interdisciplinary Technical Exchange',
     ],
     specs: {
       issuerOrContext: 'TEDxSRIT',
@@ -156,13 +157,13 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItem[] = [
     timeframe: '8 Modules',
     location: 'Online Certification',
     summary:
-      'Completed eight MathWorks courses spanning MATLAB Onramp, Symbolic Math, Coder, Linear Algebra, and Statistics.',
+      'Completed eight MathWorks modules spanning MATLAB Onramp, Symbolic Math, MATLAB Coder, Linear Algebra, and Statistical Analysis.',
     details:
-      'Built hands-on fluency in matrix operations, vector calculations, symbolic computation, custom function authoring, statistical workflows, and data analysis inside the MATLAB environment.',
+      'Developed hands-on fluency in matrix and vector computation, symbolic math workflows, modular function authoring, statistical analysis, and algorithmic prototyping inside the MATLAB environment.',
     highlights: [
       'MATLAB, Symbolic Math & Coder Onramps',
-      'Linear Algebra & Matrix Calculations',
-      'Statistics & Data Analysis Modules',
+      'Linear Algebra & Vector/Matrix Computation',
+      'Statistics & Applied Data Analysis Modules',
     ],
     specs: {
       issuerOrContext: 'MathWorks',
@@ -180,13 +181,13 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItem[] = [
     timeframe: '7 Modules',
     location: 'Online Certification',
     summary:
-      'Completed seven foundational courses covering Python for Data Science & ML, Linear Algebra, Probability, and Statistical Inference.',
+      'Completed seven foundational courses covering Python for Data Science & Machine Learning, Linear Algebra, Probability, and Statistical Inference.',
     details:
-      'Strengthened applied Python programming skills alongside probability distributions, statistical inference, and linear algebra foundations required for machine learning pipelines.',
+      'Strengthened applied Python programming alongside probability distributions, statistical inference, and linear algebra fundamentals that underpin machine learning and analytical pipelines.',
     highlights: [
       'Python for Data Science & ML Bootcamp',
       'Linear Algebra & Probability Distributions',
-      'Statistical Inference using Python',
+      'Statistical Inference Using Python',
     ],
     specs: {
       issuerOrContext: 'Python & Data Science Track',
@@ -204,12 +205,12 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItem[] = [
     timeframe: '2 Modules',
     location: 'Online Certification',
     summary:
-      'Certified in Clean Coding and DevOps, Agile & Design Thinking under the IBM Career Education Program.',
+      'Certified in Clean Coding and DevOps, Agile & Design Thinking through the IBM Career Education Program.',
     details:
-      'Developed disciplined software craftsmanship habits including readable code structure, modular engineering practices, Agile iteration cycles, and DevOps collaboration workflows.',
+      'Built disciplined software engineering practices centered on maintainable code architecture, modular design principles, Agile iteration cycles, and collaborative DevOps delivery workflows.',
     highlights: [
-      'Clean Coding Principles',
-      'DevOps & Agile Workflows',
+      'Clean Coding & Maintainable Architecture',
+      'DevOps & Agile Delivery Workflows',
       'Design Thinking Integration',
     ],
     specs: {
@@ -228,12 +229,12 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItem[] = [
     timeframe: '6 Modules',
     location: 'Skill India Digital Hub',
     summary:
-      'Hands-on coursework in MySQL projects, MongoDB, Unix/Linux fundamentals, Ethical AI, Excel VBA, and Cybersecurity (10 hrs).',
+      'Completed hands-on coursework spanning MySQL, MongoDB, Unix/Linux fundamentals, Ethical AI, Excel VBA, and a 10-hour Cybersecurity certification.',
     details:
-      'Combined relational (MySQL) and document (MongoDB) database fundamentals with Unix/Linux command-line operations, Ethical AI awareness, and a 10-hour Cybersecurity certification via Tech Mahindra Foundation.',
+      'Combined relational (MySQL) and document-oriented (MongoDB) database modeling with Unix/Linux shell fundamentals, Ethical AI principles, Excel automation, and a 10-hour Cybersecurity credential via Tech Mahindra Foundation.',
     highlights: [
-      'Project on MySQL & MongoDB Courses',
-      'Unix / Linux OS Fundamentals & Ethical AI',
+      'Applied MySQL & MongoDB Database Coursework',
+      'Unix/Linux OS Fundamentals & Ethical AI',
       'Cybersecurity — Tech Mahindra Foundation (10 Hours)',
     ],
     specs: {
@@ -252,9 +253,9 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItem[] = [
     timeframe: '2025–2027',
     location: 'Coimbatore',
     summary:
-      'Core undergraduate coursework in Data Structures, DBMS, Linear Algebra, Probability, and AI Fundamentals.',
+      'Core undergraduate engineering coursework in Data Structures, DBMS, Linear Algebra, Probability, and Artificial Intelligence Fundamentals.',
     details:
-      'Pursuing the 4-year B.Tech degree in Artificial Intelligence & Data Science (currently 2nd Year), turning theoretical mathematical and algorithmic coursework into practical code and analytical exercises.',
+      'Pursuing the four-year B.Tech degree in Artificial Intelligence & Data Science (2nd Year), bridging theoretical mathematical and algorithmic coursework with practical programming and analytical problem solving.',
     highlights: [
       'Data Structures & Algorithms / DBMS',
       'Linear Algebra, Probability & Statistics',
@@ -279,11 +280,11 @@ export const TECHNICAL_SKILLS = [
     items: ['SQL', 'DBMS', 'MongoDB'],
   },
   {
-    category: 'Technical Tools',
+    category: 'Analytical & Computing Tools',
     items: ['MATLAB', 'Microsoft Excel'],
   },
   {
-    category: 'Technical Knowledge',
+    category: 'Core Technical Foundations',
     items: [
       'Data Analysis',
       'AI Fundamentals',
@@ -325,7 +326,7 @@ export const CERTIFICATION_TRACKS: CertificationTrack[] = [
   {
     number: '02.',
     provider: 'IBM Career Education Program',
-    category: 'Software & Engineering',
+    category: 'Software & Engineering Practices',
     courses: ['Clean Coding', 'DevOps, Agile & Design Thinking'],
   },
   {
@@ -346,7 +347,7 @@ export const CERTIFICATION_TRACKS: CertificationTrack[] = [
   {
     number: '04.',
     provider: 'Python & Data Science',
-    category: 'AI, ML & Statistics',
+    category: 'AI, ML & Statistical Modeling',
     courses: [
       'Python for Data Science and Machine Learning Bootcamp',
       'Introduction to Data Science',
@@ -359,8 +360,8 @@ export const CERTIFICATION_TRACKS: CertificationTrack[] = [
   },
   {
     number: '05.',
-    provider: 'Database & Programming',
-    category: 'Systems & Data',
+    provider: 'Database & Systems',
+    category: 'Data Management & OS',
     courses: [
       'Project on MySQL',
       'MongoDB Courses',
@@ -390,29 +391,29 @@ export const CERTIFICATION_TRACKS: CertificationTrack[] = [
 ];
 
 export const SOFT_SKILLS = [
-  'Communication Skills',
-  'Problem-Solving Skills',
-  'Teamwork and Collaboration',
+  'Technical Communication',
+  'Analytical Problem Solving',
+  'Team Collaboration',
   'Time Management',
   'Critical Thinking',
-  'Adaptability',
-  'Quick Learning',
-  'Self-Motivation',
+  'Technical Adaptability',
+  'Rapid Skill Acquisition',
+  'Self-Directed Execution',
 ];
 
 export const STRENGTHS = [
-  'Self-Motivated',
-  'Hardworking',
-  'Quick Learner',
-  'Positive Attitude',
-  'Adaptability',
-  'Willingness to Learn',
+  'Self-Motivated & Proactive',
+  'Consistent Work Ethic',
+  'Fast Technical Learner',
+  'Solution-Oriented Mindset',
+  'Cross-Tool Adaptability',
+  'Continuous Improvement Focus',
 ];
 
 export const HOBBIES = [
-  'Exploring New Technologies',
-  'Learning Programming',
+  'Exploring Emerging Technologies',
+  'Practicing Programming & Problem Solving',
   'Listening to Music',
-  'Improving Technical Knowledge',
-  'Exploring New Ideas',
+  'Advancing Core Technical Knowledge',
+  'Researching Innovative Technical Ideas',
 ];

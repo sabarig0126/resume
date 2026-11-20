@@ -15,8 +15,6 @@ export type PortfolioCategory =
   | 'Academic'
   | 'Projects';
 
-export type CategoryFilter = 'All' | PortfolioCategory;
-
 export interface ShowcaseSpecs {
   issuerOrContext: string;
   focusArea: string;
@@ -39,7 +37,6 @@ export interface PortfolioItem {
   imageAlt?: string;
   featured?: boolean;
   specs: ShowcaseSpecs;
-  isUserCreated?: boolean;
 }
 
 export interface CertificationTrack {

@@ -75,12 +75,12 @@ export function ProjectImageReveal({
       {(overlayTitle || overlaySubtitle) && (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#050A18]/90 via-[#050A18]/50 to-transparent px-4 py-3">
           {overlayTitle && (
-            <p className="font-display text-xs font-semibold text-white truncate">
+            <p className="font-caveat text-sm font-normal tracking-wide text-[#FFFF00] truncate">
               {overlayTitle}
             </p>
           )}
           {overlaySubtitle && (
-            <p className="text-[11px] text-blue-200/90 truncate">
+            <p className="font-kalam text-[11px] text-blue-200/90 truncate">
               {overlaySubtitle}
             </p>
           )}

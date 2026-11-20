@@ -1,27 +1,48 @@
 @import "tailwindcss";
 
 @theme {
-  --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --default-font-family: "Kalam", cursive, sans-serif;
+  --default-mono-font-family: "Kalam", cursive, sans-serif;
+  --font-display: "Road Rage", "Caveat Brush", "Kalam", cursive, sans-serif;
+  --font-sans: "Kalam", cursive, sans-serif;
+  --font-mono: "Kalam", cursive, sans-serif;
+  --font-road-rage: "Road Rage", "Caveat Brush", cursive, sans-serif;
+  --font-caveat: "Caveat Brush", "Kalam", cursive, sans-serif;
+  --font-kalam: "Kalam", cursive, sans-serif;
 }
 
 @layer base {
   html {
+    font-family: var(--font-kalam);
     overflow-x: clip;
     -webkit-text-size-adjust: 100%;
   }
 
   body {
-    font-family: var(--font-sans);
+    font-family: var(--font-kalam);
     background-color: #050A18;
     color: #F8FAFC;
     overflow-x: clip;
     -webkit-tap-highlight-color: transparent;
   }
 
-  h1, h2, h3, h4 {
-    font-family: var(--font-display);
+  h1, h2 {
+    font-family: var(--font-road-rage);
+  }
+
+  h3, h4 {
+    font-family: var(--font-caveat);
+  }
+
+  button,
+  input,
+  textarea,
+  select,
+  code,
+  kbd,
+  samp,
+  pre {
+    font-family: var(--font-kalam);
   }
 
   button,
@@ -109,20 +130,35 @@
     inset 0 1px 0 rgba(125, 211, 252, 0.14);
 }
 
-.glass-interactive:active {
-  transform: scale(0.985);
+@keyframes touch-haptic-pulse {
+  0% {
+    box-shadow:
+      0 0 0 0 rgba(56, 189, 248, 0.42),
+      inset 0 0 0 1px rgba(186, 230, 253, 0.28);
+  }
+  100% {
+    box-shadow:
+      0 0 0 6px rgba(56, 189, 248, 0),
+      0 0 18px -2px rgba(56, 189, 248, 0.24),
+      inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  }
 }
 
 .touch-press {
   transition:
-    transform 140ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 170ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 190ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 160ms ease,
     background-color 160ms ease,
     border-color 160ms ease,
     color 160ms ease;
 }
 
-.touch-press:active {
-  transform: scale(0.975);
+.touch-press:active:not(:disabled):not([aria-disabled="true"]),
+.touch-press[data-tap="true"]:not(:disabled):not([aria-disabled="true"]) {
+  transform: scale(0.97);
+  filter: brightness(1.07);
+  animation: touch-haptic-pulse 240ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -131,33 +167,11 @@
     transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
   }
 
-  .glass-interactive:active,
-  .touch-press:active {
+  .touch-press:active:not(:disabled):not([aria-disabled="true"]),
+  .touch-press[data-tap="true"]:not(:disabled):not([aria-disabled="true"]) {
     transform: none;
-  }
-}
-
-@keyframes marquee-scroll {
-  0% {
-    transform: translate3d(0, 0, 0);
-  }
-  100% {
-    transform: translate3d(-50%, 0, 0);
-  }
-}
-
-.animate-marquee {
-  display: flex;
-  width: max-content;
-  animation: marquee-scroll 34s linear infinite;
-}
-
-.animate-marquee:hover {
-  animation-play-state: paused;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .animate-marquee {
+    filter: none;
     animation: none;
+    box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.35);
   }
 }

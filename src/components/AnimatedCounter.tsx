@@ -172,7 +172,7 @@ export function AnimatedCounter({
           }
         }
       },
-      { threshold: 0.25 }
+      { threshold: 0.05 }
     );
 
     observer.observe(el);

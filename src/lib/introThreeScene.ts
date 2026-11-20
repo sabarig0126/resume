@@ -9,6 +9,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 export interface IntroSceneOptions {
   container: HTMLDivElement;
   durationMs: number;
+  initialElapsedMs?: number;
   onProgress?: (progress: number) => void;
 }
 
@@ -16,47 +17,93 @@ const _camTarget = new THREE.Vector3(0, 0, 0);
 const _camPos = new THREE.Vector3(0, 0, 7.5);
 const _lookTarget = new THREE.Vector3(0, 0, 0);
 
-function detectSoftwareWebGL(): boolean {
+function getAspectScale(aspect: number): number {
+  const safeAspect = Math.max(aspect, 0.42);
+  return Math.max(1, 0.82 / safeAspect);
+}
+
+interface DeviceProfile {
+  isTouchDevice: boolean;
+  isLowPowerDevice: boolean;
+}
+
+function getDeviceProfile(): DeviceProfile {
+  const isCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
+  const isMobileUA =
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
+  const isTouchDevice =
+    isCoarsePointer || isMobileUA || (navigator.maxTouchPoints ?? 0) > 1;
+  const cores = navigator.hardwareConcurrency ?? 4;
+  const deviceMemory =
+    (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 4;
+  const minViewportDim = Math.min(window.innerWidth, window.innerHeight);
+
+  const isLowPowerDevice =
+    cores <= 4 ||
+    deviceMemory <= 3 ||
+    (isTouchDevice && minViewportDim < 768 && cores <= 6);
+
+  return { isTouchDevice, isLowPowerDevice };
+}
+
+function detectSoftwareRenderer(gl: WebGLRenderingContext | WebGL2RenderingContext): boolean {
   try {
-    const probe = document.createElement('canvas');
-    const gl = probe.getContext('webgl2');
-    if (!gl) return true;
     const ext = gl.getExtension('WEBGL_debug_renderer_info');
     const param = ext ? ext.UNMASKED_RENDERER_WEBGL : gl.RENDERER;
     const gpu = String(gl.getParameter(param) ?? '');
-    gl.getExtension('WEBGL_lose_context')?.loseContext();
     return /SwiftShader|llvmpipe|softpipe|Software|Basic Render/i.test(gpu);
   } catch {
-    return true;
+    return false;
   }
 }
 
 export function mountIntroThreeScene({
   container,
   durationMs,
+  initialElapsedMs = 0,
   onProgress,
 }: IntroSceneOptions): () => void {
-  const isSoftwareGl = detectSoftwareWebGL();
+  const safeDurationMs = Math.max(durationMs, 1);
   const prefersReducedMotion = window.matchMedia(
     '(prefers-reduced-motion: reduce)'
   ).matches;
+  const { isTouchDevice, isLowPowerDevice } = getDeviceProfile();
 
   const width = Math.max(container.clientWidth || window.innerWidth, 1);
   const height = Math.max(container.clientHeight || window.innerHeight, 1);
 
   const renderer = new THREE.WebGLRenderer({
-    antialias: !isSoftwareGl,
-    powerPreference: 'high-performance',
+    antialias: !isTouchDevice && !isLowPowerDevice,
+    powerPreference: isLowPowerDevice ? 'low-power' : 'high-performance',
     alpha: false,
   });
+
+  const glContext = renderer.getContext();
+  const isSoftwareGl = detectSoftwareRenderer(glContext);
+  const useLowTier = isSoftwareGl || isLowPowerDevice;
+
+  const computePixelRatio = () => {
+    const dpr = window.devicePixelRatio || 1;
+    if (useLowTier) return 1;
+    if (isTouchDevice) return Math.min(dpr, 1.5);
+    return Math.min(dpr, 2);
+  };
+
+  let currentPixelRatio = computePixelRatio();
+
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.15;
-  renderer.setPixelRatio(
-    isSoftwareGl ? 1 : Math.min(window.devicePixelRatio || 1, 2)
-  );
-  renderer.setSize(width, height);
+  renderer.toneMappingExposure = useLowTier ? 1.22 : 1.15;
+  renderer.setPixelRatio(currentPixelRatio);
+  renderer.setSize(width, height, false);
   renderer.setClearColor(0x030714, 1);
+
+  renderer.domElement.style.display = 'block';
+  renderer.domElement.style.width = '100%';
+  renderer.domElement.style.height = '100%';
+  renderer.domElement.setAttribute('aria-hidden', 'true');
   container.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
@@ -64,18 +111,17 @@ export function mountIntroThreeScene({
   scene.fog = new THREE.FogExp2(0x030714, 0.042);
 
   const camera = new THREE.PerspectiveCamera(46, width / height, 0.1, 80);
-  const initialAspectScale = Math.max(1, 1.05 / Math.max(camera.aspect, 0.45));
-  camera.position.set(1.5, 0.85, 9.2 * initialAspectScale);
+  const initialAspectScale = getAspectScale(camera.aspect);
+  camera.position.set(1.5, 0.85, 9.0 * initialAspectScale);
   camera.lookAt(0, 0, 0);
 
   // Procedural Studio Environment Reflections for Metallic Elements
   const pmremGenerator = new THREE.PMREMGenerator(renderer);
-  const envTexture = pmremGenerator.fromScene(
-    new RoomEnvironment(),
-    0.04
-  ).texture;
-  scene.environment = envTexture;
+  const roomEnv = new RoomEnvironment();
+  const envRenderTarget = pmremGenerator.fromScene(roomEnv, 0.04);
+  roomEnv.dispose();
   pmremGenerator.dispose();
+  scene.environment = envRenderTarget.texture;
 
   // Realistic 3-Point + Core Lighting Rig
   const hemiLight = new THREE.HemisphereLight(0x38bdf8, 0x050a18, 0.85);
@@ -89,7 +135,13 @@ export function mountIntroThreeScene({
   rimLight.position.set(-5.0, -2.5, -4.5);
   scene.add(rimLight);
 
-  const cyanAccentLight = new THREE.PointLight(0x22d3ee, 2.6, 16, 1.5);
+  const baseAccentIntensity = useLowTier ? 3.1 : 2.6;
+  const cyanAccentLight = new THREE.PointLight(
+    0x22d3ee,
+    baseAccentIntensity,
+    16,
+    1.5
+  );
   cyanAccentLight.position.set(0, 0, 0);
   scene.add(cyanAccentLight);
 
@@ -101,12 +153,12 @@ export function mountIntroThreeScene({
   const geometries: THREE.BufferGeometry[] = [];
   const materials: THREE.Material[] = [];
 
-  // Shared Metallic & Physical Materials (varied roughness >= 0.24)
+  // Shared Metallic & Physical Materials
   const brushedPlatinumMat = new THREE.MeshPhysicalMaterial({
     color: 0xdbeafe,
     metalness: 0.96,
     roughness: 0.14,
-    anisotropy: 0.85,
+    anisotropy: useLowTier ? 0 : 0.85,
     anisotropyRotation: Math.PI / 4,
     clearcoat: 0.7,
     clearcoatRoughness: 0.12,
@@ -126,7 +178,7 @@ export function mountIntroThreeScene({
     color: 0x1d4ed8,
     metalness: 0.92,
     roughness: 0.22,
-    iridescence: 0.55,
+    iridescence: useLowTier ? 0 : 0.55,
     iridescenceIOR: 1.4,
     clearcoat: 0.8,
     envMapIntensity: 1.35,
@@ -136,10 +188,10 @@ export function mountIntroThreeScene({
   const plasmaCoreMat = new THREE.MeshPhysicalMaterial({
     color: 0x0ea5e9,
     emissive: 0x06b6d4,
-    emissiveIntensity: 2.2,
+    emissiveIntensity: useLowTier ? 2.5 : 2.2,
     metalness: 0.15,
     roughness: 0.08,
-    iridescence: 1.0,
+    iridescence: useLowTier ? 0 : 1.0,
     clearcoat: 1.0,
   });
   materials.push(plasmaCoreMat);
@@ -154,7 +206,7 @@ export function mountIntroThreeScene({
   });
   materials.push(wireframeCageMat);
 
-  // Composite Gyroscopic Metallic Assembly (compact scale to fit any viewport)
+  // Composite Gyroscopic Metallic Assembly
   const assemblyGroup = new THREE.Group();
   assemblyGroup.scale.setScalar(0.56);
   scene.add(assemblyGroup);
@@ -185,7 +237,7 @@ export function mountIntroThreeScene({
     bevelEnabled: true,
     bevelThickness: 0.018,
     bevelSize: 0.018,
-    bevelSegments: 2,
+    bevelSegments: useLowTier ? 1 : 2,
   });
   finGeo.center();
   geometries.push(finGeo);
@@ -215,9 +267,21 @@ export function mountIntroThreeScene({
   const ring3Group = new THREE.Group();
   assemblyGroup.add(ring1Group, ring2Group, ring3Group);
 
-  const ring1Geo = new THREE.TorusGeometry(1.58, 0.055, 20, 96);
-  const ring2Geo = new THREE.TorusGeometry(1.96, 0.042, 18, 96);
-  const ring3Geo = new THREE.TorusGeometry(2.38, 0.032, 16, 110);
+  const radialSegs = useLowTier ? 12 : 20;
+  const tubularSegs = useLowTier ? 64 : 96;
+  const ring1Geo = new THREE.TorusGeometry(1.58, 0.055, radialSegs, tubularSegs);
+  const ring2Geo = new THREE.TorusGeometry(
+    1.96,
+    0.042,
+    Math.max(10, radialSegs - 2),
+    tubularSegs
+  );
+  const ring3Geo = new THREE.TorusGeometry(
+    2.38,
+    0.032,
+    Math.max(10, radialSegs - 4),
+    useLowTier ? 72 : 110
+  );
   geometries.push(ring1Geo, ring2Geo, ring3Geo);
 
   const ring1Mesh = new THREE.Mesh(ring1Geo, brushedPlatinumMat);
@@ -227,7 +291,7 @@ export function mountIntroThreeScene({
   ring2Group.add(ring2Mesh);
   ring3Group.add(ring3Mesh);
 
-  // Instanced metallic collar nodes mounted onto Ring 1 & Ring 2
+  // Instanced metallic collar nodes mounted onto Ring 1
   const nodeGeo = new THREE.BoxGeometry(0.11, 0.16, 0.14);
   geometries.push(nodeGeo);
   const nodeInstances = new THREE.InstancedMesh(nodeGeo, darkGunmetalMat, 12);
@@ -290,7 +354,14 @@ export function mountIntroThreeScene({
   });
   materials.push(holoShaderMat);
 
-  const holoCylGeo = new THREE.CylinderGeometry(2.75, 2.75, 0.42, 72, 1, true);
+  const holoCylGeo = new THREE.CylinderGeometry(
+    2.75,
+    2.75,
+    0.42,
+    useLowTier ? 48 : 72,
+    1,
+    true
+  );
   geometries.push(holoCylGeo);
   const holoShroud = new THREE.Mesh(holoCylGeo, holoShaderMat);
   holoShroud.rotation.x = Math.PI * 0.42;
@@ -308,6 +379,7 @@ export function mountIntroThreeScene({
   trailGroup.scale.setScalar(0.56);
   scene.add(trailGroup);
 
+  const tubeSegments = useLowTier ? 72 : 128;
   trailConfigs.forEach((cfg, idx) => {
     const pts: THREE.Vector3[] = [];
     const steps = 48;
@@ -323,7 +395,7 @@ export function mountIntroThreeScene({
       );
     }
     const curve = new THREE.CatmullRomCurve3(pts, true);
-    const tubeGeo = new THREE.TubeGeometry(curve, 128, 0.022, 8, true);
+    const tubeGeo = new THREE.TubeGeometry(curve, tubeSegments, 0.022, 8, true);
     geometries.push(tubeGeo);
 
     const trailMat = new THREE.ShaderMaterial({
@@ -367,8 +439,8 @@ export function mountIntroThreeScene({
     trailGroup.add(tubeMesh);
   });
 
-  // 6. Futuristic Energy Pulse Shockwave (Sphere + Equatorial Wave Ring)
-  const pulseRingGeo = new THREE.RingGeometry(0.95, 1.18, 72);
+  // 6. Futuristic Energy Pulse Shockwave (Equatorial Wave Ring)
+  const pulseRingGeo = new THREE.RingGeometry(0.95, 1.18, useLowTier ? 48 : 72);
   geometries.push(pulseRingGeo);
   const pulseRingMat = new THREE.ShaderMaterial({
     uniforms: {
@@ -402,8 +474,8 @@ export function mountIntroThreeScene({
   pulseRingMesh.scale.setScalar(0.1);
   scene.add(pulseRingMesh);
 
-  // 7. Floating Volumetric Particles (Near Bokeh, Mid & Far Stars)
-  const PARTICLE_COUNT = 520;
+  // 7. Floating Volumetric Particles (Adaptive Count for Mobile / Low-End GPUs)
+  const PARTICLE_COUNT = useLowTier ? 220 : isTouchDevice ? 340 : 520;
   const pPositions = new Float32Array(PARTICLE_COUNT * 3);
   const pColors = new Float32Array(PARTICLE_COUNT * 3);
   const pScales = new Float32Array(PARTICLE_COUNT);
@@ -443,7 +515,7 @@ export function mountIntroThreeScene({
   const particleMat = new THREE.ShaderMaterial({
     uniforms: {
       uTime: { value: 0 },
-      uPixelRatio: { value: renderer.getPixelRatio() },
+      uPixelRatio: { value: currentPixelRatio },
     },
     vertexShader: `
       attribute vec3 aColor;
@@ -486,86 +558,122 @@ export function mountIntroThreeScene({
   const particles = new THREE.Points(particleGeo, particleMat);
   scene.add(particles);
 
-  // Post-Processing: Bloom + Depth-of-Field (Bokeh) on GPU; Direct Render on Software WebGL
+  // Post-Processing:
+  // - Desktop/Laptop GPU: Half/three-quarter Bloom + Bokeh + OutputPass
+  // - Capable Tablets / High-end Phones: Half-res Bloom + OutputPass (no heavy Bokeh depth pass)
+  // - Low-end Mobile / Software WebGL: Direct render pass for smooth FPS
   let composer: EffectComposer | null = null;
   let bloomPass: UnrealBloomPass | null = null;
   let bokehPass: BokehPass | null = null;
+  const bloomResolutionScale = isTouchDevice ? 0.5 : 0.75;
 
-  if (!isSoftwareGl) {
-    composer = new EffectComposer(renderer);
-    composer.addPass(new RenderPass(scene, camera));
+  if (!useLowTier) {
+    try {
+      composer = new EffectComposer(renderer);
+      composer.setPixelRatio(currentPixelRatio);
+      composer.setSize(width, height);
+      composer.addPass(new RenderPass(scene, camera));
 
-    bloomPass = new UnrealBloomPass(
-      new THREE.Vector2(width, height),
-      0.85,
-      0.55,
-      0.42
-    );
-    composer.addPass(bloomPass);
+      bloomPass = new UnrealBloomPass(
+        new THREE.Vector2(
+          Math.max(1, Math.floor(width * bloomResolutionScale)),
+          Math.max(1, Math.floor(height * bloomResolutionScale))
+        ),
+        0.85,
+        0.55,
+        0.42
+      );
+      composer.addPass(bloomPass);
 
-    bokehPass = new BokehPass(scene, camera, {
-      focus: 7.5,
-      aperture: 0.00018,
-      maxblur: 0.006,
-    });
-    composer.addPass(bokehPass);
+      if (!isTouchDevice) {
+        bokehPass = new BokehPass(scene, camera, {
+          focus: 7.5,
+          aperture: 0.00018,
+          maxblur: 0.006,
+        });
+        composer.addPass(bokehPass);
+      }
 
-    composer.addPass(new OutputPass());
-    renderer.compile(scene, camera);
+      composer.addPass(new OutputPass());
+      renderer.compile(scene, camera);
+    } catch {
+      composer?.dispose();
+      composer = null;
+      bloomPass = null;
+      bokehPass = null;
+    }
   }
 
-  // Smooth Frame-Independent Animation Loop
-  let frameId = 0;
+  let rafId = 0;
+  let timerId = 0;
+  let orientationTimer = 0;
   let disposed = false;
-  const startTime = performance.now();
-  let lastTime = startTime;
+  let contextLost = false;
+  let isFirstFrame = true;
 
-  const afterDraw = (cb: () => void) => {
-    const gl = renderer.getContext() as WebGL2RenderingContext;
-    const sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
-    gl.flush();
-    const poll = () => {
-      if (disposed) return;
-      const state = sync && gl.getSyncParameter(sync, gl.SYNC_STATUS);
-      if (state === gl.UNSIGNALED) {
-        frameId = window.setTimeout(poll, 5);
-      } else {
-        if (sync) gl.deleteSync(sync);
-        frameId = window.setTimeout(cb, 80);
-      }
-    };
-    frameId = window.setTimeout(poll, 5);
-  };
+  const startTime = performance.now() - Math.max(0, initialElapsedMs);
+  let lastTime = performance.now();
 
-  const handleResize = () => {
-    if (disposed) return;
-    const w = Math.max(container.clientWidth || window.innerWidth, 1);
-    const h = Math.max(container.clientHeight || window.innerHeight, 1);
-    camera.aspect = w / h;
-    camera.updateProjectionMatrix();
-    renderer.setSize(w, h);
-    if (composer) {
-      composer.setSize(w, h);
-      bloomPass?.resolution.set(w, h);
+  const cancelScheduled = () => {
+    if (rafId) {
+      window.cancelAnimationFrame(rafId);
+      rafId = 0;
+    }
+    if (timerId) {
+      window.clearTimeout(timerId);
+      timerId = 0;
     }
   };
-  window.addEventListener('resize', handleResize);
 
-  const tick = () => {
-    if (disposed) return;
+  const afterDraw = (cb: () => void) => {
+    const gl = renderer.getContext();
+    if (gl.isContextLost()) return;
 
-    const now = performance.now();
-    const dt = Math.min((now - lastTime) / 1000, 0.05);
-    lastTime = now;
+    if (!('fenceSync' in gl) || typeof gl.fenceSync !== 'function') {
+      timerId = window.setTimeout(cb, 50);
+      return;
+    }
 
-    const elapsedMs = now - startTime;
+    const gl2 = gl as WebGL2RenderingContext;
+    const sync = gl2.fenceSync(gl2.SYNC_GPU_COMMANDS_COMPLETE, 0);
+    if (!sync) {
+      timerId = window.setTimeout(cb, 50);
+      return;
+    }
+    gl2.flush();
+
+    let pollCount = 0;
+    const poll = () => {
+      if (disposed || contextLost || document.hidden) {
+        gl2.deleteSync(sync);
+        return;
+      }
+      pollCount += 1;
+      const state = gl2.getSyncParameter(sync, gl2.SYNC_STATUS);
+      if (state === gl2.UNSIGNALED && pollCount < 25) {
+        timerId = window.setTimeout(poll, 5);
+      } else {
+        gl2.deleteSync(sync);
+        timerId = window.setTimeout(cb, 65);
+      }
+    };
+    timerId = window.setTimeout(poll, 5);
+  };
+
+  const renderAtState = (elapsedMs: number, dt: number, snapImmediate: boolean) => {
     const tSec = elapsedMs / 1000;
-    const progress = THREE.MathUtils.clamp(elapsedMs / durationMs, 0, 1);
+    const progress = THREE.MathUtils.clamp(elapsedMs / safeDurationMs, 0, 1);
     onProgress?.(progress);
 
-    // 1. Dynamic Camera Sweep + Rack Focus + Seamless Zoom Exit
-    const aspectScale = Math.max(1, 1.05 / Math.max(camera.aspect, 0.45));
-    if (!prefersReducedMotion) {
+    const aspectScale = getAspectScale(camera.aspect);
+
+    if (prefersReducedMotion) {
+      _camPos.set(0, 0.1, 7.6 * aspectScale);
+      _lookTarget.set(0, 0, 0);
+      camera.position.copy(_camPos);
+      _camTarget.copy(_lookTarget);
+      camera.lookAt(_camTarget);
+    } else {
       if (progress < 0.78) {
         const orbitPhase = progress / 0.78;
         const easeOrbit = 1 - Math.pow(1 - orbitPhase, 3);
@@ -576,7 +684,7 @@ export function mountIntroThreeScene({
         );
         _lookTarget.set(0, 0, 0);
       } else {
-        // Dramatic forward glide through the metallic rings into Overview
+        // Forward glide through the metallic rings into Overview
         const exitPhase = (progress - 0.78) / 0.22;
         const easeExit = exitPhase * exitPhase * exitPhase;
         _camPos.set(
@@ -587,29 +695,33 @@ export function mountIntroThreeScene({
         _lookTarget.set(0, 0, -2.2 * easeExit);
       }
 
-      camera.position.x = THREE.MathUtils.damp(
-        camera.position.x,
-        _camPos.x,
-        5.5,
-        dt
-      );
-      camera.position.y = THREE.MathUtils.damp(
-        camera.position.y,
-        _camPos.y,
-        5.5,
-        dt
-      );
-      camera.position.z = THREE.MathUtils.damp(
-        camera.position.z,
-        _camPos.z,
-        5.5,
-        dt
-      );
-      _camTarget.lerp(_lookTarget, 1 - Math.exp(-5.5 * dt));
+      if (snapImmediate) {
+        camera.position.copy(_camPos);
+        _camTarget.copy(_lookTarget);
+      } else {
+        camera.position.x = THREE.MathUtils.damp(
+          camera.position.x,
+          _camPos.x,
+          5.5,
+          dt
+        );
+        camera.position.y = THREE.MathUtils.damp(
+          camera.position.y,
+          _camPos.y,
+          5.5,
+          dt
+        );
+        camera.position.z = THREE.MathUtils.damp(
+          camera.position.z,
+          _camPos.z,
+          5.5,
+          dt
+        );
+        _camTarget.lerp(_lookTarget, 1 - Math.exp(-5.5 * dt));
+      }
       camera.lookAt(_camTarget);
     }
 
-    // Update Bokeh Depth-of-Field Focus Distance dynamically
     if (bokehPass) {
       const uniforms = bokehPass.uniforms as Record<
         string,
@@ -620,36 +732,46 @@ export function mountIntroThreeScene({
       }
     }
 
-    // 2. Smooth Object Transformations: Radial Blades Unfold + Core Morph
-    const unfold = THREE.MathUtils.smoothstep(progress, 0.06, 0.42);
+    // Radial Blades Unfold + Core Morph
+    const unfold = prefersReducedMotion
+      ? 1
+      : THREE.MathUtils.smoothstep(progress, 0.06, 0.42);
     for (let i = 0; i < BLADE_COUNT; i++) {
       const blade = bladeMeshes[i];
       const targetY = 0.62 + unfold * 0.48;
-      blade.position.y = THREE.MathUtils.damp(blade.position.y, targetY, 6, dt);
-      blade.rotation.x = THREE.MathUtils.damp(
-        blade.rotation.x,
-        unfold * 0.42,
-        6,
-        dt
-      );
-      blade.rotation.y = THREE.MathUtils.damp(
-        blade.rotation.y,
-        unfold * 0.35 + tSec * 0.3,
-        6,
-        dt
-      );
+      const targetRotX = unfold * 0.42;
+      const targetRotY = unfold * 0.35 + tSec * 0.3;
+      if (snapImmediate) {
+        blade.position.y = targetY;
+        blade.rotation.x = targetRotX;
+        blade.rotation.y = targetRotY;
+      } else {
+        blade.position.y = THREE.MathUtils.damp(blade.position.y, targetY, 6, dt);
+        blade.rotation.x = THREE.MathUtils.damp(
+          blade.rotation.x,
+          targetRotX,
+          6,
+          dt
+        );
+        blade.rotation.y = THREE.MathUtils.damp(
+          blade.rotation.y,
+          targetRotY,
+          6,
+          dt
+        );
+      }
     }
 
-    const corePulse = 1 + Math.sin(tSec * 3.4) * 0.07;
+    const corePulse = prefersReducedMotion ? 1.03 : 1 + Math.sin(tSec * 3.4) * 0.07;
     coreMesh.scale.setScalar(corePulse);
-    coreMesh.rotation.y += dt * 1.1;
-    coreMesh.rotation.x += dt * 0.55;
+    coreMesh.rotation.y = tSec * 1.1;
+    coreMesh.rotation.x = tSec * 0.55;
 
     cageMesh.scale.setScalar(0.85 + unfold * 0.38);
-    cageMesh.rotation.y -= dt * 0.65;
-    cageMesh.rotation.z += dt * 0.4;
+    cageMesh.rotation.y = -tSec * 0.65;
+    cageMesh.rotation.z = tSec * 0.4;
 
-    // 3. Counter-Rotating Metallic Gimbal Rings
+    // Counter-Rotating Metallic Gimbal Rings
     ring1Group.rotation.x = Math.sin(tSec * 0.9) * 0.45 + tSec * 0.55;
     ring1Group.rotation.y = tSec * 0.95;
 
@@ -662,7 +784,7 @@ export function mountIntroThreeScene({
     holoShroud.rotation.y = tSec * 0.6;
     holoShaderMat.uniforms.uTime.value = tSec;
 
-    // 4. Light Trails & Particles Uniform Updates
+    // Light Trails & Particles Uniform Updates
     for (const tm of trailMaterials) {
       tm.uniforms.uTime.value = tSec;
     }
@@ -670,44 +792,175 @@ export function mountIntroThreeScene({
     particleMat.uniforms.uTime.value = tSec;
     particles.rotation.y = tSec * 0.04;
 
-    // 5. Futuristic Energy Pulse Shockwave (fires around 52% -> 88%)
-    if (progress > 0.52) {
+    // Energy Pulse Shockwave (fires around 52% -> 88% when animating)
+    if (!prefersReducedMotion && progress > 0.52) {
       const waveT = THREE.MathUtils.clamp((progress - 0.52) / 0.36, 0, 1);
       const waveRadius = 0.15 + waveT * 6.5;
       pulseRingMesh.scale.setScalar(waveRadius);
       pulseRingMat.uniforms.uAlpha.value = Math.sin(waveT * Math.PI) * 0.95;
-      cyanAccentLight.intensity = 2.6 + Math.sin(waveT * Math.PI) * 5.2;
+      cyanAccentLight.intensity =
+        baseAccentIntensity + Math.sin(waveT * Math.PI) * 5.2;
       if (bloomPass) {
         bloomPass.strength = 0.85 + Math.sin(waveT * Math.PI) * 0.85;
       }
     } else {
       pulseRingMat.uniforms.uAlpha.value = 0;
+      cyanAccentLight.intensity = baseAccentIntensity;
+      if (bloomPass) {
+        bloomPass.strength = 0.85;
+      }
     }
 
-    if (composer) {
-      composer.render();
-    } else {
-      renderer.render(scene, camera);
-    }
-
-    if (isSoftwareGl) {
-      afterDraw(tick);
-    } else {
-      frameId = window.requestAnimationFrame(tick);
+    try {
+      if (composer) {
+        composer.render();
+      } else {
+        renderer.render(scene, camera);
+      }
+    } catch {
+      // If postprocessing fails mid-session, drop composer and render directly
+      if (composer) {
+        composer.dispose();
+        composer = null;
+        bloomPass = null;
+        bokehPass = null;
+        renderer.render(scene, camera);
+      }
     }
   };
 
-  tick();
+  const scheduleNextFrame = () => {
+    if (disposed || contextLost || document.hidden || prefersReducedMotion) {
+      return;
+    }
+    cancelScheduled();
+    if (isSoftwareGl) {
+      afterDraw(tick);
+    } else {
+      rafId = window.requestAnimationFrame(tick);
+    }
+  };
+
+  const tick = () => {
+    rafId = 0;
+    timerId = 0;
+    if (disposed || contextLost || document.hidden) return;
+
+    const now = performance.now();
+    const dt = Math.min(Math.max((now - lastTime) / 1000, 0), 0.05);
+    lastTime = now;
+
+    const elapsedMs = now - startTime;
+    renderAtState(elapsedMs, dt, isFirstFrame);
+    isFirstFrame = false;
+
+    if (!prefersReducedMotion) {
+      scheduleNextFrame();
+    }
+  };
+
+  const handleResize = () => {
+    if (disposed || contextLost) return;
+    const w = Math.max(container.clientWidth || window.innerWidth, 1);
+    const h = Math.max(container.clientHeight || window.innerHeight, 1);
+
+    currentPixelRatio = computePixelRatio();
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+
+    renderer.setPixelRatio(currentPixelRatio);
+    renderer.setSize(w, h, false);
+    particleMat.uniforms.uPixelRatio.value = currentPixelRatio;
+
+    if (composer) {
+      composer.setPixelRatio(currentPixelRatio);
+      composer.setSize(w, h);
+      bloomPass?.resolution.set(
+        Math.max(1, Math.floor(w * bloomResolutionScale)),
+        Math.max(1, Math.floor(h * bloomResolutionScale))
+      );
+    }
+
+    if (prefersReducedMotion) {
+      renderAtState(safeDurationMs * 0.42, 0, true);
+    }
+  };
+
+  const handleOrientationChange = () => {
+    handleResize();
+    window.clearTimeout(orientationTimer);
+    orientationTimer = window.setTimeout(handleResize, 120);
+  };
+
+  const handleVisibilityChange = () => {
+    if (disposed) return;
+    if (document.hidden) {
+      cancelScheduled();
+    } else if (!prefersReducedMotion && !contextLost) {
+      lastTime = performance.now();
+      scheduleNextFrame();
+    }
+  };
+
+  const handleContextLost = (e: Event) => {
+    e.preventDefault();
+    contextLost = true;
+    cancelScheduled();
+  };
+
+  const handleContextRestored = () => {
+    contextLost = false;
+    lastTime = performance.now();
+    handleResize();
+    if (prefersReducedMotion) {
+      renderAtState(safeDurationMs * 0.42, 0, true);
+    } else {
+      scheduleNextFrame();
+    }
+  };
+
+  let resizeObserver: ResizeObserver | null = null;
+  if (typeof ResizeObserver !== 'undefined') {
+    resizeObserver = new ResizeObserver(handleResize);
+    resizeObserver.observe(container);
+  }
+
+  window.addEventListener('resize', handleResize);
+  window.addEventListener('orientationchange', handleOrientationChange);
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  renderer.domElement.addEventListener('webglcontextlost', handleContextLost);
+  renderer.domElement.addEventListener(
+    'webglcontextrestored',
+    handleContextRestored
+  );
+
+  // Initial render
+  if (prefersReducedMotion) {
+    renderAtState(safeDurationMs * 0.42, 0, true);
+    onProgress?.(1);
+  } else {
+    tick();
+  }
 
   return () => {
     disposed = true;
-    window.cancelAnimationFrame(frameId);
-    window.clearTimeout(frameId);
-    window.removeEventListener('resize', handleResize);
+    cancelScheduled();
+    window.clearTimeout(orientationTimer);
 
+    resizeObserver?.disconnect();
+    window.removeEventListener('resize', handleResize);
+    window.removeEventListener('orientationchange', handleOrientationChange);
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
+    renderer.domElement.removeEventListener('webglcontextlost', handleContextLost);
+    renderer.domElement.removeEventListener(
+      'webglcontextrestored',
+      handleContextRestored
+    );
+
+    nodeInstances.dispose?.();
     for (const g of geometries) g.dispose();
     for (const m of materials) m.dispose();
-    envTexture.dispose();
+    envRenderTarget.dispose();
     composer?.dispose();
     renderer.dispose();
     if (renderer.domElement.parentNode === container) {
