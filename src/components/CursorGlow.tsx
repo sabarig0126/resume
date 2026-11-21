@@ -163,15 +163,15 @@ export function CursorGlow({ disabled = false }: CursorGlowProps) {
         }
 
         if (isHoveringInteractive) {
-          ringVisualEl.style.borderColor = 'rgba(34, 211, 238, 0.82)';
-          ringVisualEl.style.backgroundColor = 'rgba(37, 99, 235, 0.12)';
+          ringVisualEl.style.borderColor = 'rgba(200, 255, 39, 0.85)';
+          ringVisualEl.style.backgroundColor = 'rgba(200, 255, 39, 0.08)';
           ringVisualEl.style.boxShadow =
-            '0 0 20px rgba(34, 211, 238, 0.32), inset 0 0 10px rgba(59, 130, 246, 0.16)';
+            '0 0 20px rgba(200, 255, 39, 0.34), inset 0 0 10px rgba(240, 91, 234, 0.16)';
         } else {
-          ringVisualEl.style.borderColor = 'rgba(56, 189, 248, 0.54)';
-          ringVisualEl.style.backgroundColor = 'rgba(37, 99, 235, 0.05)';
+          ringVisualEl.style.borderColor = 'rgba(240, 91, 234, 0.56)';
+          ringVisualEl.style.backgroundColor = 'rgba(240, 91, 234, 0.05)';
           ringVisualEl.style.boxShadow =
-            '0 0 14px rgba(34, 211, 238, 0.18), inset 0 0 8px rgba(59, 130, 246, 0.1)';
+            '0 0 14px rgba(240, 91, 234, 0.22), inset 0 0 8px rgba(200, 255, 39, 0.08)';
         }
       }
     };
@@ -504,7 +504,7 @@ export function CursorGlow({ disabled = false }: CursorGlowProps) {
           willChange: 'transform, opacity',
           backfaceVisibility: 'hidden',
           background:
-            'radial-gradient(circle, rgba(34, 211, 238, 0.11) 0%, rgba(59, 130, 246, 0.08) 34%, rgba(139, 92, 246, 0.04) 58%, transparent 74%)',
+            'radial-gradient(circle, rgba(240, 91, 234, 0.11) 0%, rgba(20, 88, 88, 0.12) 38%, rgba(200, 255, 39, 0.03) 58%, transparent 74%)',
         }}
       />
 
@@ -523,11 +523,11 @@ export function CursorGlow({ disabled = false }: CursorGlowProps) {
       >
         <span
           ref={ringVisualRef}
-          className="block h-full w-full rounded-full border-[1.5px] border-sky-400/55 bg-blue-600/5"
+          className="block h-full w-full rounded-full border-[1.5px] border-[#F05BEA]/55 bg-[#F05BEA]/5"
         />
       </div>
 
-      {/* Smooth precision glowing blue/cyan cursor dot */}
+      {/* Smooth precision glowing Neon Lime / Electric Pink cursor dot */}
       <div
         ref={dotRef}
         aria-hidden="true"
@@ -542,7 +542,7 @@ export function CursorGlow({ disabled = false }: CursorGlowProps) {
       >
         <span
           ref={dotVisualRef}
-          className="block h-full w-full rounded-full bg-gradient-to-br from-cyan-300 via-sky-400 to-blue-500 shadow-[0_0_10px_rgba(34,211,238,0.85),0_0_20px_rgba(59,130,246,0.5)]"
+          className="block h-full w-full rounded-full bg-gradient-to-br from-[#C8FF27] via-[#F05BEA] to-[#F05BEA] shadow-[0_0_10px_rgba(200,255,39,0.85),0_0_20px_rgba(240,91,234,0.5)]"
         />
       </div>
     </>

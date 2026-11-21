@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ImageOff } from 'lucide-react';
+import { ImageBrokenIcon } from './NextGenIcons';
 
 interface ResilientImageProps {
   src: string;
@@ -25,10 +25,10 @@ export function ResilientImage({
       <div
         role="img"
         aria-label={alt}
-        className={`flex flex-col items-center justify-center bg-gradient-to-br from-[#0A1638] via-[#060E24] to-[#0D1A42] p-6 text-center text-slate-300 ${className}`}
+        className={`flex flex-col items-center justify-center bg-gradient-to-br from-[#071B1B] via-[#0A2525] to-[#071B1B] p-6 text-center text-[#A0B2B2] ${className}`}
       >
-        <ImageOff className="mb-2 h-6 w-6 text-cyan-400/70" strokeWidth={1.5} />
-        <span className="font-kalam text-sm font-normal text-slate-200">
+        <ImageBrokenIcon className="mb-2 h-6 w-6 text-[#F05BEA]/80" strokeWidth={1.5} />
+        <span className="font-kalam text-sm font-normal text-[#FFFFFF]">
           {fallbackTitle}
         </span>
       </div>

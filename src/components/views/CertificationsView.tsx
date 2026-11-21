@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Check, Search, X } from 'lucide-react';
+import { CheckVerifiedIcon, CloseIcon, SearchLensIcon } from '../NextGenIcons';
 import { CERTIFICATION_TRACKS, PROFILE } from '../../data/projects';
 import { AnimatedCounter } from '../AnimatedCounter';
 import { GlassCard } from '../GlassCard';
@@ -28,7 +28,7 @@ export function CertificationsView() {
     <section className="mx-auto max-w-[1280px] px-6 py-12 md:px-10 md:py-16">
       <div className="flex flex-col gap-6 border-b border-white/10 pb-8 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="font-kalam text-xs text-amber-400 tabular-nums">
+          <p className="font-kalam text-xs text-[#F05BEA] tabular-nums">
             04 · Verified Certifications &amp; Coursework
           </p>
           <h1 className="mt-2 font-road-rage text-4xl font-normal tracking-wide text-[#FF0000] sm:text-5xl [text-wrap:balance]">
@@ -39,9 +39,9 @@ export function CertificationsView() {
 
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative w-full sm:w-64">
-            <Search
+            <SearchLensIcon
               aria-hidden="true"
-              className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400"
+              className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#A0B2B2]"
             />
             <input
               type="search"
@@ -52,7 +52,7 @@ export function CertificationsView() {
               }}
               placeholder="Filter by MATLAB, Python, SQL, IBM..."
               aria-label="Search certification courses"
-              className="h-10 w-full rounded-lg border border-white/15 bg-[#0A132C] pl-9 pr-8 text-xs text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/25"
+              className="h-10 w-full rounded-lg border border-white/10 bg-[#071B1B] pl-9 pr-8 text-xs text-[#FFFFFF] placeholder:text-[#A0B2B2]/65 focus:border-[#F05BEA] focus:outline-none focus:ring-2 focus:ring-[#F05BEA]/25 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
             />
             {courseQuery && (
               <button
@@ -62,9 +62,9 @@ export function CertificationsView() {
                   setCourseQuery('');
                   setSelectedTrackIndex(0);
                 }}
-                className="touch-press absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-0.5 text-slate-400 hover:text-white cursor-pointer"
+                className="touch-press absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-0.5 text-[#A0B2B2] hover:text-[#FFFFFF] cursor-pointer"
               >
-                <X className="h-3.5 w-3.5" />
+                <CloseIcon className="h-3.5 w-3.5" />
               </button>
             )}
           </div>
@@ -72,14 +72,17 @@ export function CertificationsView() {
       </div>
 
       {filteredTracks.length === 0 ? (
-        <GlassCard className="mt-10 rounded-2xl px-6 py-14 text-center">
+        <GlassCard accent="pink" className="mt-10 rounded-2xl px-6 py-14 text-center">
           <p className="font-caveat text-2xl font-normal text-[#FFFF00]">
             No matching certification tracks found
           </p>
           <button
             type="button"
-            onClick={() => setCourseQuery('')}
-            className="touch-press mt-4 inline-flex min-h-[40px] items-center rounded-lg bg-[#2563EB] px-4 py-2 text-xs font-semibold text-white hover:bg-blue-500 cursor-pointer"
+            onClick={() => {
+              setCourseQuery('');
+              setSelectedTrackIndex(0);
+            }}
+            className="touch-press mt-4 inline-flex min-h-[40px] items-center rounded-lg bg-[#C8FF27] px-4 py-2 text-xs font-bold text-[#071B1B] hover:bg-[#d5ff52] cursor-pointer"
           >
             Reset Filter — Show All 7 Tracks
           </button>
@@ -94,22 +97,22 @@ export function CertificationsView() {
                 <TiltCard
                   key={track.number}
                   maxTiltDeg={3.5}
-                  glowColor={isSelected ? 'blue' : 'cyan'}
+                  glowColor={isSelected ? 'pink' : 'teal'}
                   className="rounded-xl"
                 >
                   <button
                     type="button"
                     onClick={() => setSelectedTrackIndex(idx)}
-                    className={`touch-press glass-surface flex min-h-[56px] w-full items-center justify-between gap-4 rounded-xl px-4 py-3.5 text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                    className={`touch-press glass-surface flex min-h-[56px] w-full items-center justify-between gap-4 rounded-xl px-4 py-3.5 text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF27] ${
                       isSelected
-                        ? 'glass-accent-blue text-white'
-                        : 'glass-interactive text-slate-300 hover:text-white'
+                        ? 'glass-accent-pink text-[#FFFFFF]'
+                        : 'glass-interactive text-[#A0B2B2] hover:text-[#FFFFFF]'
                     }`}
                   >
                     <div className="flex items-center gap-3.5 min-w-0">
                       <span
                         className={`font-kalam text-xs font-bold tabular-nums ${
-                          isSelected ? 'text-amber-400' : 'text-blue-400'
+                          isSelected ? 'text-[#C8FF27]' : 'text-[#F05BEA]'
                         }`}
                       >
                         {track.number}
@@ -118,12 +121,12 @@ export function CertificationsView() {
                         <div className="truncate font-caveat text-lg font-normal tracking-wide text-[#FFFF00]">
                           {track.provider}
                         </div>
-                        <div className="truncate font-kalam text-xs text-slate-400">
+                        <div className="truncate font-kalam text-xs text-[#A0B2B2]">
                           {track.category}
                         </div>
                       </div>
                     </div>
-                    <span className="font-kalam text-xs text-slate-400 tabular-nums shrink-0">
+                    <span className="font-kalam text-xs text-[#A0B2B2] tabular-nums shrink-0">
                       <AnimatedCounter value={track.courses.length} />{' '}
                       {track.courses.length === 1 ? 'course' : 'courses'}
                     </span>
@@ -147,9 +150,9 @@ export function CertificationsView() {
                 >
                   <TiltCard
                     maxTiltDeg={2.2}
-                    glowColor="blue"
+                    glowColor="pink"
                     scaleOnHover={1.005}
-                    className="glass-surface-strong glass-interactive glass-accent-blue flex h-full flex-col justify-between rounded-2xl p-6 sm:p-8"
+                    className="glass-surface-strong glass-interactive glass-accent-pink flex h-full flex-col justify-between rounded-2xl p-6 sm:p-8"
                   >
                     <div>
                       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-5">
@@ -161,13 +164,13 @@ export function CertificationsView() {
                             {activeTrack.provider}
                           </h2>
                         </div>
-                        <span className="font-kalam text-sm font-bold text-amber-400 tabular-nums">
-                          Track {activeTrack.number}
+                        <span className="font-kalam text-sm font-bold text-[#C8FF27] tabular-nums">
+                          Track {activeTrack.number.replace(/\.$/, '')}
                         </span>
                       </div>
 
                       <div className="mt-6">
-                        <p className="font-kalam text-xs font-bold text-slate-400">
+                        <p className="font-kalam text-xs font-bold text-[#A0B2B2]">
                           Completed Courses &amp; Modules
                         </p>
                         <ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -181,11 +184,11 @@ export function CertificationsView() {
                                 delay: courseIdx * 0.025,
                                 ease: [0.16, 1, 0.3, 1],
                               }}
-                              className="flex items-start gap-2.5 rounded-xl border border-white/12 bg-white/[0.045] px-3.5 py-3 text-sm text-slate-100 transition-[border-color,background-color] duration-200 hover:border-cyan-300/30 hover:bg-white/[0.08]"
+                              className="flex items-start gap-2.5 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-3 text-sm text-[#FFFFFF] transition-[border-color,background-color] duration-200 hover:border-[#F05BEA]/40 hover:bg-white/[0.08]"
                             >
-                              <Check
+                              <CheckVerifiedIcon
                                 aria-hidden="true"
-                                className="mt-0.5 h-4 w-4 shrink-0 text-blue-400"
+                                className="mt-0.5 h-4 w-4 shrink-0 text-[#C8FF27]"
                               />
                               <span>{course}</span>
                             </motion.li>
@@ -194,11 +197,11 @@ export function CertificationsView() {
                       </div>
                     </div>
 
-                    <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-5 text-xs text-slate-400">
-                      <span className="font-kalam text-sm text-slate-300">
+                    <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-5 text-xs text-[#A0B2B2]">
+                      <span className="font-kalam text-sm text-[#A0B2B2]">
                         {PROFILE.learningGoal}
                       </span>
-                      <span className="font-kalam text-xs font-bold text-blue-300 tabular-nums shrink-0">
+                      <span className="font-kalam text-xs font-bold text-[#F05BEA] tabular-nums shrink-0">
                         <AnimatedCounter value={activeTrack.courses.length} /> Verified
                       </span>
                     </div>

@@ -13,7 +13,7 @@ export function EducationView() {
   return (
     <section className="mx-auto max-w-[1280px] px-6 py-12 md:px-10 md:py-16">
       <div className="border-b border-white/10 pb-8">
-        <p className="font-kalam text-xs text-amber-400 tabular-nums">
+        <p className="font-kalam text-xs text-[#F05BEA] tabular-nums">
           05 · Academic Background &amp; Core Coursework
         </p>
         <h1 className="mt-2 font-road-rage text-4xl font-normal tracking-wide text-[#FF0000] sm:text-5xl [text-wrap:balance]">
@@ -31,8 +31,8 @@ export function EducationView() {
         >
           <TiltCard
             maxTiltDeg={3}
-            glowColor="blue"
-            className="glass-surface-strong glass-interactive glass-accent-blue h-full rounded-2xl p-6 sm:p-8 text-white"
+            glowColor="pink"
+            className="glass-surface-strong glass-interactive glass-accent-pink h-full rounded-2xl p-6 sm:p-8 text-[#FFFFFF]"
           >
             <p className="font-caveat text-base font-normal tracking-wide text-[#FFFF00]">
               Undergraduate Degree
@@ -40,17 +40,17 @@ export function EducationView() {
             <h2 className="mt-2 font-road-rage text-3xl font-normal tracking-wide text-[#FF0000]">
               {PROFILE.degree}
             </h2>
-            <p className="mt-2 font-kalam text-sm text-slate-300">{PROFILE.college}</p>
-            <dl className="mt-6 grid grid-cols-2 gap-4 border-t border-white/15 pt-5 text-xs">
+            <p className="mt-2 font-kalam text-sm text-[#A0B2B2]">{PROFILE.college}</p>
+            <dl className="mt-6 grid grid-cols-2 gap-4 border-t border-white/10 pt-5 text-xs">
               <div>
-                <dt className="text-slate-400">Current Year</dt>
-                <dd className="mt-1 font-bold text-amber-400">
+                <dt className="text-[#A0B2B2]">Current Year</dt>
+                <dd className="mt-1 font-bold text-[#C8FF27]">
                   {PROFILE.yearLabel}
                 </dd>
               </div>
               <div>
-                <dt className="text-slate-400">Academic Year</dt>
-                <dd className="mt-1 font-kalam font-bold text-white tabular-nums">
+                <dt className="text-[#A0B2B2]">Academic Year</dt>
+                <dd className="mt-1 font-kalam font-bold text-[#FFFFFF] tabular-nums">
                   {PROFILE.academicYear}
                 </dd>
               </div>
@@ -66,8 +66,8 @@ export function EducationView() {
         >
           <TiltCard
             maxTiltDeg={3}
-            glowColor="amber"
-            className="glass-surface glass-interactive h-full rounded-2xl p-6 sm:p-8"
+            glowColor="lime"
+            className="glass-surface glass-interactive glass-accent-lime h-full rounded-2xl p-6 sm:p-8"
           >
             <p className="font-caveat text-base font-normal tracking-wide text-[#FFFF00]">
               Secondary &amp; Higher Secondary Record
@@ -78,11 +78,11 @@ export function EducationView() {
                   <h2 className="font-caveat text-2xl font-normal tracking-wide text-[#FFFF00]">
                     Higher Secondary (HSC)
                   </h2>
-                  <span className="font-kalam text-lg font-bold text-amber-400 tabular-nums">
+                  <span className="font-kalam text-lg font-bold text-[#C8FF27] tabular-nums">
                     <AnimatedCounter value={85.5} decimals={1} suffix="%" />
                   </span>
                 </div>
-                <p className="mt-1 font-kalam text-sm text-slate-400">
+                <p className="mt-1 font-kalam text-sm text-[#A0B2B2]">
                   Thanappa Gounder Matric Higher Secondary School, Dharmapuri
                 </p>
               </div>
@@ -92,11 +92,11 @@ export function EducationView() {
                   <h2 className="font-caveat text-2xl font-normal tracking-wide text-[#FFFF00]">
                     SSLC
                   </h2>
-                  <span className="font-kalam text-lg font-bold text-amber-400 tabular-nums">
+                  <span className="font-kalam text-lg font-bold text-[#C8FF27] tabular-nums">
                     <AnimatedCounter value={81} suffix="%" />
                   </span>
                 </div>
-                <p className="mt-1 font-kalam text-sm text-slate-400">
+                <p className="mt-1 font-kalam text-sm text-[#A0B2B2]">
                   Thanappa Gounder Matric Higher Secondary School, Dharmapuri
                 </p>
               </div>
@@ -125,10 +125,10 @@ export function EducationView() {
                   key={area.number}
                   className="flex items-center gap-3 py-3 font-kalam text-sm"
                 >
-                  <span className="font-kalam text-xs font-bold text-amber-400 tabular-nums">
+                  <span className="font-kalam text-xs font-bold text-[#C8FF27] tabular-nums">
                     {area.number}
                   </span>
-                  <span className="font-normal text-slate-100">
+                  <span className="font-normal text-[#FFFFFF]">
                     {area.label}
                   </span>
                 </div>
@@ -140,10 +140,10 @@ export function EducationView() {
                   key={area.number}
                   className="flex items-center gap-3 py-3 font-kalam text-sm"
                 >
-                  <span className="font-kalam text-xs font-bold text-amber-400 tabular-nums">
+                  <span className="font-kalam text-xs font-bold text-[#C8FF27] tabular-nums">
                     {area.number}
                   </span>
-                  <span className="font-normal text-slate-100">
+                  <span className="font-normal text-[#FFFFFF]">
                     {area.label}
                   </span>
                 </div>
@@ -166,21 +166,21 @@ export function EducationView() {
             {ACADEMIC_SUBJECTS.map((subject) => (
               <div
                 key={subject}
-                className="flex items-start gap-2.5 text-sm font-medium text-slate-200"
+                className="flex items-start gap-2.5 text-sm font-medium text-[#A0B2B2]"
               >
-                <span aria-hidden="true" className="text-blue-400">
+                <span aria-hidden="true" className="text-[#F05BEA]">
                   ·
                 </span>
-                <span>{subject}</span>
+                <span className="text-[#FFFFFF]">{subject}</span>
               </div>
             ))}
           </div>
 
-          <GlassCard interactive className="mt-6 rounded-xl p-5">
+          <GlassCard interactive accent="pink" className="mt-6 rounded-xl p-5">
             <p className="font-caveat text-base font-normal tracking-wide text-[#FFFF00]">
               Learning Goal
             </p>
-            <p className="mt-1.5 font-kalam text-[15px] leading-relaxed text-slate-200">
+            <p className="mt-1.5 font-kalam text-[15px] leading-relaxed text-[#A0B2B2]">
               {PROFILE.learningGoal}
             </p>
           </GlassCard>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MotionConfig } from 'motion/react';
 import { CinematicTransition } from './components/CinematicTransition';
 import { CursorGlow } from './components/CursorGlow';
@@ -32,7 +32,7 @@ const VALID_FEATURES: ReadonlySet<FeatureId> = new Set<FeatureId>([
 
 function readFeatureFromHash(): FeatureId {
   if (typeof window === 'undefined') return 'overview';
-  const raw = window.location.hash.replace(/^#/, '') as FeatureId;
+  const raw = window.location.hash.replace(/^#\/?/, '').trim() as FeatureId;
   return VALID_FEATURES.has(raw) ? raw : 'overview';
 }
 
@@ -40,6 +40,7 @@ export default function App() {
   const [showIntro, setShowIntro] = useState(true);
   const [activeFeature, setActiveFeature] = useState<FeatureId>(readFeatureFromHash);
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
+  const shellRef = useRef<HTMLDivElement | null>(null);
 
   const handleIntroComplete = useCallback(() => {
     setShowIntro(false);
@@ -50,7 +51,7 @@ export default function App() {
     // Outer hard fail-safe so the main portfolio is never blocked indefinitely
     const outerFailSafe = window.setTimeout(() => {
       setShowIntro(false);
-    }, 6500);
+    }, 5000);
 
     return () => {
       window.clearTimeout(outerFailSafe);
@@ -135,6 +136,7 @@ export default function App() {
           window.location.hash = nextHash;
         }
       }
+      window.scrollTo({ top: 0, behavior: 'auto' });
     }
   }, []);
 
@@ -147,50 +149,69 @@ export default function App() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="relative flex min-h-screen flex-col bg-[#050A18] text-slate-50">
+      <div className="relative flex min-h-screen flex-col bg-[#071B1B] text-[#FFFFFF]">
+        {/* Pre-renders static starfield behind opaque portal veil, resumes smoothly once portal opens */}
         <ParticleBackground paused={showIntro} />
         <CursorGlow disabled={showIntro} />
 
         <IntroLoader
           isVisible={showIntro}
+          targetShellRef={shellRef}
           onComplete={handleIntroComplete}
         />
 
-        <Header
-          activeFeature={activeFeature}
-          onSelectFeature={navigateToFeature}
-        />
+        {/* Kept at full opacity behind IntroLoader's opaque veil so GPU GlassCards & fonts pre-warm at t=0 */}
+        <div
+          ref={shellRef}
+          className={
+            showIntro
+              ? 'intro-active pointer-events-none flex flex-1 flex-col select-none'
+              : 'flex flex-1 flex-col'
+          }
+          style={
+            showIntro
+              ? { transform: 'scale(0.94)', willChange: 'transform' }
+              : undefined
+          }
+          aria-hidden={showIntro ? true : undefined}
+          inert={showIntro ? true : undefined}
+        >
+          <Header
+            activeFeature={activeFeature}
+            onSelectFeature={navigateToFeature}
+          />
 
-        <main className="relative z-10 flex-1">
-          <CinematicTransition routeKey={activeFeature}>
-            {activeFeature === 'overview' && (
-              <OverviewView onNavigateFeature={navigateToFeature} />
-            )}
+          <main className="relative z-10 flex-1">
+            <CinematicTransition routeKey={activeFeature}>
+              {activeFeature === 'overview' && (
+                <OverviewView onNavigateFeature={navigateToFeature} />
+              )}
 
-            {activeFeature === 'achievements' && (
-              <AchievementsView
-                achievements={achievementsList}
-                onSelectItem={(item) => setSelectedItem(item)}
-              />
-            )}
+              {activeFeature === 'achievements' && (
+                <AchievementsView
+                  achievements={achievementsList}
+                  onSelectItem={(item) => setSelectedItem(item)}
+                />
+              )}
 
-            {activeFeature === 'skills' && <SkillsView />}
+              {activeFeature === 'skills' && <SkillsView />}
 
-            {activeFeature === 'certifications' && <CertificationsView />}
+              {activeFeature === 'certifications' && <CertificationsView />}
 
-            {activeFeature === 'education' && <EducationView />}
+              {activeFeature === 'education' && <EducationView />}
 
-            {activeFeature === 'projects' && (
-              <ProjectsView onNavigateFeature={navigateToFeature} />
-            )}
+              {activeFeature === 'projects' && (
+                <ProjectsView onNavigateFeature={navigateToFeature} />
+              )}
 
-            {activeFeature === 'resume' && <ResumeView />}
+              {activeFeature === 'resume' && <ResumeView />}
 
-            {activeFeature === 'portfolioPdf' && <PortfolioPdfView />}
+              {activeFeature === 'portfolioPdf' && <PortfolioPdfView />}
 
-            {activeFeature === 'contact' && <ContactView />}
-          </CinematicTransition>
-        </main>
+              {activeFeature === 'contact' && <ContactView />}
+            </CinematicTransition>
+          </main>
+        </div>
 
         <ProjectLightbox
           item={selectedItem}

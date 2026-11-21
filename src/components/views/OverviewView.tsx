@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { FileText, MapPin } from 'lucide-react';
+import { FileDossierIcon, LocationBeaconIcon } from '../NextGenIcons';
 import { PROFILE, PROOF_METRICS } from '../../data/projects';
 import { FeatureId } from '../../types/portfolio';
 import { AnimatedCounter } from '../AnimatedCounter';
@@ -16,7 +16,7 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
     <section className="relative overflow-hidden">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-[#050A18]/20 to-[#050A18]/50"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-[#071B1B]/25 to-[#071B1B]/55"
       />
 
       <div className="relative mx-auto max-w-[1280px] px-6 py-12 md:px-10 md:py-16">
@@ -35,19 +35,19 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
 
               <div className="mt-6 space-y-5">
                 <div>
-                  <h2 className="font-caveat text-base font-normal tracking-wide text-[#FFFF00]">
+                  <h2 className="font-caveat text-lg font-normal tracking-wide text-[#FFFF00]">
                     About Me
                   </h2>
-                  <p className="mt-1.5 max-w-[60ch] text-base leading-relaxed text-slate-200">
+                  <p className="mt-1.5 max-w-[60ch] text-base leading-relaxed text-[#A0B2B2]">
                     {PROFILE.aboutLead}
                   </p>
                 </div>
 
                 <div className="border-t border-white/10 pt-5">
-                  <h2 className="font-caveat text-base font-normal tracking-wide text-[#FFFF00]">
+                  <h2 className="font-caveat text-lg font-normal tracking-wide text-[#FFFF00]">
                     Career Objective
                   </h2>
-                  <p className="mt-1.5 max-w-[60ch] text-sm leading-relaxed text-slate-300">
+                  <p className="mt-1.5 max-w-[60ch] text-sm leading-relaxed text-[#A0B2B2]">
                     {PROFILE.careerObjective}
                   </p>
                 </div>
@@ -64,14 +64,14 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
           >
             <TiltCard
               maxTiltDeg={2.4}
-              glowColor="blue"
-              className="w-full max-w-[500px] rounded-2xl lg:w-[500px]"
+              glowColor="pink"
+              className="w-full max-w-[500px] rounded-2xl"
             >
             <GlassCard
               strong
               interactive
-              accent="blue"
-              className="flex w-full flex-col justify-between rounded-2xl p-6 text-white sm:p-8 lg:min-h-[430px]"
+              accent="pink"
+              className="flex w-full flex-col justify-between rounded-2xl p-6 text-[#FFFFFF] sm:p-8 lg:min-h-[430px]"
             >
               <div>
                 <p className="font-caveat text-base font-normal tracking-wide text-[#FFFF00]">
@@ -83,30 +83,30 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
 
                 <dl className="mt-6 space-y-4 border-t border-white/10 pt-5 text-sm">
                   <div>
-                    <dt className="text-xs text-slate-400">Department</dt>
-                    <dd className="mt-0.5 font-medium text-white">
+                    <dt className="text-xs text-[#A0B2B2]">Department</dt>
+                    <dd className="mt-0.5 font-medium text-[#FFFFFF]">
                       Artificial Intelligence &amp; Data Science
                     </dd>
                   </div>
 
                   <div>
-                    <dt className="text-xs text-slate-400">College</dt>
-                    <dd className="mt-0.5 font-medium text-white">
+                    <dt className="text-xs text-[#A0B2B2]">College</dt>
+                    <dd className="mt-0.5 font-medium text-[#FFFFFF]">
                       {PROFILE.college}
                     </dd>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <dt className="text-xs text-slate-400">Year</dt>
-                      <dd className="mt-0.5 font-medium text-amber-400">
+                      <dt className="text-xs text-[#A0B2B2]">Year</dt>
+                      <dd className="mt-0.5 font-medium text-[#C8FF27]">
                         {PROFILE.yearLabel}
                       </dd>
                     </div>
                     <div>
-                      <dt className="text-xs text-slate-400">Location</dt>
-                      <dd className="mt-0.5 flex items-center gap-1.5 font-medium text-white">
-                        <MapPin className="h-3.5 w-3.5 text-blue-400" />
+                      <dt className="text-xs text-[#A0B2B2]">Location</dt>
+                      <dd className="mt-0.5 flex items-center gap-1.5 font-medium text-[#FFFFFF]">
+                        <LocationBeaconIcon className="h-3.5 w-3.5 text-[#F05BEA]" />
                         <span>{PROFILE.location}</span>
                       </dd>
                     </div>
@@ -119,17 +119,17 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
                   <button
                     type="button"
                     onClick={() => onNavigateFeature('resume')}
-                    className="touch-press inline-flex min-h-[44px] flex-1 shrink-0 items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white hover:border-blue-400/60 hover:bg-white/10 whitespace-nowrap cursor-pointer"
+                    className="touch-press inline-flex min-h-[44px] flex-1 shrink-0 items-center justify-center gap-2 rounded-lg bg-[#C8FF27] px-4 py-2.5 text-sm font-bold text-[#071B1B] shadow-[0_0_24px_-6px_rgba(200,255,39,0.55)] hover:bg-[#d5ff52] hover:shadow-[0_0_28px_-4px_rgba(200,255,39,0.7)] whitespace-nowrap cursor-pointer"
                   >
-                    <FileText className="h-4 w-4 text-blue-300" />
+                    <FileDossierIcon className="h-4 w-4 text-[#071B1B]" />
                     <span>Open Resume PDF</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => onNavigateFeature('portfolioPdf')}
-                    className="touch-press inline-flex min-h-[44px] flex-1 shrink-0 items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white hover:border-cyan-400/60 hover:bg-white/10 whitespace-nowrap cursor-pointer"
+                    className="touch-press inline-flex min-h-[44px] flex-1 shrink-0 items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/[0.04] px-4 py-2.5 text-sm font-semibold text-[#FFFFFF] hover:border-[#F05BEA]/65 hover:bg-[#F05BEA]/10 whitespace-nowrap cursor-pointer"
                   >
-                    <FileText className="h-4 w-4 text-amber-400" />
+                    <FileDossierIcon className="h-4 w-4 text-[#F05BEA]" />
                     <span>Open Portfolio PDF</span>
                   </button>
                 </div>
@@ -156,16 +156,16 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
             >
               <TiltCard
                 maxTiltDeg={4}
-                glowColor={idx === 1 || idx === 2 ? 'amber' : 'cyan'}
+                glowColor={idx % 2 === 1 ? 'lime' : 'pink'}
                 className="glass-surface glass-interactive h-full space-y-1.5 rounded-xl p-5"
               >
                 <div className="font-road-rage text-4xl font-normal tracking-wide text-[#FF0000] tabular-nums">
                   <AnimatedCounter value={metric.value} />
                 </div>
-                <div className="font-kalam text-sm font-bold text-slate-100">
+                <div className="font-kalam text-sm font-bold text-[#FFFFFF]">
                   {metric.label}
                 </div>
-                <p className="font-kalam text-[13px] leading-relaxed text-slate-300">
+                <p className="font-kalam text-[13px] leading-relaxed text-[#A0B2B2]">
                   {metric.context}
                 </p>
               </TiltCard>
@@ -175,7 +175,7 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
         </SectionReveal>
 
         <div className="mt-7 flex justify-center">
-          <p className="nav-hint-glass relative mx-auto max-w-full rounded-xl px-4 py-3 text-center text-xs leading-relaxed text-amber-100/90 sm:px-6 sm:py-3.5 sm:text-[13px]">
+          <p className="nav-hint-glass relative mx-auto max-w-full rounded-xl px-4 py-3 text-center text-xs leading-relaxed text-[#FFF7ED] sm:px-6 sm:py-3.5 sm:text-[13px]">
             <span aria-hidden="true" className="nav-hint-sweep" />
             <span className="relative z-10">
               Use the <span className="nav-hint-menu">Menu</span> at the top right to explore Achievements, Technical Skills, Certifications, Education, Projects, Resume PDF, Portfolio PDF, and Contact.

@@ -2,11 +2,11 @@
 
 Personal portfolio web application for **Sabarivasan G**, 2nd-year B.Tech Artificial Intelligence & Data Science student at Sri Ramakrishna Institute of Technology, Coimbatore.
 
-Built as a static client-side single-page application using **React**, **TypeScript**, **Vite**, **Tailwind CSS**, **Motion**, **Three.js**, and **PDF.js**. No backend server, external API keys, or OAuth credentials are required.
+Built as a static client-side single-page application using **React**, **TypeScript**, **Vite**, **Tailwind CSS**, **Motion**, and **PDF.js**. No backend server, external API keys, or OAuth credentials are required.
 
 ## Features
 
-- **3D Interactive Intro Loader** (`IntroLoader` + `three`)
+- **Digital Portal Intro Loader** (`IntroLoader` + `PortalHyperspaceCanvas`)
 - **Overview & Profile**: Academic summary, career objective, and key metrics with neural lattice canvas backdrop
 - **Achievements**: NPTEL Elite certificate, Smart India Hackathon (SIH), IIT Bombay Illuminate Bootcamp, and TEDxSRIT records with interactive detail viewer
 - **Technical Skills**: Categorized programming, database, tool, and personal strength cards

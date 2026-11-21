@@ -65,22 +65,22 @@ export function ProjectImageReveal({
         {children}
       </div>
 
-      {/* Subtle blue/cyan hover & tap glow sheen */}
+      {/* Subtle Electric Pink hover & tap glow sheen */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-blue-500/0 via-cyan-400/0 to-blue-400/20 opacity-0 transition-opacity duration-300 group-hover/reveal:opacity-100 group-active/reveal:opacity-100"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-[#F05BEA]/0 via-[#F05BEA]/5 to-[#F05BEA]/20 opacity-0 transition-opacity duration-300 group-hover/reveal:opacity-100 group-active/reveal:opacity-100"
       />
 
       {/* Optional clean contrast scrim overlay */}
       {(overlayTitle || overlaySubtitle) && (
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#050A18]/90 via-[#050A18]/50 to-transparent px-4 py-3">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#071B1B]/90 via-[#071B1B]/55 to-transparent px-4 py-3">
           {overlayTitle && (
             <p className="font-caveat text-sm font-normal tracking-wide text-[#FFFF00] truncate">
               {overlayTitle}
             </p>
           )}
           {overlaySubtitle && (
-            <p className="font-kalam text-[11px] text-blue-200/90 truncate">
+            <p className="font-kalam text-[11px] text-[#A0B2B2] truncate">
               {overlaySubtitle}
             </p>
           )}

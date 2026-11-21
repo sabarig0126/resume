@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 
-export type GlassAccent = 'default' | 'blue' | 'amber';
+export type GlassAccent = 'default' | 'pink' | 'lime';
 
 interface GlassCardProps {
   children: ReactNode;
@@ -12,8 +12,8 @@ interface GlassCardProps {
 
 const ACCENT_CLASSES: Record<GlassAccent, string> = {
   default: '',
-  blue: 'glass-accent-blue',
-  amber: 'glass-accent-amber',
+  pink: 'glass-accent-pink',
+  lime: 'glass-accent-lime',
 };
 
 export function GlassCard({

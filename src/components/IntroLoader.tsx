@@ -1,47 +1,117 @@
-import { useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
+import { type RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { usePortfolioInit } from '../lib/usePortfolioInit';
+import {
+  type PortalCanvasHandle,
+  PortalHyperspaceCanvas,
+} from './PortalHyperspaceCanvas';
 
 interface IntroLoaderProps {
   isVisible: boolean;
+  targetShellRef?: RefObject<HTMLDivElement | null>;
   onComplete: () => void;
 }
 
 interface ParticleConfig {
   id: number;
-  color: 'blue' | 'purple' | 'pink';
+  color: 'teal' | 'pink' | 'lime';
   desktopOnly?: boolean;
+}
+
+interface FloatingCharConfig {
+  id: string;
+  char: string;
+  tone: 'cyan' | 'pink' | 'blue' | 'purple' | 'sky' | 'magenta';
+  slotClass: string;
 }
 
 const SEGMENT_COUNT = 25;
 const SEGMENTS = Array.from({ length: SEGMENT_COUNT }, (_, index) => index);
+const ENTRANCE_DURATION_MS = 500; // 2.3s -> 2.8s
+const REDUCED_ENTRANCE_DURATION_MS = 500; // 2.3s -> 2.8s
 
-const PARTICLES: ParticleConfig[] = [
-  { id: 1, color: 'blue' },
-  { id: 2, color: 'purple' },
-  { id: 3, color: 'pink' },
-  { id: 4, color: 'blue' },
-  { id: 5, color: 'purple' },
-  { id: 6, color: 'pink' },
-  { id: 7, color: 'blue' },
-  { id: 8, color: 'pink' },
-  { id: 9, color: 'purple' },
-  { id: 10, color: 'blue' },
-  { id: 11, color: 'pink', desktopOnly: true },
-  { id: 12, color: 'purple', desktopOnly: true },
-  { id: 13, color: 'blue', desktopOnly: true },
-  { id: 14, color: 'pink', desktopOnly: true },
-  { id: 15, color: 'purple', desktopOnly: true },
-  { id: 16, color: 'blue', desktopOnly: true },
+const FLOATING_CHARACTERS: readonly FloatingCharConfig[] = [
+  { id: 'en-l', char: 'l', tone: 'cyan', slotClass: 'portal-float-char--1' },
+  { id: 'ta-sa', char: 'ச', tone: 'pink', slotClass: 'portal-float-char--2' },
+  { id: 'ta-ko', char: 'கோ', tone: 'blue', slotClass: 'portal-float-char--3' },
+  { id: 'ta-va', char: 'வா', tone: 'purple', slotClass: 'portal-float-char--4' },
+  { id: 'en-g', char: 'g', tone: 'sky', slotClass: 'portal-float-char--5' },
+  { id: 'ta-la', char: 'ல', tone: 'magenta', slotClass: 'portal-float-char--6' },
 ];
 
-export function IntroLoader({ isVisible, onComplete }: IntroLoaderProps) {
+const PARTICLES: ParticleConfig[] = [
+  { id: 1, color: 'teal' },
+  { id: 2, color: 'pink' },
+  { id: 3, color: 'lime' },
+  { id: 4, color: 'pink' },
+  { id: 5, color: 'teal' },
+  { id: 6, color: 'pink' },
+  { id: 7, color: 'lime' },
+  { id: 8, color: 'pink' },
+  { id: 9, color: 'teal' },
+  { id: 10, color: 'pink' },
+  { id: 11, color: 'lime', desktopOnly: true },
+  { id: 12, color: 'pink', desktopOnly: true },
+  { id: 13, color: 'teal', desktopOnly: true },
+  { id: 14, color: 'pink', desktopOnly: true },
+  { id: 15, color: 'lime', desktopOnly: true },
+  { id: 16, color: 'teal', desktopOnly: true },
+];
+
+function getSyncedSegments(progress: number): number {
+  if (progress >= 99) return SEGMENT_COUNT; // 25 segments at 99%
+  if (progress >= 60) return 15; // 60% of 25
+  if (progress >= 50) return 13; // 50% of 25
+  if (progress >= 10) return 3; // 10% of 25
+  if (progress >= 1) return 1; // 1% -> 1st segment
+  return 0;
+}
+
+function easeOutCubic(t: number): number {
+  return 1 - Math.pow(1 - t, 3);
+}
+
+function easeInExpo(t: number): number {
+  return t <= 0 ? 0 : Math.pow(2, 10 * t - 10);
+}
+
+function clamp01(value: number): number {
+  return Math.max(0, Math.min(1, value));
+}
+
+export function IntroLoader({
+  isVisible,
+  targetShellRef,
+  onComplete,
+}: IntroLoaderProps) {
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const staticVeilRef = useRef<HTMLDivElement | null>(null);
+  const canvasHandleRef = useRef<PortalCanvasHandle | null>(null);
+  const floatingCharsRef = useRef<HTMLDivElement | null>(null);
+  const zoomWrapRef = useRef<HTMLDivElement | null>(null);
+  const orbStageRef = useRef<HTMLDivElement | null>(null);
+  const particleFieldRef = useRef<HTMLDivElement | null>(null);
+  const centerVoidRef = useRef<HTMLDivElement | null>(null);
+  const logoDissolveRef = useRef<HTMLDivElement | null>(null);
+  const brandingRef = useRef<HTMLDivElement | null>(null);
+
   const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(() =>
     typeof window !== 'undefined'
       ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
       : false
   );
+
+  const prefersReducedMotionRef = useRef(prefersReducedMotion);
+  prefersReducedMotionRef.current = prefersReducedMotion;
+
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
+  const targetShellRefLatest = useRef(targetShellRef);
+  targetShellRefLatest.current = targetShellRef;
+
+  const startedEntranceRef = useRef(false);
+  const finishedEntranceRef = useRef(false);
+  const entranceRafRef = useRef<number>(0);
+  const entranceTimerRef = useRef<number>(0);
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -50,384 +120,599 @@ export function IntroLoader({ isVisible, onComplete }: IntroLoaderProps) {
     return () => mq.removeEventListener('change', onChange);
   }, []);
 
+  // Lock page scrolling cleanly while the loader & portal entrance are active
+  useEffect(() => {
+    if (!isVisible || typeof document === 'undefined') return;
+    const prevHtmlOverflow = document.documentElement.style.overflow;
+    const prevBodyOverflow = document.body.style.overflow;
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.documentElement.style.overflow = prevHtmlOverflow;
+      document.body.style.overflow = prevBodyOverflow;
+    };
+  }, [isVisible]);
+
+  // Cleanup active entrance RAF/timers if unmounted early
+  useEffect(() => {
+    return () => {
+      if (entranceRafRef.current) {
+        window.cancelAnimationFrame(entranceRafRef.current);
+        entranceRafRef.current = 0;
+      }
+      if (entranceTimerRef.current) {
+        window.clearTimeout(entranceTimerRef.current);
+        entranceTimerRef.current = 0;
+      }
+    };
+  }, []);
+
+  // Launch unified 60 FPS portal entrance directly at 3.0s without triggering any React re-render
+  const startEntrance = useCallback(() => {
+    if (startedEntranceRef.current) return;
+    startedEntranceRef.current = true;
+
+    const finishEntrance = () => {
+      if (finishedEntranceRef.current) return;
+      finishedEntranceRef.current = true;
+      if (entranceRafRef.current) {
+        window.cancelAnimationFrame(entranceRafRef.current);
+        entranceRafRef.current = 0;
+      }
+      if (entranceTimerRef.current) {
+        window.clearTimeout(entranceTimerRef.current);
+        entranceTimerRef.current = 0;
+      }
+      const shellEl = targetShellRefLatest.current?.current;
+      if (shellEl) {
+        shellEl.style.transform = '';
+        shellEl.style.willChange = '';
+      }
+      canvasHandleRef.current?.clear();
+      onCompleteRef.current();
+    };
+
+    if (prefersReducedMotionRef.current) {
+      const shellEl = targetShellRefLatest.current?.current;
+      if (shellEl) {
+        shellEl.style.transition = `transform ${REDUCED_ENTRANCE_DURATION_MS}ms ease-out`;
+        shellEl.style.transform = 'scale(1)';
+      }
+      if (rootRef.current) {
+        rootRef.current.style.transition = `opacity ${REDUCED_ENTRANCE_DURATION_MS}ms ease-out`;
+        rootRef.current.style.opacity = '0';
+      }
+      entranceTimerRef.current = window.setTimeout(
+        finishEntrance,
+        REDUCED_ENTRANCE_DURATION_MS
+      );
+      return;
+    }
+
+    // Ensure CSS mount fade cannot override imperative entrance opacity
+    if (zoomWrapRef.current) {
+      zoomWrapRef.current.style.animation = 'none';
+      zoomWrapRef.current.style.opacity = '1';
+    }
+    if (brandingRef.current) {
+      brandingRef.current.style.animation = 'none';
+      brandingRef.current.style.opacity = '1';
+    }
+
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    let ox = vw * 0.5;
+    let oy = vh * 0.36;
+
+    if (zoomWrapRef.current) {
+      const rect = zoomWrapRef.current.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        ox = rect.left + rect.width * 0.5;
+        oy = rect.top + rect.height * 0.5;
+      }
+    }
+
+    const dxCenter = vw * 0.5 - ox;
+    const dyCenter = vh * 0.5 - oy;
+
+    orbStageRef.current?.classList.add('orb-stage--entering');
+
+    // Frame 0 atomic handoff: paint opaque canvas backdrop BEFORE dropping static veil -> 0 flicker
+    canvasHandleRef.current?.renderFrame(0, ENTRANCE_DURATION_MS, ox, oy);
+    if (staticVeilRef.current) {
+      staticVeilRef.current.style.opacity = '0';
+    }
+
+    // Emergency fallback guard if the browser tab suspends RAF mid-entrance
+    entranceTimerRef.current = window.setTimeout(
+      finishEntrance,
+      ENTRANCE_DURATION_MS + 90
+    );
+
+    let startMs: number | null = null;
+
+    const step = (nowMs: number) => {
+      if (finishedEntranceRef.current) return;
+      if (startMs === null) {
+        startMs = nowMs;
+      }
+
+      const elapsed = Math.max(0, nowMs - startMs);
+      const t = clamp01(elapsed / ENTRANCE_DURATION_MS);
+
+      // 1. Unified canvas pass: radial aperture + rim + chromatic flash + rays + sparks + hyperspace tunnel
+      canvasHandleRef.current?.renderFrame(
+        elapsed,
+        ENTRANCE_DURATION_MS,
+        ox,
+        oy
+      );
+
+      // 2. Keep 99% peripheral floating characters active across initial flash, then dissolve smoothly (2.35s -> 2.45s)
+      if (floatingCharsRef.current) {
+        const p = clamp01((t - 0.1) / 0.2);
+        if (p >= 1) {
+          floatingCharsRef.current.style.opacity = '0';
+        } else {
+          const eased = easeOutCubic(p);
+          floatingCharsRef.current.style.opacity = `${(1 - eased).toFixed(3)}`;
+          floatingCharsRef.current.style.transform = `scale(${(1 + 0.06 * eased).toFixed(4)})`;
+        }
+      }
+
+      // 3. Keep 99% progress & branding visible as Portal Flash ignites at 2.3s, then exit smoothly (2.36s -> 2.46s)
+      if (brandingRef.current) {
+        const p = clamp01((t - 0.12) / 0.2);
+        if (p >= 1) {
+          brandingRef.current.style.opacity = '0';
+        } else {
+          const eased = easeOutCubic(p);
+          brandingRef.current.style.opacity = `${(1 - eased).toFixed(3)}`;
+          brandingRef.current.style.transform = `translate3d(0, ${(14 * eased).toFixed(2)}px, 0) scale(${(1 - 0.04 * eased).toFixed(4)})`;
+        }
+      }
+
+      // 4. Disperse outer portal particles cleanly as zoom begins (2.34s -> 2.44s)
+      if (particleFieldRef.current) {
+        const p = clamp01((t - 0.08) / 0.2);
+        if (p >= 1) {
+          particleFieldRef.current.style.opacity = '0';
+        } else {
+          const eased = easeOutCubic(p);
+          particleFieldRef.current.style.opacity = `${(1 - eased).toFixed(3)}`;
+          particleFieldRef.current.style.transform = `scale(${(1 + 0.34 * eased).toFixed(4)})`;
+        }
+      }
+
+      // 5. Dissolve center logo into the central flash (2.32s -> 2.42s)
+      if (logoDissolveRef.current) {
+        const p = clamp01((t - 0.04) / 0.2);
+        if (p >= 1) {
+          logoDissolveRef.current.style.opacity = '0';
+        } else {
+          const eased = easeOutCubic(p);
+          logoDissolveRef.current.style.opacity = `${(1 - eased).toFixed(3)}`;
+          logoDissolveRef.current.style.transform = `scale(${(1 + 0.85 * eased).toFixed(4)})`;
+        }
+      }
+
+      // 6. Open dark portal center void immediately so central flash erupts from portal core (2.30s -> 2.40s)
+      if (centerVoidRef.current) {
+        const p = clamp01(t / 0.2);
+        centerVoidRef.current.style.opacity = `${(1 - easeOutCubic(p)).toFixed(3)}`;
+      }
+
+      // 7. Continuous camera zoom-in (2.40s -> 2.55s) into portal ring expansion & dissolve (2.55s -> 2.70s)
+      if (zoomWrapRef.current) {
+        const centerMix = easeOutCubic(clamp01((t - 0.14) / 0.34));
+        const tx = dxCenter * centerMix;
+        const ty = dyCenter * centerMix;
+
+        const zoomP = clamp01((t - 0.14) / 0.64);
+        const scale = 1 + 5.8 * (0.22 * zoomP + 0.78 * easeInExpo(zoomP));
+        const ringAlpha = 1 - easeOutCubic(clamp01((t - 0.48) / 0.32));
+
+        zoomWrapRef.current.style.transform = `translate3d(${tx.toFixed(2)}px, ${ty.toFixed(2)}px, 0) scale(${scale.toFixed(4)})`;
+        zoomWrapRef.current.style.opacity = `${ringAlpha.toFixed(3)}`;
+      }
+
+      // 8. Pull Overview page smoothly forward across portal expansion into final 2.8s reveal (2.55s -> 2.80s)
+      const shellEl = targetShellRefLatest.current?.current;
+      if (shellEl) {
+        const emergeP = easeOutCubic(clamp01((t - 0.5) / 0.5));
+        const shellScale = 0.94 + 0.06 * emergeP;
+        shellEl.style.transform = `scale(${shellScale.toFixed(4)})`;
+      }
+
+      if (t < 1) {
+        entranceRafRef.current = window.requestAnimationFrame(step);
+      } else {
+        finishEntrance();
+      }
+    };
+
+    entranceRafRef.current = window.requestAnimationFrame(step);
+  }, []);
+
   const { progress } = usePortfolioInit({
     enabled: isVisible,
     prefersReducedMotion,
-    onComplete,
+    onComplete: startEntrance,
   });
 
-  useEffect(() => {
-    if (!isVisible && rootRef.current) {
-      rootRef.current.style.pointerEvents = 'none';
-      rootRef.current.style.touchAction = 'auto';
-    }
-  }, [isVisible]);
+  if (!isVisible) return null;
 
-  const litSegments =
-    progress >= 100
-      ? SEGMENT_COUNT
-      : progress > 0
-        ? Math.min(SEGMENT_COUNT - 1, Math.max(1, Math.floor(progress / 4)))
-        : 0;
+  const isInitialBlackout = progress === 0;
+  const litSegments = getSyncedSegments(progress);
+  const isActivating = progress >= 99;
 
   return (
-    <AnimatePresence>
-      {isVisible && (
-        <motion.div
-          ref={rootRef}
-          key="intro-loader"
-          role="status"
-          aria-live="polite"
-          initial={{ opacity: 1, scale: 1 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={
-            prefersReducedMotion
-              ? { opacity: 0 }
-              : { opacity: 0, scale: 1.025 }
-          }
-          transition={{
-            duration: prefersReducedMotion ? 0.25 : 0.55,
-            ease: [0.22, 1, 0.36, 1],
-          }}
-          className="loader-sans pointer-events-auto fixed inset-0 z-50 flex h-dvh w-full touch-none flex-col items-center justify-center overflow-hidden bg-[#000000] px-5 py-6 pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] select-none"
-        >
-          <div className="relative flex w-full max-w-md flex-col items-center justify-center">
-            {/* Liquid Glass Orb + Surrounding Particle System */}
-            <motion.div
-              initial={
-                prefersReducedMotion
-                  ? { opacity: 0 }
-                  : { opacity: 0, scale: 0.9 }
-              }
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{
-                duration: prefersReducedMotion ? 0.2 : 0.8,
-                ease: [0.16, 1, 0.3, 1],
-              }}
-              className="orb-stage"
-              aria-hidden="true"
-            >
-              {/* Soft Cinematic Atmospheric Glow */}
-              <div className="orb-ambient-glow" />
-
-              {/* Drifting Multi-Speed Glowing Particles */}
-              <div className="orb-particle-field">
-                {PARTICLES.map((particle) => (
-                  <span
-                    key={particle.id}
-                    className={`orb-particle orb-particle--${particle.color} orb-particle--${particle.id}${
-                      particle.desktopOnly ? ' hidden sm:block' : ''
-                    }`}
-                  />
-                ))}
-              </div>
-
-              {/* Futuristic Circular Digital Portal */}
-              <div className="portal-breathe-wrap">
-                {/* Flowing Blue / Purple / Pink Circumferential Light */}
-                <div className="portal-energy-flow" />
-                <div className="portal-outer-halo" />
-
-                {/* Small Glowing Particles Orbiting the Portal Frame */}
-                <div className="portal-orbit-track portal-orbit-track--a">
-                  <span className="portal-orbit-dot portal-orbit-dot--cyan" />
-                  <span className="portal-orbit-dot portal-orbit-dot--magenta" />
-                </div>
-                <div className="portal-orbit-track portal-orbit-track--b">
-                  <span className="portal-orbit-dot portal-orbit-dot--purple" />
-                  <span className="portal-orbit-dot portal-orbit-dot--blue" />
-                </div>
-
-                {/* Dark Transparent Center with Neon Glass Reflections */}
-                <div className="portal-center-void">
-                  <div className="portal-glass-glint-top" />
-                  <div className="portal-glass-glint-bottom" />
-                </div>
-
-                {/* Precision Mechanical & Neon Ring Assembly */}
-                <svg
-                  viewBox="0 0 240 240"
-                  className="portal-svg"
-                  fill="none"
-                >
-                  <defs>
-                    <linearGradient
-                      id="portal-metal-grad"
-                      x1="0%"
-                      y1="0%"
-                      x2="100%"
-                      y2="100%"
-                    >
-                      <stop offset="0%" stopColor="#94A3B8" />
-                      <stop offset="28%" stopColor="#1E293B" />
-                      <stop offset="52%" stopColor="#E2E8F0" />
-                      <stop offset="76%" stopColor="#334155" />
-                      <stop offset="100%" stopColor="#0F172A" />
-                    </linearGradient>
-
-                    <linearGradient
-                      id="portal-metal-dark"
-                      x1="100%"
-                      y1="0%"
-                      x2="0%"
-                      y2="100%"
-                    >
-                      <stop offset="0%" stopColor="#475569" />
-                      <stop offset="50%" stopColor="#0F172A" />
-                      <stop offset="100%" stopColor="#64748B" />
-                    </linearGradient>
-
-                    <linearGradient
-                      id="portal-neon-cyan"
-                      x1="0%"
-                      y1="0%"
-                      x2="100%"
-                      y2="100%"
-                    >
-                      <stop offset="0%" stopColor="#67E8F9" />
-                      <stop offset="50%" stopColor="#22D3EE" />
-                      <stop offset="100%" stopColor="#3B82F6" />
-                    </linearGradient>
-
-                    <linearGradient
-                      id="portal-neon-magenta"
-                      x1="0%"
-                      y1="100%"
-                      x2="100%"
-                      y2="0%"
-                    >
-                      <stop offset="0%" stopColor="#A855F7" />
-                      <stop offset="50%" stopColor="#EC4899" />
-                      <stop offset="100%" stopColor="#60A5FA" />
-                    </linearGradient>
-
-                    <linearGradient
-                      id="portal-arc-cyan"
-                      gradientUnits="userSpaceOnUse"
-                      x1="210"
-                      y1="120"
-                      x2="185.5"
-                      y2="181.7"
-                    >
-                      <stop offset="0%" stopColor="#22D3EE" stopOpacity="0" />
-                      <stop offset="60%" stopColor="#38BDF8" stopOpacity="0.85" />
-                      <stop offset="100%" stopColor="#FFFFFF" stopOpacity="1" />
-                    </linearGradient>
-
-                    <linearGradient
-                      id="portal-arc-pink"
-                      gradientUnits="userSpaceOnUse"
-                      x1="216.2"
-                      y1="175.4"
-                      x2="231"
-                      y2="120"
-                    >
-                      <stop offset="0%" stopColor="#A855F7" stopOpacity="0" />
-                      <stop offset="60%" stopColor="#EC4899" stopOpacity="0.85" />
-                      <stop offset="100%" stopColor="#FCE7F3" stopOpacity="1" />
-                    </linearGradient>
-                  </defs>
-
-                  {/* Outer Purple / Magenta Rotating Energy Ring & Ticks */}
-                  <g className="portal-ring-cw">
-                    <circle
-                      cx="120"
-                      cy="120"
-                      r="112"
-                      stroke="url(#portal-neon-magenta)"
-                      strokeWidth="1.6"
-                      strokeDasharray="42 12 16 12"
-                      strokeLinecap="round"
-                      opacity="0.88"
-                    />
-                    <circle
-                      cx="120"
-                      cy="120"
-                      r="107"
-                      stroke="#C084FC"
-                      strokeWidth="1.2"
-                      strokeDasharray="1.5 11.06"
-                      opacity="0.6"
-                    />
-                  </g>
-
-                  {/* Segmented Metallic Mechanical Frame */}
-                  <g className="portal-ring-ccw">
-                    <circle
-                      cx="120"
-                      cy="120"
-                      r="97"
-                      stroke="url(#portal-metal-grad)"
-                      strokeWidth="11"
-                    />
-                    <circle
-                      cx="120"
-                      cy="120"
-                      r="97"
-                      stroke="#050814"
-                      strokeWidth="12"
-                      strokeDasharray="4 72.18"
-                    />
-                    <circle
-                      cx="120"
-                      cy="120"
-                      r="102"
-                      stroke="url(#portal-metal-dark)"
-                      strokeWidth="4.5"
-                      strokeDasharray="44 116.22"
-                    />
-                    <circle
-                      cx="120"
-                      cy="120"
-                      r="104.2"
-                      stroke="#E2E8F0"
-                      strokeWidth="0.9"
-                      strokeDasharray="40 120.22"
-                      opacity="0.55"
-                    />
-                    <circle
-                      cx="120"
-                      cy="120"
-                      r="97"
-                      stroke="#F472B6"
-                      strokeWidth="2.4"
-                      strokeDasharray="3 149.38"
-                      strokeLinecap="round"
-                      opacity="0.9"
-                    />
-                  </g>
-
-                  {/* Traveling Rim Energy Sparks & Light Trails */}
-                  <g className="portal-spark-cw">
-                    <circle
-                      cx="120"
-                      cy="120"
-                      r="90"
-                      stroke="url(#portal-arc-cyan)"
-                      strokeWidth="2.2"
-                      strokeDasharray="68 497.5"
-                      strokeLinecap="round"
-                    />
-                    <circle cx="185.5" cy="181.7" r="2.2" fill="#FFFFFF" />
-                  </g>
-
-                  <g className="portal-spark-ccw">
-                    <circle
-                      cx="120"
-                      cy="120"
-                      r="111"
-                      stroke="url(#portal-arc-pink)"
-                      strokeWidth="2"
-                      strokeDasharray="58 639.4"
-                      strokeLinecap="round"
-                    />
-                    <circle cx="231" cy="120" r="2.1" fill="#FCE7F3" />
-                  </g>
-
-                  {/* Pulsing Electric Blue & Cyan Inner Ring */}
-                  <g className="portal-inner-pulse">
-                    <circle
-                      cx="120"
-                      cy="120"
-                      r="76"
-                      stroke="#3B82F6"
-                      strokeWidth="5.5"
-                      opacity="0.38"
-                    />
-                    <circle
-                      cx="120"
-                      cy="120"
-                      r="76"
-                      stroke="url(#portal-neon-cyan)"
-                      strokeWidth="2.4"
-                    />
-                    <circle
-                      cx="120"
-                      cy="120"
-                      r="76"
-                      stroke="#E0F2FE"
-                      strokeWidth="0.8"
-                      opacity="0.7"
-                    />
-                  </g>
-
-                  {/* Inner Cyan Telemetry Arcs */}
-                  <g className="portal-inner-spin">
-                    <circle
-                      cx="120"
-                      cy="120"
-                      r="70"
-                      stroke="#38BDF8"
-                      strokeWidth="1.1"
-                      strokeDasharray="14 7 3 7"
-                      strokeLinecap="round"
-                      opacity="0.68"
-                    />
-                  </g>
-                </svg>
-              </div>
-            </motion.div>
-
-            {/* Personal Branding Typography */}
-            <motion.div
-              initial={
-                prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 12 }
-              }
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                duration: prefersReducedMotion ? 0.2 : 0.7,
-                delay: prefersReducedMotion ? 0 : 0.14,
-                ease: [0.16, 1, 0.3, 1],
-              }}
-              className="mt-7 flex w-full flex-col items-center text-center sm:mt-9"
-            >
-              <p className="loader-sans text-[clamp(1.25rem,min(5.2vw,3.4dvh),1.85rem)] font-semibold tracking-[0.26em] text-white uppercase drop-shadow-[0_0_20px_rgba(168,85,247,0.32)]">
-                SABARIVASAN G
-              </p>
-
-              <p className="loader-sans mt-1.5 text-[11px] font-normal tracking-[0.34em] text-slate-400 sm:text-xs">
-                portfolio website
-              </p>
-
-              {/* 25-Segment Real Progress Bar */}
-              <div className="mt-6 w-full max-w-[320px] sm:mt-7 sm:max-w-[380px]">
-                <div className="mb-2.5 flex items-center justify-between text-[10px] font-medium tracking-[0.24em] sm:text-[11px]">
-                  <span className="text-slate-300/90 uppercase">
-                    INITIALIZING...
-                  </span>
-                  <span className="text-slate-200 tabular-nums">
-                    {progress}%
-                  </span>
-                </div>
-
-                <div
-                  role="progressbar"
-                  aria-label="Portfolio initialization progress"
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={progress}
-                  className="loader-segments-grid"
-                >
-                  {SEGMENTS.map((segmentIndex) => {
-                    const isLit = segmentIndex < litSegments;
-                    const isHead =
-                      isLit && segmentIndex === litSegments - 1 && progress < 100;
-
-                    return (
-                      <div
-                        key={segmentIndex}
-                        className={`loader-segment${
-                          isLit ? ' loader-segment--lit' : ''
-                        }${isHead ? ' loader-segment--head' : ''}`}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </motion.div>
+    <div
+      ref={rootRef}
+      role="status"
+      aria-live="polite"
+      className="font-kalam pointer-events-auto fixed inset-0 z-50 flex h-dvh w-full touch-none flex-col items-center justify-center overflow-hidden px-5 py-6 pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] select-none"
+    >
+      {/* Initial 0.2s completely empty black screen */}
+      {isInitialBlackout && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed inset-0 z-40 bg-[#000000]"
+        />
       )}
-    </AnimatePresence>
+
+      {/* Solid opaque backdrop during active load; dropped atomically on canvas Frame 0 */}
+      <div ref={staticVeilRef} className="portal-static-veil" aria-hidden="true" />
+
+      {/* Pre-mounted GPU Warp Canvas (zero allocation spike when entrance begins at 3.0s) */}
+      <PortalHyperspaceCanvas ref={canvasHandleRef} />
+
+      {/* Six Decorative Floating English & Tamil Portal Characters */}
+      <div
+        ref={floatingCharsRef}
+        aria-hidden="true"
+        className="portal-floating-chars"
+      >
+        {FLOATING_CHARACTERS.map((item) => (
+          <span
+            key={item.id}
+            className={`portal-float-char portal-float-char--${item.tone} ${item.slotClass}`}
+          >
+            {item.char}
+          </span>
+        ))}
+      </div>
+
+      <div className="relative z-30 flex w-full max-w-md flex-col items-center justify-center">
+        {/* Isolated Camera Zoom Transform Container */}
+        <div ref={zoomWrapRef} className="portal-zoom-wrap" aria-hidden="true">
+          <div
+            ref={orbStageRef}
+            className={`orb-stage${isActivating ? ' orb-stage--activating' : ''}`}
+          >
+            {/* Drifting Multi-Speed Glowing Particles */}
+            <div ref={particleFieldRef} className="orb-particle-field">
+              {PARTICLES.map((particle) => (
+                <span
+                  key={particle.id}
+                  className={`orb-particle orb-particle--${particle.color} orb-particle--${particle.id}${
+                    particle.desktopOnly ? ' hidden sm:block' : ''
+                  }`}
+                />
+              ))}
+            </div>
+
+            {/* Futuristic Circular Digital Portal */}
+            <div className="portal-breathe-wrap">
+              {/* Flowing Deep Teal / Electric Pink / Neon Lime Circumferential Light */}
+              <div className="portal-energy-flow" />
+              <div className="portal-outer-halo" />
+
+              {/* Small Glowing Particles Orbiting the Portal Frame */}
+              <div className="portal-orbit-track portal-orbit-track--a">
+                <span className="portal-orbit-dot portal-orbit-dot--lime" />
+                <span className="portal-orbit-dot portal-orbit-dot--pink" />
+              </div>
+              <div className="portal-orbit-track portal-orbit-track--b">
+                <span className="portal-orbit-dot portal-orbit-dot--teal" />
+                <span className="portal-orbit-dot portal-orbit-dot--white" />
+              </div>
+
+              {/* Deep Teal Center with Centered Luminous Logo & Glass Reflections */}
+              <div ref={centerVoidRef} className="portal-center-void">
+                <div className="portal-logo-aura" />
+                <div ref={logoDissolveRef} className="portal-logo-dissolve-wrap">
+                  <div className="portal-logo-float">
+                    <img
+                      src="/assets/portal-logo.png"
+                      alt=""
+                      loading="eager"
+                      decoding="sync"
+                      draggable={false}
+                      className="portal-logo-img"
+                    />
+                  </div>
+                </div>
+                <div className="portal-logo-sheen" />
+                <div className="portal-glass-glint-top" />
+                <div className="portal-glass-glint-bottom" />
+              </div>
+
+              {/* Precision Mechanical & Neon Ring Assembly */}
+              <svg
+                viewBox="0 0 240 240"
+                className="portal-svg"
+                fill="none"
+              >
+                <defs>
+                  <linearGradient
+                    id="portal-metal-grad"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="100%"
+                  >
+                    <stop offset="0%" stopColor="#A0B2B2" />
+                    <stop offset="28%" stopColor="#0D2B2B" />
+                    <stop offset="52%" stopColor="#E2EEEE" />
+                    <stop offset="76%" stopColor="#143D3D" />
+                    <stop offset="100%" stopColor="#071B1B" />
+                  </linearGradient>
+
+                  <linearGradient
+                    id="portal-metal-dark"
+                    x1="100%"
+                    y1="0%"
+                    x2="0%"
+                    y2="100%"
+                  >
+                    <stop offset="0%" stopColor="#5D7878" />
+                    <stop offset="50%" stopColor="#071B1B" />
+                    <stop offset="100%" stopColor="#A0B2B2" />
+                  </linearGradient>
+
+                  <linearGradient
+                    id="portal-neon-core"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="100%"
+                  >
+                    <stop offset="0%" stopColor="#C8FF27" />
+                    <stop offset="50%" stopColor="#22D3EE" />
+                    <stop offset="100%" stopColor="#F05BEA" />
+                  </linearGradient>
+
+                  <linearGradient
+                    id="portal-neon-pink"
+                    x1="0%"
+                    y1="100%"
+                    x2="100%"
+                    y2="0%"
+                  >
+                    <stop offset="0%" stopColor="#F05BEA" />
+                    <stop offset="55%" stopColor="#A855F7" />
+                    <stop offset="100%" stopColor="#22D3EE" />
+                  </linearGradient>
+
+                  <linearGradient
+                    id="portal-arc-lime"
+                    gradientUnits="userSpaceOnUse"
+                    x1="210"
+                    y1="120"
+                    x2="185.5"
+                    y2="181.7"
+                  >
+                    <stop offset="0%" stopColor="#C8FF27" stopOpacity="0" />
+                    <stop offset="60%" stopColor="#22D3EE" stopOpacity="0.88" />
+                    <stop offset="100%" stopColor="#FFFFFF" stopOpacity="1" />
+                  </linearGradient>
+
+                  <linearGradient
+                    id="portal-arc-pink"
+                    gradientUnits="userSpaceOnUse"
+                    x1="216.2"
+                    y1="175.4"
+                    x2="231"
+                    y2="120"
+                  >
+                    <stop offset="0%" stopColor="#F05BEA" stopOpacity="0" />
+                    <stop offset="60%" stopColor="#F05BEA" stopOpacity="0.88" />
+                    <stop offset="100%" stopColor="#FFFFFF" stopOpacity="1" />
+                  </linearGradient>
+                </defs>
+
+                {/* Outer Rotating Energy Ring & Ticks */}
+                <g className="portal-ring-cw">
+                  <circle
+                    cx="120"
+                    cy="120"
+                    r="112"
+                    stroke="url(#portal-neon-pink)"
+                    strokeWidth="1.6"
+                    strokeDasharray="42 12 16 12"
+                    strokeLinecap="round"
+                    opacity="0.9"
+                  />
+                  <circle
+                    cx="120"
+                    cy="120"
+                    r="107"
+                    stroke="#F05BEA"
+                    strokeWidth="1.2"
+                    strokeDasharray="1.5 11.06"
+                    opacity="0.62"
+                  />
+                </g>
+
+                {/* Segmented Metallic Mechanical Frame */}
+                <g className="portal-ring-ccw">
+                  <circle
+                    cx="120"
+                    cy="120"
+                    r="97"
+                    stroke="url(#portal-metal-grad)"
+                    strokeWidth="11"
+                  />
+                  <circle
+                    cx="120"
+                    cy="120"
+                    r="97"
+                    stroke="#051313"
+                    strokeWidth="12"
+                    strokeDasharray="4 72.18"
+                  />
+                  <circle
+                    cx="120"
+                    cy="120"
+                    r="102"
+                    stroke="url(#portal-metal-dark)"
+                    strokeWidth="4.5"
+                    strokeDasharray="44 116.22"
+                  />
+                  <circle
+                    cx="120"
+                    cy="120"
+                    r="104.2"
+                    stroke="#FFFFFF"
+                    strokeWidth="0.9"
+                    strokeDasharray="40 120.22"
+                    opacity="0.48"
+                  />
+                  <circle
+                    cx="120"
+                    cy="120"
+                    r="97"
+                    stroke="#F05BEA"
+                    strokeWidth="2.4"
+                    strokeDasharray="3 149.38"
+                    strokeLinecap="round"
+                    opacity="0.92"
+                  />
+                </g>
+
+                {/* Traveling Rim Energy Sparks & Light Trails */}
+                <g className="portal-spark-cw">
+                  <circle
+                    cx="120"
+                    cy="120"
+                    r="90"
+                    stroke="url(#portal-arc-lime)"
+                    strokeWidth="2.2"
+                    strokeDasharray="68 497.5"
+                    strokeLinecap="round"
+                  />
+                  <circle cx="185.5" cy="181.7" r="2.2" fill="#FFFFFF" />
+                </g>
+
+                <g className="portal-spark-ccw">
+                  <circle
+                    cx="120"
+                    cy="120"
+                    r="111"
+                    stroke="url(#portal-arc-pink)"
+                    strokeWidth="2"
+                    strokeDasharray="58 639.4"
+                    strokeLinecap="round"
+                  />
+                  <circle cx="231" cy="120" r="2.1" fill="#F05BEA" />
+                </g>
+
+                {/* Pulsing Electric Pink, Cyan & Neon Lime Inner Ring */}
+                <g className="portal-inner-pulse">
+                  <circle
+                    cx="120"
+                    cy="120"
+                    r="76"
+                    stroke="#F05BEA"
+                    strokeWidth="5.5"
+                    opacity="0.32"
+                  />
+                  <circle
+                    cx="120"
+                    cy="120"
+                    r="76"
+                    stroke="url(#portal-neon-core)"
+                    strokeWidth="2.4"
+                  />
+                  <circle
+                    cx="120"
+                    cy="120"
+                    r="76"
+                    stroke="#FFFFFF"
+                    strokeWidth="0.8"
+                    opacity="0.6"
+                  />
+                </g>
+
+                {/* Inner Neon Telemetry Arcs */}
+                <g className="portal-inner-spin">
+                  <circle
+                    cx="120"
+                    cy="120"
+                    r="70"
+                    stroke="#C8FF27"
+                    strokeWidth="1.1"
+                    strokeDasharray="14 7 3 7"
+                    strokeLinecap="round"
+                    opacity="0.58"
+                  />
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Personal Branding Typography & 25-Segment Progress Bar */}
+        <div
+          ref={brandingRef}
+          className="portal-branding-wrap mt-7 flex w-full flex-col items-center text-center sm:mt-9"
+        >
+          <p className="font-road-rage text-[clamp(1.85rem,min(6.4vw,4.2dvh),2.75rem)] font-normal tracking-[0.16em] text-[#FF0000] uppercase drop-shadow-[0_0_20px_rgba(240,91,234,0.34)]">
+            SABARIVASAN G
+          </p>
+
+          <p className="font-caveat mt-1 text-sm font-normal tracking-[0.26em] text-[#FFFF00] sm:text-base">
+            portfolio website
+          </p>
+
+          {/* 25-Segment Synchronized Progress Bar (1% -> 10% -> 50% -> 60% -> 99%) */}
+          <div className="mt-6 w-full max-w-[320px] sm:mt-7 sm:max-w-[380px]">
+            <div className="mb-2.5 flex items-center justify-between font-kalam text-[11px] font-bold tracking-[0.2em] sm:text-xs">
+              <span className="text-[#A0B2B2] uppercase">
+                INITIALIZING...
+              </span>
+              <span className="font-bold text-[#C8FF27] tabular-nums">
+                {progress}%
+              </span>
+            </div>
+
+            <div
+              role="progressbar"
+              aria-label="Portfolio initialization progress"
+              aria-valuemin={0}
+              aria-valuemax={99}
+              aria-valuenow={progress}
+              className="loader-segments-grid"
+            >
+              {SEGMENTS.map((segmentIndex) => {
+                const isLit = segmentIndex < litSegments;
+                const isHead = isLit && segmentIndex === litSegments - 1;
+
+                return (
+                  <div
+                    key={segmentIndex}
+                    className={`loader-segment${
+                      isLit ? ' loader-segment--lit' : ''
+                    }${isHead ? ' loader-segment--head' : ''}`}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

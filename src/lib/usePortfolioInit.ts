@@ -9,45 +9,43 @@ interface UsePortfolioInitOptions {
 
 interface UsePortfolioInitResult {
   progress: number;
-  isComplete: boolean;
 }
 
-interface Milestone {
-  timeMs: number;
+interface DiscreteMilestone {
+  atMs: number;
   value: number;
 }
 
-const TOTAL_DURATION_MS = 3000;
-const COMPLETE_REVEAL_DELAY_MS = 90;
+/**
+ * Exact 2.4-second discrete loading schedule with overlapping 2.3s flash start:
+ * - 0.0s -> 0.2s (0ms -> 200ms)   : completely empty black screen (0)
+ * - 0.2s -> 0.7s (200ms -> 700ms) : hold at 10%
+ * - 0.7s -> 1.2s (700ms -> 1200ms): hold at 50%
+ * - 1.2s -> 1.9s (1200ms -> 1900ms): hold at 60%
+ * - 1.9s -> 2.4s (1900ms -> 2400ms): hold at 99% (never shows 100%)
+ * - 2.3s (2300ms): Portal Flash overlaps final 0.1s of 99% stage -> finishes at 2.8s
+ */
+export const OVERLAP_TRANSITION_START_MS = 2300;
+export const TOTAL_LOADING_DURATION_MS = 2400;
 
-const PROGRESS_MILESTONES: readonly Milestone[] = [
-  { timeMs: 0, value: 1 },
-  { timeMs: 500, value: 10 },
-  { timeMs: 1000, value: 50 },
-  { timeMs: 1500, value: 60 },
-  { timeMs: 2000, value: 99 },
-  { timeMs: TOTAL_DURATION_MS, value: 99 },
+const DISCRETE_MILESTONES: readonly DiscreteMilestone[] = [
+  { atMs: 0, value: 0 },
+  { atMs: 200, value: 10 },
+  { atMs: 700, value: 50 },
+  { atMs: 1200, value: 60 },
+  { atMs: 1900, value: 99 },
 ];
 
-function evaluateMilestoneProgress(elapsedMs: number): number {
-  if (elapsedMs <= 0) return 1;
-  if (elapsedMs >= TOTAL_DURATION_MS) return 100;
-
-  for (let i = 0; i < PROGRESS_MILESTONES.length - 1; i++) {
-    const start = PROGRESS_MILESTONES[i];
-    const end = PROGRESS_MILESTONES[i + 1];
-
-    if (elapsedMs <= end.timeMs) {
-      if (end.value === start.value || end.timeMs === start.timeMs) {
-        return end.value;
-      }
-      const t = (elapsedMs - start.timeMs) / (end.timeMs - start.timeMs);
-      const eased = t * t * (3 - 2 * t);
-      return Math.round(start.value + (end.value - start.value) * eased);
+function getMilestoneAtElapsed(elapsedMs: number): number {
+  let current = DISCRETE_MILESTONES[0].value;
+  for (let i = 0; i < DISCRETE_MILESTONES.length; i++) {
+    if (elapsedMs >= DISCRETE_MILESTONES[i].atMs) {
+      current = DISCRETE_MILESTONES[i].value;
+    } else {
+      break;
     }
   }
-
-  return 99;
+  return current;
 }
 
 export function usePortfolioInit({
@@ -55,8 +53,7 @@ export function usePortfolioInit({
   prefersReducedMotion: _prefersReducedMotion,
   onComplete,
 }: UsePortfolioInitOptions): UsePortfolioInitResult {
-  const [progress, setProgress] = useState<number>(1);
-  const [isComplete, setIsComplete] = useState<boolean>(false);
+  const [progress, setProgress] = useState<number>(0);
 
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
@@ -67,17 +64,14 @@ export function usePortfolioInit({
     if (!enabled || hasFinishedRef.current) return;
 
     let cancelled = false;
-    let rafId: number | null = null;
-    let completionTimerId: number | null = null;
-    let revealTimerId: number | null = null;
+    const timers: number[] = [];
     const controllers = new Set<AbortController>();
 
     const startTime =
       typeof performance !== 'undefined' ? performance.now() : Date.now();
-    let lastReportedProgress = 1;
-    setProgress(1);
+    setProgress(0);
 
-    // Warm critical assets silently in the background without altering the 3s timeline
+    // Warm critical assets silently in the background without altering the 2.4s timeline
     const warmAsset = (url: string) => {
       const controller = new AbortController();
       controllers.add(controller);
@@ -98,58 +92,40 @@ export function usePortfolioInit({
       void document.fonts.ready.catch(() => {});
     }
 
-    const finalizeAtThreeSeconds = () => {
+    const triggerTransitionOverlap = () => {
       if (cancelled || hasFinishedRef.current) return;
-      if (rafId !== null) {
-        window.cancelAnimationFrame(rafId);
-        rafId = null;
-      }
-      lastReportedProgress = 100;
-      setProgress(100);
-      setIsComplete(true);
+      hasFinishedRef.current = true;
+      onCompleteRef.current();
+    };
 
-      revealTimerId = window.setTimeout(() => {
+    // Schedule each exact discrete milestone without intermediate interpolation
+    for (let i = 1; i < DISCRETE_MILESTONES.length; i++) {
+      const milestone = DISCRETE_MILESTONES[i];
+      const timerId = window.setTimeout(() => {
         if (cancelled || hasFinishedRef.current) return;
-        hasFinishedRef.current = true;
-        onCompleteRef.current();
-      }, COMPLETE_REVEAL_DELAY_MS);
-    };
+        setProgress(milestone.value);
+      }, milestone.atMs);
+      timers.push(timerId);
+    }
 
-    // Exact 3.0s completion timer (also guarantees completion if tab was backgrounded)
-    completionTimerId = window.setTimeout(
-      finalizeAtThreeSeconds,
-      TOTAL_DURATION_MS
+    // Start overlapping Portal Flash early at 2.3s while 99% loading stage (1.9s -> 2.4s) is active
+    const overlapTimerId = window.setTimeout(
+      triggerTransitionOverlap,
+      OVERLAP_TRANSITION_START_MS
     );
+    timers.push(overlapTimerId);
 
-    const tick = (now: number) => {
-      if (cancelled || hasFinishedRef.current) return;
-
-      const elapsedMs = Math.max(0, now - startTime);
-      if (elapsedMs >= TOTAL_DURATION_MS) {
-        finalizeAtThreeSeconds();
-        return;
-      }
-
-      const nextProgress = Math.max(
-        lastReportedProgress,
-        evaluateMilestoneProgress(elapsedMs)
-      );
-
-      if (nextProgress !== lastReportedProgress) {
-        lastReportedProgress = nextProgress;
-        setProgress(nextProgress);
-      }
-
-      rafId = window.requestAnimationFrame(tick);
-    };
-
-    rafId = window.requestAnimationFrame(tick);
-
+    // If tab was backgrounded, snap cleanly to exact elapsed milestone or trigger transition
     const handleVisibilityChange = () => {
+      if (cancelled || hasFinishedRef.current || document.hidden) return;
       const now =
         typeof performance !== 'undefined' ? performance.now() : Date.now();
-      if (!document.hidden && now - startTime >= TOTAL_DURATION_MS) {
-        finalizeAtThreeSeconds();
+      const elapsedMs = Math.max(0, now - startTime);
+      if (elapsedMs >= OVERLAP_TRANSITION_START_MS) {
+        setProgress(99);
+        triggerTransitionOverlap();
+      } else {
+        setProgress(getMilestoneAtElapsed(elapsedMs));
       }
     };
 
@@ -158,13 +134,11 @@ export function usePortfolioInit({
     return () => {
       cancelled = true;
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      if (rafId !== null) window.cancelAnimationFrame(rafId);
-      if (completionTimerId !== null) window.clearTimeout(completionTimerId);
-      if (revealTimerId !== null) window.clearTimeout(revealTimerId);
+      timers.forEach((id) => window.clearTimeout(id));
       controllers.forEach((ctrl) => ctrl.abort());
       controllers.clear();
     };
   }, [enabled]);
 
-  return { progress, isComplete };
+  return { progress };
 }

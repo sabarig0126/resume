@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { X } from 'lucide-react';
+import { CloseIcon } from './NextGenIcons';
 import { PortfolioItem } from '../types/portfolio';
 import { ProjectImageReveal } from './ProjectImageReveal';
 import { ResilientImage } from './ResilientImage';
@@ -11,6 +11,7 @@ interface ProjectLightboxProps {
 
 export function ProjectLightbox({ item, onClose }: ProjectLightboxProps) {
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -20,7 +21,9 @@ export function ProjectLightbox({ item, onClose }: ProjectLightboxProps) {
       document.activeElement instanceof HTMLElement
         ? document.activeElement
         : null;
-    const prevOverflow = document.body.style.overflow;
+    const prevHtmlOverflow = document.documentElement.style.overflow;
+    const prevBodyOverflow = document.body.style.overflow;
+    document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
 
     const focusTimer = window.requestAnimationFrame(() => {
@@ -30,13 +33,32 @@ export function ProjectLightbox({ item, onClose }: ProjectLightboxProps) {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose();
+        return;
+      }
+      if (e.key === 'Tab' && dialogRef.current) {
+        const focusables = Array.from(
+          dialogRef.current.querySelectorAll<HTMLElement>(
+            'button:not(:disabled), [href], [tabindex]:not([tabindex="-1"])'
+          )
+        );
+        if (focusables.length === 0) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => {
       window.cancelAnimationFrame(focusTimer);
       window.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = prevOverflow;
+      document.documentElement.style.overflow = prevHtmlOverflow;
+      document.body.style.overflow = prevBodyOverflow;
       previousFocusRef.current?.focus?.();
     };
   }, [item, onClose]);
@@ -48,155 +70,157 @@ export function ProjectLightbox({ item, onClose }: ProjectLightboxProps) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="lightbox-title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm sm:p-6 md:p-10"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#041010]/82 p-4 backdrop-blur-sm sm:p-6 md:p-10"
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
         onClick={(e) => e.stopPropagation()}
-        className="glass-surface-strong glass-accent-blue relative flex max-h-[92dvh] w-full max-w-[1120px] flex-col overflow-hidden rounded-2xl text-white"
+        className="glass-surface-strong glass-accent-pink relative flex max-h-[92dvh] w-full max-w-[1120px] flex-col overflow-hidden rounded-2xl text-[#FFFFFF]"
       >
         <button
           ref={closeButtonRef}
           type="button"
           onClick={onClose}
           aria-label="Close item viewer"
-          className="touch-press absolute right-4 top-4 z-20 inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-black/55 text-white hover:border-cyan-400/60 hover:bg-white hover:text-[#08122E] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          className="touch-press absolute right-4 top-4 z-20 inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#F05BEA]/45 bg-[#071B1B]/80 text-[#FFFFFF] transition-colors duration-200 hover:border-[#C8FF27] hover:bg-[#C8FF27] hover:text-[#071B1B] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF27]"
         >
-          <X className="h-5 w-5" />
+          <CloseIcon className="h-5 w-5" />
         </button>
 
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain lg:grid lg:grid-cols-12 lg:overflow-hidden">
+          {/* Left Plate: Uploaded Image OR Typographic Slide Plate */}
+          <div
+            className={`flex flex-col bg-gradient-to-br from-[#071B1B]/95 via-[#0B2626]/85 to-[#071B1B]/95 p-6 sm:p-10 lg:col-span-6 ${
+              item.imageUrl ? 'justify-center' : 'justify-between'
+            }`}
+          >
+            {item.imageUrl ? (
+              <ProjectImageReveal className="aspect-[16/10] w-full rounded-xl border border-white/10 bg-[#051414] shadow-[0_20px_50px_-16px_rgba(2,10,10,0.88)]">
+                <ResilientImage
+                  src={item.imageUrl}
+                  alt={item.imageAlt ?? item.title}
+                  fallbackTitle={item.title}
+                  className="h-full w-full object-contain"
+                />
+              </ProjectImageReveal>
+            ) : (
+              <div className="flex h-full flex-col justify-between py-2">
+                <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                  <span className="font-kalam text-xs text-[#C8FF27] tabular-nums">
+                    Record {item.indexNumber}
+                  </span>
+                  <span className="font-caveat text-sm font-normal tracking-wide text-[#FFFF00]">
+                    {item.category}
+                  </span>
+                </div>
 
-        {/* Left Plate: Uploaded Image OR Typographic Slide Plate */}
-        <div
-          className={`flex flex-col bg-gradient-to-br from-[#0A1A44]/72 via-[#0E245E]/66 to-[#133280]/72 p-6 sm:p-10 lg:col-span-6 ${
-            item.imageUrl ? 'justify-center' : 'justify-between'
-          }`}
-        >
-          {item.imageUrl ? (
-            <ProjectImageReveal
-              className="aspect-[16/10] w-full rounded-xl border border-cyan-300/20 bg-[#050C20]/90 shadow-[0_20px_50px_-16px_rgba(2,6,23,0.85)]"
-            >
-              <ResilientImage
-                src={item.imageUrl}
-                alt={item.imageAlt ?? item.title}
-                fallbackTitle={item.title}
-                className="h-full w-full object-contain"
-              />
-            </ProjectImageReveal>
-          ) : (
-            <div className="flex h-full flex-col justify-between py-2">
-              <div className="flex items-center justify-between border-b border-white/15 pb-4">
-                <span className="font-kalam text-xs text-blue-200 tabular-nums">
-                  Record {item.indexNumber}
+                <div className="my-8">
+                  <p className="font-caveat text-sm font-normal tracking-wide text-[#FFFF00]">
+                    {item.organization}
+                  </p>
+                  <h3 className="mt-2 font-road-rage text-4xl font-normal tracking-wide text-[#FF0000] sm:text-5xl [text-wrap:balance]">
+                    {item.title}
+                  </h3>
+                  <p className="mt-4 font-kalam text-sm leading-relaxed text-[#A0B2B2]">
+                    {item.summary}
+                  </p>
+                </div>
+
+                <div className="border-t border-white/10 pt-4 font-kalam text-xs text-[#C8FF27] tabular-nums">
+                  {item.specs.credentialOrOutcome} · {item.location}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Right: Structured Details */}
+          <div className="flex min-h-0 flex-col justify-between border-t border-white/10 bg-[#071B1B]/90 p-6 sm:p-8 lg:col-span-6 lg:overflow-y-auto lg:border-l lg:border-t-0">
+            <div>
+              <div className="flex flex-wrap items-center gap-2 pr-10 font-kalam text-xs text-[#A0B2B2]">
+                <span className="font-kalam font-bold tabular-nums text-[#C8FF27]">
+                  {item.indexNumber}
                 </span>
-                <span className="font-caveat text-sm font-normal tracking-wide text-[#FFFF00]">
-                  {item.category}
+                <span aria-hidden="true">·</span>
+                <span className="text-[#F05BEA]">{item.category}</span>
+                <span aria-hidden="true">·</span>
+                <span className="font-kalam tabular-nums text-[#A0B2B2]">
+                  {item.timeframe}
                 </span>
               </div>
 
-              <div className="my-8">
-                <p className="font-caveat text-sm font-normal tracking-wide text-[#FFFF00]">
-                  {item.organization}
-                </p>
-                <h3 className="mt-2 font-road-rage text-4xl font-normal tracking-wide text-[#FF0000] sm:text-5xl [text-wrap:balance]">
-                  {item.title}
+              <h2
+                id="lightbox-title"
+                className="mt-3 font-road-rage text-3xl font-normal tracking-wide text-[#FF0000] sm:text-4xl [text-wrap:balance]"
+              >
+                {item.title}
+              </h2>
+
+              <p className="mt-1 font-kalam text-sm text-[#A0B2B2]">
+                {item.organization} — {item.location}
+              </p>
+
+              <p className="mt-6 font-kalam text-sm leading-relaxed text-[#FFFFFF]/90">
+                {item.details}
+              </p>
+
+              {/* Key Highlights */}
+              <div className="mt-6 border-t border-white/10 pt-5">
+                <h3 className="font-caveat text-base font-normal tracking-wide text-[#FFFF00]">
+                  Key Highlights
                 </h3>
-                <p className="mt-4 font-kalam text-sm leading-relaxed text-blue-100/90">
-                  {item.summary}
-                </p>
+                <ul className="mt-3 space-y-2 font-kalam text-sm text-[#FFFFFF]">
+                  {item.highlights.map((hl) => (
+                    <li key={hl} className="flex items-start gap-2.5">
+                      <span aria-hidden="true" className="text-[#C8FF27]">
+                        —
+                      </span>
+                      <span>{hl}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
 
-              <div className="border-t border-white/15 pt-4 font-kalam text-xs text-blue-200 tabular-nums">
-                {item.specs.credentialOrOutcome} · {item.location}
+              {/* Credential Metadata */}
+              <div className="mt-6 border-t border-white/10 pt-5">
+                <h3 className="font-caveat text-base font-normal tracking-wide text-[#FFFF00]">
+                  Credential &amp; Context
+                </h3>
+                <dl className="mt-3 grid grid-cols-1 gap-3 font-kalam text-xs sm:grid-cols-2">
+                  <div>
+                    <dt className="font-kalam text-[#A0B2B2]">
+                      Issuer / Institution
+                    </dt>
+                    <dd className="mt-0.5 font-kalam text-[#FFFFFF]">
+                      {item.specs.issuerOrContext}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="font-kalam text-[#A0B2B2]">Focus Area</dt>
+                    <dd className="mt-0.5 font-kalam text-[#FFFFFF]">
+                      {item.specs.focusArea}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="font-kalam text-[#A0B2B2]">Outcome / Scope</dt>
+                    <dd className="mt-0.5 font-kalam text-[#C8FF27] tabular-nums">
+                      {item.specs.credentialOrOutcome}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="font-kalam text-[#A0B2B2]">Location</dt>
+                    <dd className="mt-0.5 font-kalam text-[#FFFFFF]">
+                      {item.specs.location}
+                    </dd>
+                  </div>
+                </dl>
               </div>
             </div>
-          )}
-        </div>
 
-        {/* Right: Structured Details */}
-        <div className="flex min-h-0 flex-col justify-between bg-[#070E24]/78 p-6 sm:p-8 lg:col-span-6 lg:overflow-y-auto">
-          <div>
-            <div className="flex flex-wrap items-center gap-2 pr-10 font-kalam text-xs text-slate-400">
-              <span className="font-kalam tabular-nums text-blue-300">
-                {item.indexNumber}
-              </span>
-              <span aria-hidden="true">·</span>
-              <span>{item.category}</span>
-              <span aria-hidden="true">·</span>
-              <span className="font-kalam tabular-nums">{item.timeframe}</span>
-            </div>
-
-            <h2
-              id="lightbox-title"
-              className="mt-3 font-road-rage text-3xl font-normal tracking-wide text-[#FF0000] sm:text-4xl [text-wrap:balance]"
-            >
-              {item.title}
-            </h2>
-
-            <p className="mt-1 font-kalam text-sm text-slate-400">
-              {item.organization} — {item.location}
-            </p>
-
-            <p className="mt-6 font-kalam text-sm leading-relaxed text-slate-200">
-              {item.details}
-            </p>
-
-            {/* Key Highlights */}
-            <div className="mt-6 border-t border-white/10 pt-5">
-              <h3 className="font-caveat text-base font-normal tracking-wide text-[#FFFF00]">
-                Key Highlights
-              </h3>
-              <ul className="mt-3 space-y-2 font-kalam text-sm text-slate-100">
-                {item.highlights.map((hl) => (
-                  <li key={hl} className="flex items-start gap-2.5">
-                    <span aria-hidden="true" className="text-blue-400">
-                      —
-                    </span>
-                    <span>{hl}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Credential Metadata */}
-            <div className="mt-6 border-t border-white/10 pt-5">
-              <h3 className="font-caveat text-base font-normal tracking-wide text-[#FFFF00]">
-                Credential &amp; Context
-              </h3>
-              <dl className="mt-3 grid grid-cols-1 gap-3 font-kalam text-xs sm:grid-cols-2">
-                <div>
-                  <dt className="font-kalam text-slate-500">Issuer / Institution</dt>
-                  <dd className="mt-0.5 font-kalam text-slate-200">
-                    {item.specs.issuerOrContext}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="font-kalam text-slate-500">Focus Area</dt>
-                  <dd className="mt-0.5 font-kalam text-slate-200">
-                    {item.specs.focusArea}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="font-kalam text-slate-500">Outcome / Scope</dt>
-                  <dd className="mt-0.5 font-kalam text-slate-200 tabular-nums">
-                    {item.specs.credentialOrOutcome}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="font-kalam text-slate-500">Location</dt>
-                  <dd className="mt-0.5 font-kalam text-slate-200">
-                    {item.specs.location}
-                  </dd>
-                </div>
-              </dl>
+            <div className="mt-8 border-t border-white/10 pt-5 font-kalam text-xs text-[#A0B2B2]">
+              <span className="text-[#C8FF27]">Verified</span> Portfolio Record
             </div>
           </div>
-
-          <div className="mt-8 border-t border-white/10 pt-5 font-kalam text-xs text-slate-400">
-            <span>Verified Portfolio Record</span>
-          </div>
-        </div>
         </div>
       </div>
     </div>

@@ -4,14 +4,14 @@ interface TiltCardProps {
   children: ReactNode;
   className?: string;
   maxTiltDeg?: number;
-  glowColor?: 'blue' | 'cyan' | 'amber';
+  glowColor?: 'pink' | 'lime' | 'teal';
   scaleOnHover?: number;
 }
 
 const GLOW_STYLES: Record<NonNullable<TiltCardProps['glowColor']>, string> = {
-  blue: 'radial-gradient(360px circle at var(--tilt-mx, 50%) var(--tilt-my, 50%), rgba(59, 130, 246, 0.16), rgba(168, 85, 247, 0.08) 42%, rgba(236, 72, 153, 0.04) 60%, transparent 76%)',
-  cyan: 'radial-gradient(360px circle at var(--tilt-mx, 50%) var(--tilt-my, 50%), rgba(34, 211, 238, 0.16), rgba(139, 92, 246, 0.08) 42%, rgba(236, 72, 153, 0.04) 60%, transparent 76%)',
-  amber: 'radial-gradient(360px circle at var(--tilt-mx, 50%) var(--tilt-my, 50%), rgba(245, 158, 11, 0.15), rgba(59, 130, 246, 0.08) 44%, rgba(168, 85, 247, 0.04) 62%, transparent 76%)',
+  pink: 'radial-gradient(360px circle at var(--tilt-mx, 50%) var(--tilt-my, 50%), rgba(240, 91, 234, 0.17), rgba(200, 255, 39, 0.05) 48%, transparent 76%)',
+  lime: 'radial-gradient(360px circle at var(--tilt-mx, 50%) var(--tilt-my, 50%), rgba(200, 255, 39, 0.14), rgba(240, 91, 234, 0.08) 46%, transparent 76%)',
+  teal: 'radial-gradient(360px circle at var(--tilt-mx, 50%) var(--tilt-my, 50%), rgba(240, 91, 234, 0.13), rgba(255, 255, 255, 0.05) 48%, transparent 76%)',
 };
 
 const HOVER_TRANSITION =
@@ -23,7 +23,7 @@ export function TiltCard({
   children,
   className = '',
   maxTiltDeg = 4,
-  glowColor = 'cyan',
+  glowColor = 'pink',
   scaleOnHover = 1.01,
 }: TiltCardProps) {
   const cardRef = useRef<HTMLDivElement | null>(null);

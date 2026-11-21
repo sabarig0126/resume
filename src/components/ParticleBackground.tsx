@@ -12,14 +12,14 @@ interface Particle3D {
   vy: number;
   vz: number;
   baseRadius: number;
-  color: 'blue' | 'cyan' | 'violet';
+  color: 'teal' | 'pink' | 'lime';
   phase: number;
 }
 
 const COLOR_MAP: Record<Particle3D['color'], [number, number, number]> = {
-  blue: [59, 130, 246],
-  cyan: [34, 211, 238],
-  violet: [139, 92, 246],
+  teal: [94, 234, 212],
+  pink: [240, 91, 234],
+  lime: [200, 255, 39],
 };
 
 export function ParticleBackground({ paused = false }: ParticleBackgroundProps) {
@@ -73,7 +73,7 @@ export function ParticleBackground({ paused = false }: ParticleBackgroundProps) 
     const seedParticles = () => {
       const targetCount = getParticleCount();
       particles.length = 0;
-      const palette: Particle3D['color'][] = ['blue', 'cyan', 'blue', 'violet'];
+      const palette: Particle3D['color'][] = ['pink', 'teal', 'pink', 'lime'];
       const spreadX = Math.max(width * 0.65, 360);
       const spreadY = Math.max(height * 0.65, 360);
 
@@ -118,7 +118,6 @@ export function ParticleBackground({ paused = false }: ParticleBackgroundProps) 
     const drawFrame = (time: number) => {
       ctx.clearRect(0, 0, width, height);
 
-      // Subtle atmospheric depth gradients (blue, cyan, violet)
       const centerX = width * 0.5;
       const centerY = height * 0.5;
 
@@ -182,14 +181,14 @@ export function ParticleBackground({ paused = false }: ParticleBackgroundProps) 
             if (distSq < maxDistSq) {
               const distRatio = 1 - Math.sqrt(distSq) / maxDist;
               const depthFade = Math.min(a.scale, b.scale, 1.1);
-              const alpha = distRatio * depthFade * 0.22;
+              const alpha = distRatio * depthFade * 0.2;
               if (alpha > 0.015) {
                 const rgb =
-                  a.p.color === 'cyan' || b.p.color === 'cyan'
-                    ? '34, 211, 238'
-                    : a.p.color === 'violet'
-                      ? '139, 92, 246'
-                      : '59, 130, 246';
+                  a.p.color === 'pink' || b.p.color === 'pink'
+                    ? '240, 91, 234'
+                    : a.p.color === 'lime'
+                      ? '200, 255, 39'
+                      : '160, 178, 178';
                 ctx.strokeStyle = `rgba(${rgb}, ${alpha.toFixed(3)})`;
                 ctx.beginPath();
                 ctx.moveTo(a.sx, a.sy);
@@ -206,7 +205,7 @@ export function ParticleBackground({ paused = false }: ParticleBackgroundProps) 
         const item = projected[i];
         const [r, g, b] = COLOR_MAP[item.p.color];
         const radius = Math.max(0.8, item.p.baseRadius * item.scale);
-        const alpha = Math.min(0.85, Math.max(0.18, item.scale * 0.58));
+        const alpha = Math.min(0.82, Math.max(0.16, item.scale * 0.54));
 
         ctx.beginPath();
         ctx.arc(item.sx, item.sy, radius, 0, Math.PI * 2);
@@ -236,11 +235,11 @@ export function ParticleBackground({ paused = false }: ParticleBackgroundProps) 
         window.cancelAnimationFrame(rafId);
         rafId = 0;
       }
-      if (prefersReducedMotion) {
+      if (prefersReducedMotion || pausedRef.current) {
         drawFrame(0);
         return;
       }
-      if (!isTabHidden && !pausedRef.current) {
+      if (!isTabHidden) {
         rafId = window.requestAnimationFrame(tick);
       }
     };
@@ -318,12 +317,12 @@ export function ParticleBackground({ paused = false }: ParticleBackgroundProps) 
       aria-hidden="true"
       className="pointer-events-none fixed inset-0 z-0 overflow-hidden select-none"
     >
-      {/* Subtle ambient depth gradient behind particle canvas */}
+      {/* Subtle Electric Pink ambient radial glows (10%–22% opacity) over Deep Teal */}
       <div
         className="absolute inset-0"
         style={{
           background:
-            'radial-gradient(circle at 18% 15%, rgba(37, 99, 235, 0.14), transparent 45%), radial-gradient(circle at 82% 24%, rgba(34, 211, 238, 0.08), transparent 42%), radial-gradient(circle at 55% 85%, rgba(139, 92, 246, 0.09), transparent 48%)',
+            'radial-gradient(circle at 18% 15%, rgba(240, 91, 234, 0.15), transparent 45%), radial-gradient(circle at 82% 24%, rgba(20, 88, 88, 0.22), transparent 44%), radial-gradient(circle at 55% 85%, rgba(240, 91, 234, 0.11), transparent 48%), radial-gradient(circle at 75% 78%, rgba(200, 255, 39, 0.045), transparent 36%)',
         }}
       />
       <canvas ref={canvasRef} className="block h-full w-full" />
