@@ -4,6 +4,7 @@ import {
   type TouchEvent,
   useCallback,
   useEffect,
+  useId,
   useLayoutEffect,
   useRef,
   useState,
@@ -142,18 +143,12 @@ export function PortfolioPdfView(_props: PortfolioPdfViewProps) {
   const [remoteError, setRemoteError] = useState<string | null>(null);
 
   const { isPortrait, isMobile, isDesktop } = useTvViewport();
-  const isMobilePortrait = isMobile && isPortrait;
-  const isMobileLandscape = isMobile && !isPortrait;
   const isTablet = !isMobile && !isDesktop;
 
-  // Automatic playback policy per device & orientation:
-  // - Mobile Portrait: ON continuously
-  // - Mobile Landscape: OFF (swipe navigation)
-  // - Tablet: ON continuously
+  // Automatic playback policy per device:
+  // - Mobile & Tablet: ON continuously
   // - Desktop/Laptop: ON by default until stopped/interacted with via remote
-  const isAutoPlayActive = isDesktop
-    ? isDesktopAutoPlay
-    : isMobilePortrait || isTablet;
+  const isAutoPlayActive = isDesktop ? isDesktopAutoPlay : true;
 
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
@@ -570,8 +565,8 @@ export function PortfolioPdfView(_props: PortfolioPdfViewProps) {
 
           {/* TV Row + Flanking Prev/Next Controls */}
           <div className="flex w-full items-center justify-center gap-2 sm:gap-3.5 md:gap-4">
-          {/* Flanking Left Arrow (Visible on Mobile Landscape, Tablet, and Desktop; hidden on Mobile Portrait) */}
-          {!isMobilePortrait && (
+          {/* Flanking Left Arrow (Visible on Tablet and Desktop; hidden on Mobile) */}
+          {!isMobile && (
             <button
               type="button"
               onClick={goPrevSlide}
@@ -642,8 +637,8 @@ export function PortfolioPdfView(_props: PortfolioPdfViewProps) {
                   </div>
                 </div>
 
-                {/* Slim Bottom Bezel Chin + Hardware Power LED + SL TV Brand & Standby LED */}
-                <div className="tv-chassis-metal relative z-10 flex h-[12px] items-center justify-center overflow-hidden bg-gradient-to-b from-[#0b0e10] to-[#050607] sm:h-[15px] md:h-[17px]">
+                {/* Slim Bottom Bezel Chin + Hardware Power LED + Sharp Metallic SL TV Logo & Standby LED */}
+                <div className="tv-chassis-metal relative z-10 flex h-[16px] items-center justify-center overflow-hidden bg-gradient-to-b from-[#0b0e10] to-[#050607] sm:h-[19px] md:h-[22px]">
                   <span
                     aria-hidden="true"
                     className={`relative z-10 h-1.5 w-1.5 rounded-full transition-colors duration-300 ${
@@ -652,17 +647,21 @@ export function PortfolioPdfView(_props: PortfolioPdfViewProps) {
                         : 'bg-[#C8FF27]/40 shadow-[0_0_5px_rgba(200,255,39,0.4)]'
                     }`}
                   />
-                  <div className="pointer-events-none absolute right-2.5 z-10 flex items-center gap-1.5 sm:right-3.5 sm:gap-2">
+                  <div className="pointer-events-none absolute right-2 z-10 flex items-center gap-1.5 sm:right-3 sm:gap-2">
                     <span
-                      aria-hidden="true"
-                      className="tv-brand-sl font-sans text-[6.5px] font-semibold tracking-[0.22em] uppercase sm:text-[8.5px] md:text-[9px]"
+                      aria-live="polite"
+                      aria-label={`TV Channel ${currentSlideHuman}`}
+                      className="tv-bezel-led-readout inline-flex items-center rounded-[3px] px-1.5 py-[1px] text-[9.5px] font-bold sm:px-2 sm:py-[1.5px] sm:text-[11.5px] md:px-2 md:py-[2px] md:text-[13px]"
                     >
-                      SL TV
+                      {digitBuffer
+                        ? `CH ${digitBuffer}_`
+                        : `CH ${currentSlideHuman}`}
                     </span>
+                    <SlTvEmblemLogo className="tv-brand-sl-logo h-[12px] w-auto sm:h-[15px] md:h-[17px]" />
                     <span
                       aria-hidden="true"
                       title="Standby"
-                      className="tv-standby-led h-1 w-1 rounded-full bg-red-400/80 shadow-[0_0_7px_rgba(248,113,113,0.78)] sm:h-1.5 sm:w-1.5"
+                      className="tv-standby-led h-1 w-1 rounded-full bg-red-400/90 shadow-[0_0_8px_rgba(248,113,113,0.9)] sm:h-1.5 sm:w-1.5"
                     />
                   </div>
                 </div>
@@ -685,8 +684,8 @@ export function PortfolioPdfView(_props: PortfolioPdfViewProps) {
             </div>
           </div>
 
-          {/* Flanking Right Arrow (Visible on Mobile Landscape, Tablet, and Desktop; hidden on Mobile Portrait) */}
-          {!isMobilePortrait && (
+          {/* Flanking Right Arrow (Visible on Tablet and Desktop; hidden on Mobile) */}
+          {!isMobile && (
             <button
               type="button"
               onClick={goNextSlide}
@@ -697,20 +696,6 @@ export function PortfolioPdfView(_props: PortfolioPdfViewProps) {
             </button>
           )}
           </div>
-
-          {/* Mobile Portrait ONLY: Rotation Highlight Directly Below TV (No Remote / No Extra UI) */}
-          {isMobilePortrait && (
-            <p className="mt-3.5 inline-flex max-w-full items-center justify-center rounded-lg border border-[#C8FF27]/30 bg-[#082020]/90 px-3.5 py-1.5 text-center font-kalam text-xs font-semibold tracking-wide text-[#C8FF27] shadow-[0_6px_20px_-8px_rgba(200,255,39,0.35)]">
-              ↻ Rotate your phone for a bigger view
-            </p>
-          )}
-
-          {/* Mobile Landscape: Clean Swipe Hint (No Remote, Rotation Prompt Hidden) */}
-          {isMobileLandscape && (
-            <p className="mt-1 text-center font-kalam text-[11px] text-[#A0B2B2]">
-              Swipe Left or Right to Navigate
-            </p>
-          )}
 
           {/* Tablet (Portrait & Landscape): Existing Keyboard/Swipe Hint, No Remote */}
           {isTablet && (
@@ -737,7 +722,7 @@ export function PortfolioPdfView(_props: PortfolioPdfViewProps) {
             className="tv-remote-desktop tv-remote-wand w-[164px] shrink-0 select-none xl:w-[172px]"
           >
             {/* Upper Obsidian Glass Panel + SL TV OLED Display */}
-            <div className="tv-remote-glass flex h-[108px] w-full flex-col justify-between rounded-t-[14px] px-2.5 pt-2 pb-1">
+            <div className="tv-remote-glass flex h-[118px] w-full flex-col justify-between rounded-t-[14px] px-2.5 pt-2 pb-1">
               <div className="tv-remote-glass-oled flex flex-1 flex-col justify-between overflow-hidden rounded-[6px] px-2 py-1">
                 {/* Top-Right Green Battery Indicator */}
                 <div className="flex items-center justify-end">
@@ -792,11 +777,9 @@ export function PortfolioPdfView(_props: PortfolioPdfViewProps) {
                 </div>
               </div>
 
-              {/* SL TV Wordmark on Lower Gloss Bezel */}
-              <div className="pt-0.5 text-center">
-                <span className="text-[10px] font-semibold tracking-[0.08em] text-[#e5e7eb]">
-                  SL TV
-                </span>
+              {/* SL TV Metallic Emblem on Lower Gloss Bezel */}
+              <div className="flex items-center justify-center pt-1">
+                <SlTvEmblemLogo className="tv-brand-sl-logo h-[22px] w-auto" />
               </div>
             </div>
 
@@ -1538,6 +1521,125 @@ function RemotePauseSolidIcon({ className }: { className?: string }) {
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
       <rect x="6.5" y="5.5" width="4" height="13" rx="1" />
       <rect x="13.5" y="5.5" width="4" height="13" rx="1" />
+    </svg>
+  );
+}
+
+function SlTvEmblemLogo({ className }: { className?: string }) {
+  const uid = useId().replace(/:/g, '');
+  const chromeGradId = `sl-chrome-${uid}`;
+  const bevelGradId = `sl-bevel-${uid}`;
+
+  return (
+    <svg
+      viewBox="0 0 92 78"
+      fill="none"
+      role="img"
+      aria-label="SL TV"
+      shapeRendering="geometricPrecision"
+      className={className}
+    >
+      <defs>
+        <linearGradient id={chromeGradId} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#FFFFFF" />
+          <stop offset="28%" stopColor="#E6EDF4" />
+          <stop offset="52%" stopColor="#94A3B8" />
+          <stop offset="72%" stopColor="#F8FAFC" />
+          <stop offset="100%" stopColor="#CBD5E1" />
+        </linearGradient>
+        <linearGradient id={bevelGradId} x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#FFFFFF" />
+          <stop offset="48%" stopColor="#D8E2EC" />
+          <stop offset="100%" stopColor="#8292A3" />
+        </linearGradient>
+      </defs>
+
+      {/* Twin Antennas + Top Antenna Mount Bridge */}
+      <path
+        d="M39.5 18 30.5 4.5M52.5 18 61.5 4.5"
+        stroke={`url(#${chromeGradId})`}
+        strokeWidth="2.8"
+        strokeLinecap="round"
+      />
+      <circle cx="30.5" cy="4.5" r="1.7" fill="#FFFFFF" />
+      <circle cx="61.5" cy="4.5" r="1.7" fill="#FFFFFF" />
+      <path
+        d="M28 19.5c3-2.4 7-3 18-3s15 .6 18 3"
+        stroke={`url(#${bevelGradId})`}
+        strokeWidth="2.4"
+        strokeLinecap="round"
+      />
+
+      {/* Crisp Curved-Screen Outer Metallic TV Chassis */}
+      <rect
+        x="8"
+        y="19.5"
+        width="76"
+        height="43"
+        rx="5"
+        fill="#05080A"
+        fillOpacity="0.88"
+        stroke={`url(#${chromeGradId})`}
+        strokeWidth="3.6"
+      />
+
+      {/* Top Bezel Indicator Dash + Status Dots */}
+      <rect
+        x="26.5"
+        y="22.8"
+        width="7.5"
+        height="2.1"
+        rx="1"
+        fill={`url(#${chromeGradId})`}
+      />
+      <circle cx="39" cy="23.85" r="1.25" fill="#F8FAFC" />
+      <circle cx="44" cy="23.85" r="1.25" fill="#F8FAFC" />
+      <circle cx="49" cy="23.85" r="1.25" fill="#F8FAFC" />
+      <circle cx="54" cy="23.85" r="1.25" fill="#F8FAFC" />
+      <circle cx="59" cy="23.85" r="1.25" fill="#F8FAFC" />
+
+      {/* Subtle Curved Inner Bezel Outline */}
+      <path
+        d="M14 28.5Q46 31.2 78 28.5V56.5Q46 53.8 14 56.5Z"
+        stroke={`url(#${bevelGradId})`}
+        strokeOpacity="0.72"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+
+      {/* High-Contrast Stylized Metallic "S" */}
+      <path
+        d="M41.5 34.4c-3.4-1.7-8.7-1.5-10.5 1.8-1.4 2.6 1 4.6 5.2 5.6 4.4 1.1 6.7 2.8 5.6 5.8-1.1 3-6 4.2-11.2 2.4"
+        stroke={`url(#${chromeGradId})`}
+        strokeWidth="4.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+
+      {/* High-Contrast Stylized Metallic "L" */}
+      <path
+        d="M50.5 32.5v18.8c3.6 0 7.7-.5 11-1.3"
+        stroke={`url(#${chromeGradId})`}
+        strokeWidth="4.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+
+      {/* Sculpted Pedestal Stand */}
+      <rect
+        x="43.5"
+        y="62.5"
+        width="5"
+        height="7"
+        fill={`url(#${bevelGradId})`}
+      />
+      <path
+        d="M27.5 73.8c5.5-3.2 12-4.6 18.5-4.6s13 1.4 18.5 4.6c-11.5-1.2-25.5-1.2-37 0Z"
+        fill={`url(#${chromeGradId})`}
+        stroke="#FFFFFF"
+        strokeWidth="0.6"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
