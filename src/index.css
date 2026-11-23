@@ -1400,3 +1400,478 @@
     transform: none;
   }
 }
+
+/* ============================================================================
+   Portfolio TV — Orientation & Device-Aware 16:9 Scaling (Portrait / Landscape)
+   ============================================================================ */
+
+.tv-stage-chassis {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Mobile Portrait: maximize TV width in portrait phone screens, show rotation prompt */
+@media (orientation: portrait) and (max-width: 767px) {
+  .tv-stage-section {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .tv-stage-chassis {
+    max-width: 100%;
+  }
+}
+
+/* Mobile Landscape: fit full TV frame + bezel + chin + stand inside 100dvh at 16:9 */
+@media (orientation: landscape) and (max-height: 580px) {
+  .tv-stage-section {
+    padding-top: 0.375rem;
+    padding-bottom: 0.5rem;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .tv-utility-bar {
+    margin-bottom: 0.375rem;
+  }
+
+  .tv-stage-chassis {
+    max-width: min(calc(100vw - 7.75rem), calc((100dvh - 148px) * 16 / 9));
+  }
+
+  .tv-stand-neck {
+    height: 0.85rem;
+  }
+
+  .tv-stand-base {
+    height: 0.45rem;
+  }
+
+  .tv-stand-shadow {
+    height: 0.5rem;
+  }
+}
+
+/* Tablet Portrait: comfortable horizontal 16:9 TV scaling */
+@media (orientation: portrait) and (min-width: 768px) {
+  .tv-stage-chassis {
+    max-width: min(100%, 740px);
+  }
+}
+
+/* Tablet Landscape (or coarse-pointer large landscape screens): fit full TV + stand inside height */
+@media (orientation: landscape) and (min-height: 581px) {
+  .tv-stage-chassis {
+    max-width: min(calc(100vw - 8.5rem), calc((100dvh - 235px) * 16 / 9), 860px);
+  }
+}
+
+/* Desktop / Laptop fine pointer + >= 1024px: large hero TV beside right-aligned glassmorphism remote */
+@media (hover: hover) and (pointer: fine) and (min-width: 1024px) {
+  .tv-stage-chassis {
+    max-width: min(100%, calc((100dvh - 220px) * 16 / 9), 860px);
+  }
+}
+
+.tv-screen-canvas {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  container-type: size;
+}
+
+.tv-slide-stage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 960px;
+  height: 540px;
+  transform-origin: center center;
+  transform: translate(-50%, -50%) scale(var(--tv-scale, 1));
+  will-change: transform;
+}
+
+.tv-remote-desktop {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) and (min-width: 1024px) {
+  .tv-remote-desktop {
+    display: block;
+  }
+}
+
+@keyframes tv-standby-led-pulse {
+  0%, 100% {
+    opacity: 0.32;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 0.92;
+    transform: scale(1);
+  }
+}
+
+.tv-standby-led {
+  animation: tv-standby-led-pulse 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tv-standby-led {
+    animation: none;
+    opacity: 0.75;
+  }
+}
+
+/* Subtle dark brushed-metal horizontal grain & micro-noise overlay for TV chassis bezel/chin */
+.tv-chassis-metal {
+  isolation: isolate;
+}
+
+.tv-chassis-metal::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.022) 0px,
+      rgba(255, 255, 255, 0.022) 1px,
+      rgba(0, 0, 0, 0.06) 1px,
+      rgba(0, 0, 0, 0.06) 3px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.015) 0px,
+      transparent 1px,
+      rgba(0, 0, 0, 0.04) 2px
+    ),
+    linear-gradient(
+      115deg,
+      rgba(255, 255, 255, 0.045) 0%,
+      transparent 38%,
+      rgba(255, 255, 255, 0.025) 68%,
+      transparent 100%
+    );
+  opacity: 0.85;
+}
+
+.tv-chassis-metal::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.88' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  background-size: 140px 140px;
+  mix-blend-mode: overlay;
+  opacity: 0.14;
+}
+
+/* Subtle metallic SL TV bezel branding integrated beside the bottom-right standby LED */
+.tv-brand-sl {
+  background: linear-gradient(
+    180deg,
+    #f1f5f7 0%,
+    #b2bec3 48%,
+    #667277 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.92));
+  opacity: 0.82;
+  user-select: none;
+  line-height: 1;
+}
+
+/* Gentle continuous floating/breathing TV stand animation matching portal-breathe rhythm (5.6s ease-in-out) */
+@keyframes tv-stand-float-breathe {
+  0%, 100% {
+    transform: translate3d(0, 1px, 0);
+  }
+  50% {
+    transform: translate3d(0, -2.5px, 0);
+  }
+}
+
+@keyframes tv-stand-shadow-breathe {
+  0%, 100% {
+    transform: scaleX(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scaleX(0.96);
+    opacity: 0.68;
+  }
+}
+
+.tv-stand-breathe {
+  animation: tv-stand-float-breathe 5.6s ease-in-out infinite;
+  will-change: transform;
+}
+
+.tv-stand-shadow-breathe {
+  animation: tv-stand-shadow-breathe 5.6s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tv-stand-breathe,
+  .tv-stand-shadow-breathe {
+    animation: none;
+    transform: none;
+  }
+}
+
+/* ============================================================================
+   SL TV Desktop Remote — Precision Anodized Brushed Metal & Glass OLED Finish
+   ============================================================================ */
+
+.tv-remote-wand {
+  position: relative;
+  border-radius: 14px;
+  background: #0d0e10;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  box-shadow:
+    -10px 18px 34px -6px rgba(0, 0, 0, 0.92),
+    -4px 6px 14px rgba(0, 0, 0, 0.72),
+    0 24px 48px -12px rgba(0, 0, 0, 0.95),
+    0 0 0 1px rgba(255, 255, 255, 0.11),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.tv-remote-wand button,
+.tv-remote-wand output,
+.tv-remote-wand span {
+  font-family: inherit;
+}
+
+.tv-remote-glass {
+  position: relative;
+  background:
+    radial-gradient(ellipse 90% 45% at 50% 0%, rgba(255, 255, 255, 0.08) 0%, transparent 70%),
+    linear-gradient(180deg, #0b0c0f 0%, #030406 38%, #020304 100%);
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.07),
+    inset -1px 0 0 rgba(255, 255, 255, 0.04),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.tv-remote-glass-oled {
+  background:
+    radial-gradient(circle at 50% 35%, rgba(24, 30, 38, 0.24) 0%, rgba(2, 3, 5, 0.98) 80%);
+}
+
+.tv-remote-seam {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    rgba(255, 255, 255, 0.28) 50%,
+    rgba(255, 255, 255, 0.06) 100%
+  );
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.95);
+}
+
+.tv-remote-metal {
+  position: relative;
+  isolation: isolate;
+  background:
+    linear-gradient(
+      90deg,
+      #101012 0%,
+      #252528 16%,
+      #3b3b40 48%,
+      #3f3f44 52%,
+      #242427 84%,
+      #0e0e10 100%
+    );
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.72),
+    inset 1px 0 0 rgba(255, 255, 255, 0.07),
+    inset -1px 0 0 rgba(255, 255, 255, 0.04);
+}
+
+.tv-remote-metal::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.045) 0px,
+      rgba(255, 255, 255, 0.045) 1px,
+      rgba(0, 0, 0, 0.12) 1px,
+      rgba(0, 0, 0, 0.12) 2px,
+      rgba(255, 255, 255, 0.02) 2px,
+      rgba(255, 255, 255, 0.02) 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      rgba(0, 0, 0, 0.11) 5px,
+      rgba(255, 255, 255, 0.03) 7px,
+      transparent 11px
+    ),
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.28) 0%,
+      rgba(255, 255, 255, 0.04) 24%,
+      rgba(255, 255, 255, 0.05) 60%,
+      rgba(0, 0, 0, 0.68) 100%
+    );
+}
+
+.tv-remote-metal::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E");
+  background-size: 96px 96px;
+  mix-blend-mode: overlay;
+  opacity: 0.16;
+}
+
+.tv-remote-key {
+  background: linear-gradient(180deg, #1b1c1f 0%, #111214 55%, #0c0d0f 100%);
+  border: 1px solid rgba(0, 0, 0, 0.85);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.11),
+    0 2px 4px rgba(0, 0, 0, 0.72),
+    inset 0 1px 0 rgba(255, 255, 255, 0.09),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.75);
+  transition:
+    transform 140ms ease-out,
+    box-shadow 140ms ease-out,
+    color 140ms ease-out,
+    border-color 140ms ease-out;
+}
+
+.tv-remote-key:hover {
+  transform: scale(0.96);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 2px 6px rgba(0, 0, 0, 0.88),
+    inset 0 0 8px rgba(255, 255, 255, 0.06);
+}
+
+.tv-remote-key:active {
+  transform: scale(0.92);
+  box-shadow:
+    inset 0 3px 8px rgba(0, 0, 0, 0.96),
+    inset 0 0 4px rgba(0, 0, 0, 0.9);
+}
+
+.tv-remote-capsule {
+  background: linear-gradient(180deg, #1c1d20 0%, #121316 50%, #0d0e10 100%);
+  border: 1px solid rgba(0, 0, 0, 0.88);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.11),
+    0 3px 6px rgba(0, 0, 0, 0.76),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.tv-remote-capsule-half {
+  transition:
+    transform 140ms ease-out,
+    background-color 140ms ease-out,
+    box-shadow 140ms ease-out,
+    color 140ms ease-out;
+}
+
+.tv-remote-capsule-half:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.75);
+}
+
+.tv-remote-capsule-half:active {
+  transform: scale(0.95);
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.92);
+}
+
+.tv-remote-orb-well {
+  background: radial-gradient(circle at 50% 45%, #07080a 0%, #15171a 68%, #28292d 100%);
+  box-shadow:
+    inset 0 2px 5px rgba(0, 0, 0, 0.95),
+    0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.tv-remote-orb {
+  background:
+    radial-gradient(circle at 38% 32%, #4a4c52 0%, #232529 36%, #0b0c0e 74%, #040405 100%);
+  border: 1px solid rgba(0, 0, 0, 0.92);
+  box-shadow:
+    0 2px 5px rgba(0, 0, 0, 0.88),
+    inset 0 1px 2px rgba(255, 255, 255, 0.22),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.95);
+  transition:
+    transform 140ms ease-out,
+    box-shadow 140ms ease-out;
+}
+
+.tv-remote-orb:hover {
+  transform: scale(0.95);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.88),
+    inset 0 2px 5px rgba(0, 0, 0, 0.88),
+    inset 0 0 8px rgba(255, 255, 255, 0.12);
+}
+
+.tv-remote-orb:active {
+  transform: scale(0.9);
+  box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.98);
+}
+
+.tv-remote-touch-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.6);
+  transition:
+    transform 130ms ease-out,
+    background-color 130ms ease-out,
+    border-color 130ms ease-out,
+    box-shadow 130ms ease-out,
+    color 130ms ease-out;
+}
+
+.tv-remote-touch-btn:hover {
+  transform: scale(0.96);
+  background: rgba(255, 255, 255, 0.13);
+  border-color: rgba(255, 255, 255, 0.28);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.78);
+}
+
+.tv-remote-touch-btn:active {
+  transform: scale(0.92);
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.95);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tv-remote-key:hover,
+  .tv-remote-key:active,
+  .tv-remote-capsule-half:active,
+  .tv-remote-orb:hover,
+  .tv-remote-orb:active,
+  .tv-remote-touch-btn:hover,
+  .tv-remote-touch-btn:active {
+    transform: none;
+  }
+}

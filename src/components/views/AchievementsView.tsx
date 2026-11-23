@@ -16,19 +16,19 @@ export function AchievementsView({
   onSelectItem,
 }: AchievementsViewProps) {
   return (
-    <section className="mx-auto max-w-[1280px] px-4 py-8 sm:px-6 sm:py-12 md:px-10 md:py-16">
-      <div className="border-b border-white/10 pb-6 sm:pb-8">
+    <section className="mx-auto flex w-full max-w-[1280px] flex-1 flex-col justify-between px-4 py-6 sm:px-6 sm:py-10 md:px-10 md:py-12">
+      <div className="shrink-0 border-b border-white/10 pb-5 sm:pb-7">
         <div>
           <p className="font-kalam text-xs text-[#F05BEA] tabular-nums">
             02 · Achievements &amp; Participation
           </p>
-          <h1 className="mt-2 font-road-rage text-[2rem] font-normal leading-[1.08] tracking-wide text-[#FF0000] sm:text-5xl [text-wrap:balance]">
+          <h1 className="mt-2 font-road-rage text-[2.2rem] font-normal leading-[1.06] tracking-wide text-[#FF0000] sm:text-5xl lg:text-[3.35rem] [text-wrap:balance]">
             Certifications, campus participation, and bootcamp milestones
           </h1>
         </div>
       </div>
 
-      <div className="mt-6 flex flex-col gap-4 sm:mt-8 sm:gap-5">
+      <div className="mt-6 flex flex-1 flex-col justify-evenly gap-5 sm:mt-8 sm:gap-6">
         {achievements.map((item, idx) => {
           const isLead = idx === 0;
           return (
@@ -56,7 +56,7 @@ export function AchievementsView({
                     className="touch-press flex w-full flex-col text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#C8FF27] md:flex-row md:items-stretch"
                   >
                     {/* Left-side Subject-Matched Visual Panel with Top-Left Index Number */}
-                    <div className="relative flex w-full shrink-0 flex-col overflow-hidden border-b border-white/10 bg-gradient-to-br from-[#071B1B]/95 via-[#051414]/98 to-[#0B2525]/92 md:w-80 md:border-b-0 md:border-r md:border-[#F05BEA]/20">
+                    <div className="relative flex w-full shrink-0 flex-col overflow-hidden border-b border-white/10 bg-gradient-to-br from-[#071B1B]/95 via-[#051414]/98 to-[#0B2525]/92 md:w-88 lg:w-96 md:border-b-0 md:border-r md:border-[#F05BEA]/20">
                       <span
                         className={`pointer-events-none absolute left-3.5 top-3.5 z-20 inline-flex items-center rounded-md border px-2 py-0.5 font-kalam text-xs tabular-nums tracking-wider backdrop-blur-md ${
                           isLead
@@ -69,7 +69,7 @@ export function AchievementsView({
 
                       <ProjectImageReveal
                         delayMs={idx * 50}
-                        className="aspect-[16/10] w-full flex-1 md:aspect-auto md:min-h-[214px]"
+                        className="aspect-[16/10] w-full flex-1 md:aspect-auto md:min-h-[228px]"
                       >
                         {item.imageUrl ? (
                           <div className="relative h-full w-full overflow-hidden bg-[#051414]">
@@ -95,9 +95,9 @@ export function AchievementsView({
                     </div>
 
                     {/* Right-side Achievement Details */}
-                    <div className="flex flex-1 flex-col justify-between p-4 sm:p-6">
+                    <div className="flex flex-1 flex-col justify-between p-5 sm:p-7">
                       <div>
-                        <div className="flex flex-wrap items-center gap-2 font-kalam text-xs text-[#A0B2B2]">
+                        <div className="flex flex-wrap items-center gap-2 font-kalam text-xs text-[#A0B2B2] sm:text-[13px]">
                           <span className="text-[#FFFFFF]/90">{item.organization}</span>
                           <span aria-hidden="true">·</span>
                           <span className="font-kalam text-[#C8FF27] tabular-nums">
@@ -110,23 +110,23 @@ export function AchievementsView({
                         <div className="mt-2.5 flex items-start justify-between gap-3 sm:gap-4">
                           <h2
                             className={`font-road-rage font-normal tracking-wide text-[#FF0000] ${
-                              isLead ? 'text-3xl sm:text-[2rem]' : 'text-2xl sm:text-[1.65rem]'
+                              isLead ? 'text-3xl sm:text-[2.15rem]' : 'text-2xl sm:text-[1.85rem]'
                             }`}
                           >
                             {item.title}
                           </h2>
                           <ArrowUpRightIcon
                             aria-hidden="true"
-                            className="mt-1 h-4 w-4 shrink-0 text-[#A0B2B2] transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[#C8FF27]"
+                            className="mt-1 h-4.5 w-4.5 shrink-0 text-[#A0B2B2] transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[#C8FF27]"
                           />
                         </div>
 
-                        <p className="mt-2.5 font-kalam text-sm leading-relaxed text-[#A0B2B2]">
+                        <p className="mt-3 font-kalam text-sm leading-relaxed text-[#A0B2B2] sm:text-[15.5px]">
                           {item.summary}
                         </p>
                       </div>
 
-                      <div className="mt-5 border-t border-white/10 pt-3.5 font-kalam text-xs text-[#F05BEA]">
+                      <div className="mt-5 border-t border-white/10 pt-3.5 font-kalam text-xs text-[#F05BEA] sm:text-[13px]">
                         {item.highlights.join(' · ')}
                       </div>
                     </div>

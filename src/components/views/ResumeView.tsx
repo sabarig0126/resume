@@ -114,7 +114,7 @@ const ACADEMIC_LEARNING_TOPICS = [
 
 export function ResumeView() {
   return (
-    <section className="mx-auto max-w-[1340px] 2xl:max-w-[1400px] overflow-x-clip px-3 py-4 sm:px-6 sm:py-6 md:px-8 lg:px-[clamp(1.25rem,2.6vw,2.5rem)] lg:py-[clamp(0.55rem,1.15dvh,1rem)]">
+    <section className="mx-auto flex w-full max-w-[1340px] flex-1 flex-col justify-between overflow-x-clip px-3 py-4 sm:px-6 sm:py-6 md:px-8 lg:px-[clamp(1.25rem,2.6vw,2.5rem)] lg:py-[clamp(0.55rem,1.15dvh,1rem)] 2xl:max-w-[1400px]">
       {/* Top Section Header & Official Resume Link */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-3 lg:mb-[clamp(0.45rem,0.95dvh,0.8rem)] lg:pb-[clamp(0.35rem,0.75dvh,0.65rem)]">
         <p className="font-kalam text-xs text-[#F05BEA] tabular-nums">

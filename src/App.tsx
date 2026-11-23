@@ -244,8 +244,12 @@ export default function App() {
             onOpenAboutCard={openAboutCard}
           />
 
-          <main className="relative z-10 min-w-0 flex-1 overflow-x-clip">
-            <CinematicTransition routeKey={activeFeature} introActive={showIntro}>
+          <main className="relative z-10 flex min-w-0 flex-1 flex-col overflow-x-clip">
+            <CinematicTransition
+              routeKey={activeFeature}
+              introActive={showIntro}
+              className="flex flex-1 flex-col"
+            >
               {activeFeature === 'overview' && (
                 <OverviewView onNavigateFeature={navigateToFeature} />
               )}
@@ -264,11 +268,7 @@ export default function App() {
               {activeFeature === 'education' && <EducationView />}
 
               {activeFeature === 'projects' && (
-                <ProjectsView
-                  items={allItems}
-                  onSelectItem={(item) => setSelectedItem(item)}
-                  onNavigateFeature={navigateToFeature}
-                />
+                <ProjectsView onNavigateFeature={navigateToFeature} />
               )}
 
               {activeFeature === 'resume' && <ResumeView />}
