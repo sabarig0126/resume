@@ -10,20 +10,20 @@ import { TiltCard } from '../TiltCard';
 
 export function SkillsView() {
   return (
-    <section className="mx-auto max-w-[1280px] px-6 py-12 md:px-10 md:py-16">
-      <div className="border-b border-white/10 pb-8">
+    <section className="mx-auto max-w-[1280px] px-4 py-8 sm:px-6 sm:py-12 md:px-10 md:py-16">
+      <div className="border-b border-white/10 pb-6 sm:pb-8">
         <div>
           <p className="font-kalam text-xs text-[#F05BEA] tabular-nums">
-            03 · Technical Stack, Strengths &amp; Interests
+            03 · Skills, Strengths &amp; Hobbies
           </p>
-          <h1 className="mt-2 font-road-rage text-4xl font-normal tracking-wide text-[#FF0000] sm:text-5xl [text-wrap:balance]">
-            Core programming stack, databases, and analytical competencies
+          <h1 className="mt-2 font-road-rage text-[2rem] font-normal leading-[1.08] tracking-wide text-[#FF0000] sm:text-5xl [text-wrap:balance]">
+            Technical skills, soft skills, strengths, and hobbies
           </h1>
         </div>
       </div>
 
-      <div className="mt-10">
-        <div className="flex items-baseline justify-between gap-4">
+      <div className="mt-8 sm:mt-10">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
           <h2 className="font-road-rage text-2xl sm:text-3xl font-normal tracking-wide text-[#FF0000]">
             Technical Skills
           </h2>
@@ -31,7 +31,7 @@ export function SkillsView() {
             <AnimatedCounter value={TECHNICAL_SKILLS.length} /> Categories
           </span>
         </div>
-        <div className="mt-5 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:mt-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
           {TECHNICAL_SKILLS.map((group, idx) => (
             <motion.div
               key={group.category}
@@ -47,7 +47,7 @@ export function SkillsView() {
               <TiltCard
                 maxTiltDeg={4.5}
                 glowColor={idx % 2 === 0 ? 'pink' : 'lime'}
-                className="glass-surface glass-interactive h-full rounded-2xl p-6"
+                className="glass-surface glass-interactive h-full rounded-2xl p-5 sm:p-6"
               >
                 <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-3">
                   <h3 className="font-caveat text-lg font-normal tracking-wide text-[#FFFF00]">
@@ -73,8 +73,8 @@ export function SkillsView() {
         </div>
       </div>
 
-      <div className="mt-12 border-t border-white/10 pt-10">
-        <div className="flex items-baseline justify-between gap-4">
+      <div className="mt-10 border-t border-white/10 pt-8 sm:mt-12 sm:pt-10">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
           <h2 className="font-road-rage text-2xl sm:text-3xl font-normal tracking-wide text-[#FF0000]">
             Professional &amp; Soft Skills
           </h2>
@@ -82,7 +82,7 @@ export function SkillsView() {
             <AnimatedCounter value={SOFT_SKILLS.length} /> Core Competencies
           </span>
         </div>
-        <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:mt-5 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
           {SOFT_SKILLS.map((skill, idx) => (
             <motion.div
               key={skill}
@@ -110,7 +110,7 @@ export function SkillsView() {
         </div>
       </div>
 
-      <div className="mt-12 grid grid-cols-1 gap-8 border-t border-white/10 pt-10 md:grid-cols-2">
+      <div className="mt-10 grid grid-cols-1 gap-5 border-t border-white/10 pt-8 sm:mt-12 sm:gap-8 sm:pt-10 md:grid-cols-2">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -121,10 +121,10 @@ export function SkillsView() {
           <TiltCard
             maxTiltDeg={3}
             glowColor="pink"
-            className="glass-surface glass-interactive glass-accent-pink h-full rounded-2xl p-6 sm:p-8"
+            className="glass-surface glass-interactive glass-accent-pink h-full rounded-2xl p-5 sm:p-8"
           >
             <h2 className="font-caveat text-2xl font-normal tracking-wide text-[#FFFF00]">
-              Core Strengths
+              My Strengths
             </h2>
             <ul className="mt-5 grid grid-cols-1 gap-3 text-sm text-[#A0B2B2] sm:grid-cols-2">
               {STRENGTHS.map((item) => (
@@ -149,10 +149,10 @@ export function SkillsView() {
           <TiltCard
             maxTiltDeg={3}
             glowColor="lime"
-            className="glass-surface glass-interactive glass-accent-lime h-full rounded-2xl p-6 sm:p-8"
+            className="glass-surface glass-interactive glass-accent-lime h-full rounded-2xl p-5 sm:p-8"
           >
             <h2 className="font-caveat text-2xl font-normal tracking-wide text-[#FFFF00]">
-              Interests &amp; Hobbies
+              My Hobbies
             </h2>
             <ul className="mt-5 space-y-3 font-kalam text-[15px] text-[#A0B2B2]">
               {HOBBIES.map((item) => (

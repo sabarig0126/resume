@@ -19,8 +19,8 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
         className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-[#071B1B]/25 to-[#071B1B]/55"
       />
 
-      <div className="relative mx-auto max-w-[1280px] px-6 py-12 md:px-10 md:py-16">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-stretch lg:gap-12">
+      <div className="relative mx-auto max-w-[1280px] px-4 py-8 sm:px-6 sm:py-12 md:px-10 md:py-16">
+        <div className="grid grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-12 lg:items-stretch lg:gap-12">
           {/* Left: About Me & Career Objective */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
@@ -29,7 +29,7 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
             className="flex flex-col justify-center lg:col-span-7"
           >
             <div>
-              <h1 className="font-road-rage text-5xl font-normal tracking-[0.02em] leading-[1.05] text-[#FF0000] sm:text-6xl lg:text-[4rem] [text-wrap:balance]">
+              <h1 className="font-road-rage text-[2.65rem] font-normal tracking-[0.02em] leading-[1.05] text-[#FF0000] sm:text-6xl lg:text-[4rem] [text-wrap:balance]">
                 Sabarivasan&apos;s Profile
               </h1>
 
@@ -71,7 +71,7 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
               strong
               interactive
               accent="pink"
-              className="flex w-full flex-col justify-between rounded-2xl p-6 text-[#FFFFFF] sm:p-8 lg:min-h-[430px]"
+              className="flex w-full flex-col justify-between rounded-2xl p-5 text-[#FFFFFF] sm:p-8 lg:min-h-[430px]"
             >
               <div>
                 <p className="font-caveat text-base font-normal tracking-wide text-[#FFFF00]">
@@ -115,22 +115,22 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
               </div>
 
               <div className="mt-6 border-t border-white/10 pt-5">
-                <div className="flex flex-wrap items-center gap-2.5">
+                <div className="grid grid-cols-1 gap-2.5 sm:flex sm:flex-wrap sm:items-center">
                   <button
                     type="button"
                     onClick={() => onNavigateFeature('resume')}
-                    className="touch-press inline-flex min-h-[44px] flex-1 shrink-0 items-center justify-center gap-2 rounded-lg bg-[#C8FF27] px-4 py-2.5 text-sm font-bold text-[#071B1B] shadow-[0_0_24px_-6px_rgba(200,255,39,0.55)] hover:bg-[#d5ff52] hover:shadow-[0_0_28px_-4px_rgba(200,255,39,0.7)] whitespace-nowrap cursor-pointer"
+                    className="touch-press inline-flex min-h-[44px] w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-[#C8FF27] px-4 py-2.5 text-sm font-bold text-[#071B1B] shadow-[0_0_24px_-6px_rgba(200,255,39,0.55)] hover:bg-[#d5ff52] hover:shadow-[0_0_28px_-4px_rgba(200,255,39,0.7)] whitespace-nowrap sm:w-auto sm:flex-1 cursor-pointer"
                   >
                     <FileDossierIcon className="h-4 w-4 text-[#071B1B]" />
-                    <span>Open Resume PDF</span>
+                    <span>Open Resume</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => onNavigateFeature('portfolioPdf')}
-                    className="touch-press inline-flex min-h-[44px] flex-1 shrink-0 items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/[0.04] px-4 py-2.5 text-sm font-semibold text-[#FFFFFF] hover:border-[#F05BEA]/65 hover:bg-[#F05BEA]/10 whitespace-nowrap cursor-pointer"
+                    className="touch-press inline-flex min-h-[44px] w-full shrink-0 items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/[0.04] px-4 py-2.5 text-sm font-semibold text-[#FFFFFF] hover:border-[#F05BEA]/65 hover:bg-[#F05BEA]/10 whitespace-nowrap sm:w-auto sm:flex-1 cursor-pointer"
                   >
                     <FileDossierIcon className="h-4 w-4 text-[#F05BEA]" />
-                    <span>Open Portfolio PDF</span>
+                    <span>Open Portfolio</span>
                   </button>
                 </div>
               </div>
@@ -141,7 +141,7 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
 
         {/* 4-Column Academic & Credential Summary Boxes */}
         <SectionReveal>
-        <div className="mt-10 grid grid-cols-1 gap-4 border-t border-white/10 pt-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-8 grid grid-cols-1 gap-3.5 border-t border-white/10 pt-6 sm:mt-10 sm:grid-cols-2 sm:gap-4 sm:pt-8 lg:grid-cols-4">
           {PROOF_METRICS.map((metric, idx) => (
             <motion.div
               key={metric.label}
@@ -157,7 +157,7 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
               <TiltCard
                 maxTiltDeg={4}
                 glowColor={idx % 2 === 1 ? 'lime' : 'pink'}
-                className="glass-surface glass-interactive h-full space-y-1.5 rounded-xl p-5"
+                className="glass-surface glass-interactive h-full space-y-1.5 rounded-xl p-4 sm:p-5"
               >
                 <div className="font-road-rage text-4xl font-normal tracking-wide text-[#FF0000] tabular-nums">
                   <AnimatedCounter value={metric.value} />
@@ -174,11 +174,18 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
         </div>
         </SectionReveal>
 
-        <div className="mt-7 flex justify-center">
-          <p className="nav-hint-glass relative mx-auto max-w-full rounded-xl px-4 py-3 text-center text-xs leading-relaxed text-[#FFF7ED] sm:px-6 sm:py-3.5 sm:text-[13px]">
+        <div className="mt-7 grid grid-cols-1 gap-4 md:grid-cols-2">
+          <p className="nav-hint-glass relative flex h-full w-full items-center justify-center rounded-xl px-4 py-3 text-center text-xs leading-relaxed text-[#FFF7ED] sm:px-6 sm:py-3.5 sm:text-[13px]">
             <span aria-hidden="true" className="nav-hint-sweep" />
             <span className="relative z-10">
-              Use the <span className="nav-hint-menu">Menu</span> at the top right to explore Achievements, Technical Skills, Certifications, Education, Projects, Resume PDF, Portfolio PDF, and Contact.
+              Use the <span className="nav-hint-menu">Menu</span> at the top right to explore Achievements, Technical Skills, Certifications, Education, Projects, Resume, Portfolio, and Contact.
+            </span>
+          </p>
+
+          <p className="nav-hint-glass relative flex h-full w-full items-center justify-center rounded-xl px-4 py-3 text-center text-xs leading-relaxed text-[#FFF7ED] sm:px-6 sm:py-3.5 sm:text-[13px]">
+            <span aria-hidden="true" className="nav-hint-sweep" />
+            <span className="relative z-10">
+              Use the <span className="nav-hint-menu">App Logo</span> at the top left to explore my About Me Highlight Card.
             </span>
           </p>
         </div>

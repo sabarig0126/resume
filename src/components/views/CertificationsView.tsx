@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { CheckVerifiedIcon, CloseIcon, SearchLensIcon } from '../NextGenIcons';
 import { CERTIFICATION_TRACKS, PROFILE } from '../../data/projects';
@@ -9,6 +9,19 @@ import { TiltCard } from '../TiltCard';
 export function CertificationsView() {
   const [selectedTrackIndex, setSelectedTrackIndex] = useState(0);
   const [courseQuery, setCourseQuery] = useState('');
+  const detailPanelRef = useRef<HTMLDivElement | null>(null);
+
+  const handleSelectTrack = (idx: number) => {
+    setSelectedTrackIndex(idx);
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      window.requestAnimationFrame(() => {
+        detailPanelRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+        });
+      });
+    }
+  };
 
   const filteredTracks = useMemo(() => {
     const q = courseQuery.trim().toLowerCase();
@@ -25,15 +38,15 @@ export function CertificationsView() {
     filteredTracks[selectedTrackIndex] ?? filteredTracks[0] ?? null;
 
   return (
-    <section className="mx-auto max-w-[1280px] px-6 py-12 md:px-10 md:py-16">
-      <div className="flex flex-col gap-6 border-b border-white/10 pb-8 lg:flex-row lg:items-end lg:justify-between">
+    <section className="mx-auto max-w-[1280px] px-4 py-8 sm:px-6 sm:py-12 md:px-10 md:py-16">
+      <div className="flex flex-col gap-5 border-b border-white/10 pb-6 sm:gap-6 sm:pb-8 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="font-kalam text-xs text-[#F05BEA] tabular-nums">
-            04 · Verified Certifications &amp; Coursework
+            04 · Certifications &amp; Technical Courses
           </p>
-          <h1 className="mt-2 font-road-rage text-4xl font-normal tracking-wide text-[#FF0000] sm:text-5xl [text-wrap:balance]">
-            <AnimatedCounter value={7} /> structured learning tracks across{' '}
-            <AnimatedCounter value={25} suffix="+" /> verified modules
+          <h1 className="mt-2 font-road-rage text-[2rem] font-normal leading-[1.08] tracking-wide text-[#FF0000] sm:text-5xl [text-wrap:balance]">
+            <AnimatedCounter value={7} /> learning tracks across{' '}
+            <AnimatedCounter value={25} suffix="+" /> completed courses
           </h1>
         </div>
 
@@ -52,7 +65,7 @@ export function CertificationsView() {
               }}
               placeholder="Filter by MATLAB, Python, SQL, IBM..."
               aria-label="Search certification courses"
-              className="h-10 w-full rounded-lg border border-white/10 bg-[#071B1B] pl-9 pr-8 text-xs text-[#FFFFFF] placeholder:text-[#A0B2B2]/65 focus:border-[#F05BEA] focus:outline-none focus:ring-2 focus:ring-[#F05BEA]/25 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
+              className="min-h-[44px] w-full rounded-lg border border-white/10 bg-[#071B1B] pl-9 pr-9 text-base text-[#FFFFFF] placeholder:text-xs placeholder:text-[#A0B2B2]/65 focus:border-[#F05BEA] focus:outline-none focus:ring-2 focus:ring-[#F05BEA]/25 sm:h-10 sm:min-h-0 sm:pr-8 sm:text-xs [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
             />
             {courseQuery && (
               <button
@@ -62,7 +75,7 @@ export function CertificationsView() {
                   setCourseQuery('');
                   setSelectedTrackIndex(0);
                 }}
-                className="touch-press absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-0.5 text-[#A0B2B2] hover:text-[#FFFFFF] cursor-pointer"
+                className="touch-press absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-[#A0B2B2] hover:text-[#FFFFFF] sm:right-2.5 sm:p-0.5 cursor-pointer"
               >
                 <CloseIcon className="h-3.5 w-3.5" />
               </button>
@@ -88,7 +101,7 @@ export function CertificationsView() {
           </button>
         </GlassCard>
       ) : (
-        <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <div className="mt-6 grid grid-cols-1 gap-5 sm:mt-8 sm:gap-6 lg:grid-cols-12">
           {/* Left Track Selector */}
           <div className="flex flex-col gap-2.5 lg:col-span-5">
             {filteredTracks.map((track, idx) => {
@@ -102,14 +115,14 @@ export function CertificationsView() {
                 >
                   <button
                     type="button"
-                    onClick={() => setSelectedTrackIndex(idx)}
-                    className={`touch-press glass-surface flex min-h-[56px] w-full items-center justify-between gap-4 rounded-xl px-4 py-3.5 text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF27] ${
+                    onClick={() => handleSelectTrack(idx)}
+                    className={`touch-press glass-surface flex min-h-[52px] w-full items-center justify-between gap-3 rounded-xl px-3.5 py-3 text-left sm:min-h-[56px] sm:gap-4 sm:px-4 sm:py-3.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF27] ${
                       isSelected
                         ? 'glass-accent-pink text-[#FFFFFF]'
                         : 'glass-interactive text-[#A0B2B2] hover:text-[#FFFFFF]'
                     }`}
                   >
-                    <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="flex items-center gap-3 min-w-0 sm:gap-3.5">
                       <span
                         className={`font-kalam text-xs font-bold tabular-nums ${
                           isSelected ? 'text-[#C8FF27]' : 'text-[#F05BEA]'
@@ -118,7 +131,7 @@ export function CertificationsView() {
                         {track.number}
                       </span>
                       <div className="min-w-0">
-                        <div className="truncate font-caveat text-lg font-normal tracking-wide text-[#FFFF00]">
+                        <div className="truncate font-caveat text-base font-normal tracking-wide text-[#FFFF00] sm:text-lg">
                           {track.provider}
                         </div>
                         <div className="truncate font-kalam text-xs text-[#A0B2B2]">
@@ -138,7 +151,7 @@ export function CertificationsView() {
 
           {/* Right Track Detail Panel */}
           {activeTrack && (
-            <div className="lg:col-span-7">
+            <div ref={detailPanelRef} className="scroll-mt-20 lg:col-span-7">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeTrack.number}
@@ -152,7 +165,7 @@ export function CertificationsView() {
                     maxTiltDeg={2.2}
                     glowColor="pink"
                     scaleOnHover={1.005}
-                    className="glass-surface-strong glass-interactive glass-accent-pink flex h-full flex-col justify-between rounded-2xl p-6 sm:p-8"
+                    className="glass-surface-strong glass-interactive glass-accent-pink flex h-full flex-col justify-between rounded-2xl p-4 sm:p-8"
                   >
                     <div>
                       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-5">
@@ -202,7 +215,7 @@ export function CertificationsView() {
                         {PROFILE.learningGoal}
                       </span>
                       <span className="font-kalam text-xs font-bold text-[#F05BEA] tabular-nums shrink-0">
-                        <AnimatedCounter value={activeTrack.courses.length} /> Verified
+                        <AnimatedCounter value={activeTrack.courses.length} /> Listed
                       </span>
                     </div>
                   </TiltCard>

@@ -4,9 +4,8 @@ import {
   ProofMetric,
 } from '../types/portfolio';
 
-export const RESUME_PDF_PATH =
-  '/assets/aistudio/Sabarivasan_G_Resume_Creative__1_-1_e4404cec.pdf';
-export const PORTFOLIO_PDF_PATH = '/assets/aistudio/my_resume_86a39148.pdf';
+export const RESUME_PDF_PATH = '/assets/aistudio/sabarivasan_resume.pdf';
+export const PORTFOLIO_PDF_PATH = '/assets/aistudio/sabarivasan_portfolio.pdf';
 
 export const PROFILE = {
   name: 'Sabarivasan G',
@@ -20,18 +19,19 @@ export const PROFILE = {
   mobile: '9688283942',
   linkedinUrl: 'https://www.linkedin.com/in/sabarivasan-g-774ba6375',
   aboutLead:
-    'Second-year B.Tech Artificial Intelligence & Data Science undergraduate at Sri Ramakrishna Institute of Technology, focused on software engineering, statistical modeling, and data-driven problem solving, with strong technical depth in Python and C programming, relational and NoSQL databases, and mathematical computing in MATLAB, supported by 25+ industry-recognized certifications.',
+    'Second-year B.Tech Artificial Intelligence and Data Science student at Sri Ramakrishna Institute of Technology, passionate about programming, data analysis, and emerging technologies, building skills through certified courses and hands-on practice.',
   careerObjective:
-    'Aspiring AI and Data Science engineer seeking opportunities to apply strong foundations in algorithms, data analysis, statistical inference, and mathematical modeling to real-world engineering challenges, while advancing practical production skills through collaborative builds, hackathons, and technical internships.',
+    'To build a successful career in technology by applying my knowledge of programming, data analysis, and mathematics to Artificial Intelligence and Data Science, growing through continuous learning, dedication, and hands-on practice.',
   learningGoal:
-    'Translating core academic foundations in algorithms, probability, linear algebra, and database systems into structured, applied engineering workflows.',
+    'To strengthen my theoretical foundation and turn it into practical technical skills through continuous, hands-on learning.',
 };
 
 export const PROOF_METRICS: ProofMetric[] = [
   {
     value: '25+',
-    label: 'Certified Modules',
-    context: 'Completed across MathWorks, IBM, NPTEL, Python, SQL & Data Science',
+    label: 'Completed Courses',
+    context:
+      'Completed across NPTEL, IBM, MathWorks, Python, Databases, Data Analysis & Cybersecurity',
   },
   {
     value: '85.5%',
@@ -60,22 +60,22 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItem[] = [
     timeframe: 'Elite · 63%',
     location: 'IIT Madras (Online)',
     imageUrl: '/assets/achievements/nptel-design-thinking.svg',
-    imageAlt: 'NPTEL IIT Madras Design Thinking Elite certification visual emblem and iterative process diagram',
+    imageAlt: 'NPTEL IIT Madras Design Thinking Elite certificate emblem',
     summary:
-      'Earned the NPTEL Elite Certification in Design Thinking – A Primer (IIT Madras) with a proctored evaluation score of 63%.',
+      'Earned the NPTEL Elite certificate in Design Thinking – A Primer offered by IIT Madras with a score of 63%.',
     details:
-      'Completed structured coursework and a proctored national assessment under IIT Madras, covering human-centered problem framing, iterative ideation, rapid prototyping, and the translation of user insights into practical, engineering-ready solutions.',
+      'Earned the NPTEL Elite certification for Design Thinking – A Primer through IIT Madras, scoring 63%.',
     highlights: [
-      'NPTEL Elite Certification Tier (63% Proctored Score)',
-      'Human-Centered Problem Framing & Ideation',
-      'Iterative Prototyping & Solution Validation',
+      'NPTEL Elite Certification',
+      'Course: Design Thinking – A Primer (IIT Madras)',
+      'Score: 63%',
     ],
     featured: true,
     specs: {
       issuerOrContext: 'NPTEL – IIT Madras',
-      focusArea: 'Design Thinking & Innovation',
+      focusArea: 'Design Thinking',
       credentialOrOutcome: 'Elite Certificate (63%)',
-      location: 'Coimbatore / Online',
+      location: 'Online (IIT Madras)',
     },
   },
   {
@@ -84,23 +84,23 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItem[] = [
     title: 'Smart India Hackathon (SIH) Internal Round',
     category: 'Achievements',
     organization: 'Sri Ramakrishna Institute of Technology',
-    timeframe: '2026',
+    timeframe: 'College Level',
     location: 'Coimbatore',
     imageUrl: '/assets/achievements/sih-hackathon-srit.svg',
-    imageAlt: 'Smart India Hackathon 2026 SRIT internal qualifier circuit emblem and solution workflow schematic',
+    imageAlt: 'Smart India Hackathon internal round participation visual emblem',
     summary:
-      'Competed in the institution’s internal selection round for the Smart India Hackathon (SIH), scoping technical solutions for national problem statements.',
+      'Participated in the internal round of the Smart India Hackathon (SIH) at Sri Ramakrishna Institute of Technology.',
     details:
-      'Collaborated in a multidisciplinary team to deconstruct national-level hackathon problem statements, assess technical feasibility, structure solution architectures, and deliver technical pitches during the institutional SIH screening round.',
+      'Participated in the college-level internal round of the Smart India Hackathon at Sri Ramakrishna Institute of Technology.',
     highlights: [
-      'Collaborative Problem Framing & Technical Pitching',
-      'Technical Feasibility Scoping & Workflow Design',
-      'Institutional National Hackathon Qualifier Round',
+      'Event: Smart India Hackathon (SIH)',
+      'Level: Internal Round (College Level)',
+      'Institution: Sri Ramakrishna Institute of Technology',
     ],
     specs: {
       issuerOrContext: 'Smart India Hackathon (SIH)',
-      focusArea: 'Applied Problem Solving',
-      credentialOrOutcome: 'College Internal Round Participant',
+      focusArea: 'Hackathon Participation',
+      credentialOrOutcome: 'Internal Round Participant',
       location: 'Coimbatore',
     },
   },
@@ -113,21 +113,21 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItem[] = [
     timeframe: 'Bootcamp',
     location: 'IIT Bombay',
     imageUrl: '/assets/achievements/illuminate-iit-bombay.svg',
-    imageAlt: 'IIT Bombay Illuminate Entrepreneurship Bootcamp beacon prism and venture growth trajectory graphic',
+    imageAlt: 'Illuminate Entrepreneurship Bootcamp IIT Bombay visual emblem',
     summary:
-      'Completed the Illuminate Entrepreneurship Bootcamp organized by IIT Bombay, focused on technology venture ideation and product validation.',
+      'Took part in the Illuminate Entrepreneurship Bootcamp at IIT Bombay.',
     details:
-      'Engaged in structured entrepreneurship and product strategy workshops through IIT Bombay’s Illuminate initiative, covering market opportunity discovery, value proposition design, early-stage validation, and technology-driven product thinking.',
+      'Participated in the Illuminate Entrepreneurship Bootcamp organized under IIT Bombay.',
     highlights: [
-      'Technology Venture Ideation & Opportunity Discovery',
-      'Value Proposition & Product-Validation Frameworks',
-      'Team-Based Workshop Execution',
+      'Program: Illuminate Entrepreneurship Bootcamp',
+      'Institution: IIT Bombay',
+      'Role: Bootcamp Participant',
     ],
     specs: {
       issuerOrContext: 'IIT Bombay (Illuminate)',
-      focusArea: 'Entrepreneurship & Product Strategy',
-      credentialOrOutcome: 'Bootcamp Participant',
-      location: 'Mumbai / Campus',
+      focusArea: 'Entrepreneurship Bootcamp',
+      credentialOrOutcome: 'Participant',
+      location: 'IIT Bombay',
     },
   },
   {
@@ -139,43 +139,43 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItem[] = [
     timeframe: 'Event',
     location: 'Coimbatore',
     imageUrl: '/assets/achievements/tedxsrit-human-in-the-loop.svg',
-    imageAlt: 'TEDxSRIT Human in the Loop AI ethics and human oversight orbital diagram',
+    imageAlt: 'TEDxSRIT Human in the Loop participation visual emblem',
     summary:
-      'Participated in TEDxSRIT, centered on “Human in the Loop,” examining ethical governance and human-centered oversight in AI systems.',
+      'Participated in TEDxSRIT on the theme “Human in the Loop”.',
     details:
-      'Explored cross-disciplinary perspectives at the intersection of artificial intelligence, responsible decision-making, and human-in-the-loop supervision across modern autonomous and data-driven architectures.',
+      'Participated in the TEDxSRIT event centered on the theme “Human in the Loop” at Sri Ramakrishna Institute of Technology.',
     highlights: [
+      'Event: TEDxSRIT',
       'Theme: Human in the Loop',
-      'Responsible AI & Human-Centered Oversight',
-      'Interdisciplinary Technical Exchange',
+      'Role: Participant',
     ],
     specs: {
       issuerOrContext: 'TEDxSRIT',
-      focusArea: 'AI Ethics & Human Oversight',
-      credentialOrOutcome: 'Active Participant',
+      focusArea: 'Conference / Event Participation',
+      credentialOrOutcome: 'Participant',
       location: 'Coimbatore',
     },
   },
   {
     id: 'mathworks-matlab-track',
     indexNumber: '05',
-    title: 'MATLAB & Mathematical Computing Track',
+    title: 'MATLAB – MathWorks Track',
     category: 'Certifications',
     organization: 'MathWorks',
-    timeframe: '8 Modules',
+    timeframe: '8 Courses',
     location: 'Online Certification',
     summary:
-      'Completed eight MathWorks modules spanning MATLAB Onramp, Symbolic Math, MATLAB Coder, Linear Algebra, and Statistical Analysis.',
+      'Completed eight MathWorks courses covering MATLAB Onramp, Symbolic Math, MATLAB Coder, writing functions, linear algebra, vectors and matrices, statistics, and data analysis.',
     details:
-      'Developed hands-on fluency in matrix and vector computation, symbolic math workflows, modular function authoring, statistical analysis, and algorithmic prototyping within the MATLAB environment.',
+      'Completed MATLAB Onramp, Symbolic Math Onramp, MATLAB Coder Onramp, The How and Why of Writing Functions, Introduction to Linear Algebra with MATLAB, Calculations with Vectors and Matrices, Statistics Onramp, and Data Analysis Courses.',
     highlights: [
-      'MATLAB, Symbolic Math & Coder Onramps',
-      'Linear Algebra & Vector/Matrix Computation',
-      'Statistics & Applied Data Analysis Modules',
+      'MATLAB, Symbolic Math & MATLAB Coder Onramp',
+      'Linear Algebra & Calculations with Vectors and Matrices',
+      'Writing Functions, Statistics Onramp & Data Analysis Courses',
     ],
     specs: {
       issuerOrContext: 'MathWorks',
-      focusArea: 'Scientific & Mathematical Computing',
+      focusArea: 'MATLAB & Mathematical Computing',
       credentialOrOutcome: '8 Completed Courses',
       location: 'Online',
     },
@@ -183,23 +183,23 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItem[] = [
   {
     id: 'python-data-science-track',
     indexNumber: '06',
-    title: 'Python, Machine Learning & Statistics Track',
+    title: 'Python & Data Science Track',
     category: 'Certifications',
-    organization: 'Data Science & Python Curriculum',
-    timeframe: '7 Modules',
+    organization: 'Python & Data Science Courses',
+    timeframe: '7 Courses',
     location: 'Online Certification',
     summary:
-      'Completed seven foundational courses covering Python for Data Science & Machine Learning, Linear Algebra, Probability, and Statistical Inference.',
+      'Completed seven courses covering Python for Data Science and Machine Learning Bootcamp, Introduction to Data Science, Data Science Foundation, Linear Algebra, Probability, and Statistical Inference using Python.',
     details:
-      'Strengthened applied Python programming alongside probability distributions, statistical inference, and linear algebra fundamentals that underpin machine learning and analytical pipelines.',
+      'Completed Python for Data Science and Machine Learning Bootcamp, Introduction to Data Science, Data Science Foundation, Basics of Linear Algebra using Python, Probability and Statistics using Python, Statistical Inference using Python, and Probability Distribution using Python.',
     highlights: [
-      'Python for Data Science & ML Bootcamp',
-      'Linear Algebra & Probability Distributions',
-      'Statistical Inference Using Python',
+      'Python for Data Science and Machine Learning Bootcamp',
+      'Introduction to Data Science & Data Science Foundation',
+      'Linear Algebra, Probability & Statistical Inference using Python',
     ],
     specs: {
       issuerOrContext: 'Python & Data Science Track',
-      focusArea: 'Data Science & Statistical Modeling',
+      focusArea: 'Python & Data Science',
       credentialOrOutcome: '7 Completed Courses',
       location: 'Online',
     },
@@ -207,67 +207,66 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItem[] = [
   {
     id: 'ibm-clean-coding-devops',
     indexNumber: '07',
-    title: 'Clean Coding, DevOps & Agile Practice',
+    title: 'IBM Career Education Program',
     category: 'Certifications',
     organization: 'IBM Career Education Program',
-    timeframe: '2 Modules',
+    timeframe: '2 Courses',
     location: 'Online Certification',
     summary:
-      'Certified in “Clean Coding” and “DevOps, Agile & Design Thinking” through the IBM Career Education Program.',
+      'Completed Clean Coding and DevOps, Agile & Design Thinking under the IBM Career Education Program.',
     details:
-      'Built disciplined software engineering practices centered on maintainable code architecture, modular design principles, Agile iteration cycles, and collaborative DevOps delivery workflows.',
+      'Completed Clean Coding as well as DevOps, Agile & Design Thinking through the IBM Career Education Program.',
     highlights: [
-      'Clean Coding & Maintainable Architecture',
-      'DevOps & Agile Delivery Workflows',
-      'Design Thinking Integration',
+      'Clean Coding',
+      'DevOps, Agile & Design Thinking',
     ],
     specs: {
       issuerOrContext: 'IBM Career Education Program',
-      focusArea: 'Software Engineering Practices',
-      credentialOrOutcome: '2 Verified Modules',
+      focusArea: 'Software Practices & Design Thinking',
+      credentialOrOutcome: '2 Completed Courses',
       location: 'Online',
     },
   },
   {
     id: 'databases-linux-cyber',
     indexNumber: '08',
-    title: 'MySQL, MongoDB, Unix/Linux & Cybersecurity',
+    title: 'Database, Programming & Cybersecurity Courses',
     category: 'Certifications',
-    organization: 'Databases, Systems & Tech Mahindra Foundation',
-    timeframe: '6 Modules',
-    location: 'Skill India Digital Hub',
+    organization: 'Database, Systems & Tech Mahindra Foundation',
+    timeframe: '6 Courses',
+    location: 'Online / Skill India Digital Hub',
     summary:
-      'Completed hands-on coursework spanning MySQL, MongoDB, Unix/Linux fundamentals, Ethical AI, Excel VBA, and a 10-hour Cybersecurity certification.',
+      'Completed coursework covering Project on MySQL, MongoDB Courses, Unix Linux OS – Unix Fundamentals, Ethical AI, Excel Macros & VBA for Beginners, and Cybersecurity (Tech Mahindra Foundation, 10 Hours).',
     details:
-      'Combined relational (MySQL) and document-oriented (MongoDB) database modeling with Unix/Linux shell fundamentals, Ethical AI principles, Excel automation, and a 10-hour Cybersecurity credential through Tech Mahindra Foundation.',
+      'Completed structured learning modules covering Project on MySQL, MongoDB Courses, Unix Linux OS – Unix Fundamentals, Ethical AI, Excel Macros & VBA for Beginners, and the 10-hour Cybersecurity course from Tech Mahindra Foundation on Skill India Digital Hub.',
     highlights: [
-      'Applied MySQL & MongoDB Database Coursework',
-      'Unix/Linux OS Fundamentals & Ethical AI',
+      'Project on MySQL & MongoDB Courses',
+      'Unix Linux OS Fundamentals, Ethical AI & Excel Macros/VBA',
       'Cybersecurity — Tech Mahindra Foundation (10 Hours)',
     ],
     specs: {
-      issuerOrContext: 'IBM / Tech Mahindra / Database Track',
-      focusArea: 'Databases, OS & Security',
-      credentialOrOutcome: '6 Completed Modules',
-      location: 'Skill India Digital Hub',
+      issuerOrContext: 'Databases, Systems & Tech Mahindra Foundation',
+      focusArea: 'Databases, OS, AI Ethics & Cybersecurity',
+      credentialOrOutcome: '6 Completed Courses',
+      location: 'Online / Skill India Digital Hub',
     },
   },
   {
     id: 'btech-ai-ds-curriculum',
     indexNumber: '09',
-    title: 'Core AI & Data Science Academic Foundation',
+    title: 'B.Tech AI & Data Science Academic Learning',
     category: 'Academic',
     organization: 'Sri Ramakrishna Institute of Technology',
-    timeframe: '2025–2027',
+    timeframe: '2nd Year · 2026–2027',
     location: 'Coimbatore',
     summary:
-      'Includes core undergraduate engineering coursework in Data Structures, DBMS, Linear Algebra, Probability, and Artificial Intelligence Fundamentals.',
+      'Academic coursework spanning Programming Fundamentals, Database Management Systems, Data Structures and Algorithms, Linear Algebra, Probability and Statistics, Python for Scientific Computing, Fundamentals of AI, and Data Analysis Techniques.',
     details:
-      'Pursuing a four-year B.Tech degree in Artificial Intelligence & Data Science (2nd Year), bridging mathematical and algorithmic theory with practical programming and analytical problem solving.',
+      'Pursuing a B.Tech degree in Artificial Intelligence & Data Science (2nd Year) at Sri Ramakrishna Institute of Technology, focused on strengthening theoretical foundations and turning them into practical technical skills through continuous, hands-on learning.',
     highlights: [
-      'Data Structures & Algorithms / DBMS',
-      'Linear Algebra, Probability & Statistics',
-      'Python for Scientific Computing & AI',
+      'Programming Fundamentals, DBMS & Data Structures and Algorithms',
+      'Linear Algebra & Probability and Statistics',
+      'Python for Scientific Computing, AI Fundamentals & Data Analysis Techniques',
     ],
     specs: {
       issuerOrContext: 'Sri Ramakrishna Institute of Technology',
@@ -288,11 +287,11 @@ export const TECHNICAL_SKILLS = [
     items: ['SQL', 'DBMS', 'MongoDB'],
   },
   {
-    category: 'Analytical & Computing Tools',
+    category: 'Technical Tools',
     items: ['MATLAB', 'Microsoft Excel'],
   },
   {
-    category: 'Core Technical Foundations',
+    category: 'Technical Knowledge',
     items: [
       'Data Analysis',
       'AI Fundamentals',
@@ -334,7 +333,7 @@ export const CERTIFICATION_TRACKS: CertificationTrack[] = [
   {
     number: '02.',
     provider: 'IBM Career Education Program',
-    category: 'Software & Engineering Practices',
+    category: 'Software & Design Practices',
     courses: ['Clean Coding', 'DevOps, Agile & Design Thinking'],
   },
   {
@@ -355,25 +354,25 @@ export const CERTIFICATION_TRACKS: CertificationTrack[] = [
   {
     number: '04.',
     provider: 'Python & Data Science',
-    category: 'AI, ML & Statistical Modeling',
+    category: 'Python, Math & Statistics',
     courses: [
       'Python for Data Science and Machine Learning Bootcamp',
       'Introduction to Data Science',
       'Data Science Foundation',
-      'Basics of Linear Algebra Using Python',
-      'Probability and Statistics Using Python',
-      'Statistical Inference Using Python',
-      'Probability Distribution Using Python',
+      'Basics of Linear Algebra using Python',
+      'Probability and Statistics using Python',
+      'Statistical Inference using Python',
+      'Probability Distribution using Python',
     ],
   },
   {
     number: '05.',
-    provider: 'Database & Systems',
-    category: 'Data Management & OS',
+    provider: 'Database & Programming',
+    category: 'Databases, OS & Tools',
     courses: [
       'Project on MySQL',
       'MongoDB Courses',
-      'Unix/Linux OS – Unix Fundamentals',
+      'Unix Linux OS – Unix Fundamentals',
       'Ethical AI',
       'Excel Macros & VBA for Beginners',
     ],
@@ -381,7 +380,7 @@ export const CERTIFICATION_TRACKS: CertificationTrack[] = [
   {
     number: '06.',
     provider: 'Data Analysis',
-    category: 'Analytical Workflows',
+    category: 'Data Preparation & Analysis',
     courses: [
       'Common Data Analysis Techniques',
       'Calculations on Grouped Data',
@@ -399,29 +398,29 @@ export const CERTIFICATION_TRACKS: CertificationTrack[] = [
 ];
 
 export const SOFT_SKILLS = [
-  'Technical Communication',
-  'Analytical Problem Solving',
-  'Team Collaboration',
+  'Communication Skills',
+  'Problem-Solving Skills',
+  'Teamwork and Collaboration',
   'Time Management',
   'Critical Thinking',
-  'Technical Adaptability',
-  'Rapid Skill Acquisition',
-  'Self-Directed Execution',
+  'Adaptability',
+  'Quick Learning',
+  'Self-Motivation',
 ];
 
 export const STRENGTHS = [
-  'Self-Motivated & Proactive',
-  'Consistent Work Ethic',
-  'Fast Technical Learner',
-  'Solution-Oriented Mindset',
-  'Cross-Tool Adaptability',
-  'Continuous Improvement Focus',
+  'Self-Motivated',
+  'Hardworking',
+  'Quick Learner',
+  'Positive Attitude',
+  'Adaptability',
+  'Willingness to Learn',
 ];
 
 export const HOBBIES = [
-  'Exploring Emerging Technologies',
-  'Practicing Programming & Problem Solving',
+  'Exploring New Technologies',
+  'Learning Programming',
   'Listening to Music',
-  'Advancing Core Technical Knowledge',
-  'Researching Innovative Technical Ideas',
+  'Improving Technical Knowledge',
+  'Exploring New Ideas',
 ];

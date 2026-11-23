@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MotionConfig } from 'motion/react';
+import { AboutMeHighlightModal } from './components/AboutMeHighlightModal';
 import { CinematicTransition } from './components/CinematicTransition';
 import { CursorGlow } from './components/CursorGlow';
 import { Header } from './components/Header';
@@ -16,6 +17,7 @@ import { ProjectsView } from './components/views/ProjectsView';
 import { ResumeView } from './components/views/ResumeView';
 import { SkillsView } from './components/views/SkillsView';
 import { INITIAL_PORTFOLIO_ITEMS } from './data/projects';
+import { updateFeatureSeo } from './lib/seo';
 import { FeatureId, PortfolioItem } from './types/portfolio';
 
 const VALID_FEATURES: ReadonlySet<FeatureId> = new Set<FeatureId>([
@@ -36,31 +38,73 @@ function readFeatureFromHash(): FeatureId {
   return VALID_FEATURES.has(raw) ? raw : 'overview';
 }
 
+function clearInitialNavigationHash(): void {
+  if (typeof window === 'undefined' || !window.location.hash) return;
+  try {
+    window.history.replaceState(
+      null,
+      '',
+      `${window.location.pathname}${window.location.search}`
+    );
+  } catch {
+    window.location.hash = '';
+  }
+}
+
 export default function App() {
   const [showIntro, setShowIntro] = useState(true);
-  const [activeFeature, setActiveFeature] = useState<FeatureId>(readFeatureFromHash);
+  const [activeFeature, setActiveFeature] = useState<FeatureId>('overview');
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
+  const [aboutCardOpen, setAboutCardOpen] = useState(false);
   const shellRef = useRef<HTMLDivElement | null>(null);
+  const previousFeatureRef = useRef<FeatureId>('overview');
+  const showIntroRef = useRef(showIntro);
+  showIntroRef.current = showIntro;
+
+  // Always reset any prior route hash & scroll position on full page reload
+  useEffect(() => {
+    clearInitialNavigationHash();
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+  }, []);
 
   const handleIntroComplete = useCallback(() => {
+    clearInitialNavigationHash();
+    previousFeatureRef.current = 'overview';
+    setActiveFeature('overview');
+    setSelectedItem(null);
+    setAboutCardOpen(false);
     setShowIntro(false);
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+  }, []);
+
+  const openAboutCard = useCallback(() => {
+    setAboutCardOpen(true);
+  }, []);
+
+  const closeAboutCard = useCallback(() => {
+    setAboutCardOpen(false);
   }, []);
 
   useEffect(() => {
     if (!showIntro) return;
     // Outer hard fail-safe so the main portfolio is never blocked indefinitely
     const outerFailSafe = window.setTimeout(() => {
-      setShowIntro(false);
+      handleIntroComplete();
     }, 5000);
 
     return () => {
       window.clearTimeout(outerFailSafe);
     };
-  }, [showIntro]);
+  }, [showIntro, handleIntroComplete]);
 
-  // Support browser back/forward navigation cleanly via URL hash
+  // Support browser back/forward navigation cleanly via URL hash after intro completes
   useEffect(() => {
     const handleHashOrPop = () => {
+      if (showIntroRef.current) return;
       setActiveFeature(readFeatureFromHash());
     };
     window.addEventListener('hashchange', handleHashOrPop);
@@ -70,6 +114,10 @@ export default function App() {
       window.removeEventListener('popstate', handleHashOrPop);
     };
   }, []);
+
+  useEffect(() => {
+    updateFeatureSeo(activeFeature);
+  }, [activeFeature]);
 
   // Lightweight delegated touch feedback for mobile/pen taps with instant release
   useEffect(() => {
@@ -126,7 +174,12 @@ export default function App() {
   }, []);
 
   const navigateToFeature = useCallback((feature: FeatureId) => {
-    setActiveFeature(feature);
+    setActiveFeature((current) => {
+      if (current !== feature) {
+        previousFeatureRef.current = current;
+      }
+      return feature;
+    });
     if (typeof window !== 'undefined') {
       const nextHash = `#${feature}`;
       if (window.location.hash !== nextHash) {
@@ -140,6 +193,14 @@ export default function App() {
     }
   }, []);
 
+  const returnToPreviousView = useCallback(() => {
+    const target =
+      previousFeatureRef.current && previousFeatureRef.current !== 'portfolioPdf'
+        ? previousFeatureRef.current
+        : 'overview';
+    navigateToFeature(target);
+  }, [navigateToFeature]);
+
   const allItems = INITIAL_PORTFOLIO_ITEMS;
 
   const achievementsList = useMemo(
@@ -149,7 +210,7 @@ export default function App() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="relative flex min-h-screen flex-col bg-[#071B1B] text-[#FFFFFF]">
+      <div className="relative flex min-h-dvh w-full flex-col overflow-x-clip bg-[#071B1B] text-[#FFFFFF]">
         {/* Pre-renders static starfield behind opaque portal veil, resumes smoothly once portal opens */}
         <ParticleBackground paused={showIntro} />
         <CursorGlow disabled={showIntro} />
@@ -179,10 +240,12 @@ export default function App() {
           <Header
             activeFeature={activeFeature}
             onSelectFeature={navigateToFeature}
+            isAboutOpen={aboutCardOpen}
+            onOpenAboutCard={openAboutCard}
           />
 
-          <main className="relative z-10 flex-1">
-            <CinematicTransition routeKey={activeFeature}>
+          <main className="relative z-10 min-w-0 flex-1 overflow-x-clip">
+            <CinematicTransition routeKey={activeFeature} introActive={showIntro}>
               {activeFeature === 'overview' && (
                 <OverviewView onNavigateFeature={navigateToFeature} />
               )}
@@ -201,12 +264,18 @@ export default function App() {
               {activeFeature === 'education' && <EducationView />}
 
               {activeFeature === 'projects' && (
-                <ProjectsView onNavigateFeature={navigateToFeature} />
+                <ProjectsView
+                  items={allItems}
+                  onSelectItem={(item) => setSelectedItem(item)}
+                  onNavigateFeature={navigateToFeature}
+                />
               )}
 
               {activeFeature === 'resume' && <ResumeView />}
 
-              {activeFeature === 'portfolioPdf' && <PortfolioPdfView />}
+              {activeFeature === 'portfolioPdf' && (
+                <PortfolioPdfView onReturnPreviousView={returnToPreviousView} />
+              )}
 
               {activeFeature === 'contact' && <ContactView />}
             </CinematicTransition>
@@ -216,6 +285,11 @@ export default function App() {
         <ProjectLightbox
           item={selectedItem}
           onClose={() => setSelectedItem(null)}
+        />
+
+        <AboutMeHighlightModal
+          isOpen={aboutCardOpen}
+          onClose={closeAboutCard}
         />
       </div>
     </MotionConfig>

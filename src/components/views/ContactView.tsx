@@ -40,12 +40,12 @@ export function ContactView() {
     : `https://web.whatsapp.com/send?phone=${whatsappNumber}`;
 
   return (
-    <section className="mx-auto max-w-[1280px] px-6 py-12 md:px-10 md:py-16">
-      <div className="border-b border-white/10 pb-8">
+    <section className="mx-auto max-w-[1280px] px-4 py-8 sm:px-6 sm:py-12 md:px-10 md:py-16">
+      <div className="border-b border-white/10 pb-6 sm:pb-8">
         <p className="font-kalam text-xs text-[#F05BEA] tabular-nums">
           09 · Contact &amp; Networking
         </p>
-        <h1 className="mt-2 font-road-rage text-4xl font-normal tracking-[0.02em] text-[#FF0000] sm:text-5xl">
+        <h1 className="mt-2 font-road-rage text-[2rem] font-normal leading-[1.08] tracking-[0.02em] text-[#FF0000] sm:text-5xl">
           Connect with {PROFILE.name}
         </h1>
       </div>
@@ -54,20 +54,20 @@ export function ContactView() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className="mt-10"
+        className="mt-8 sm:mt-10"
       >
-        <GlassCard strong accent="pink" className="rounded-2xl p-6 sm:p-8">
+        <GlassCard strong accent="pink" className="rounded-2xl p-4 sm:p-8">
         <div className="border-b border-white/10 pb-6">
           <h2 className="font-caveat text-2xl font-normal tracking-wide text-[#FFFF00]">
             Direct Channels
           </h2>
           <p className="mt-2 max-w-2xl font-kalam text-base leading-relaxed text-[#A0B2B2]">
-            Available for AI &amp; Data Science internships, collaborative student engineering projects, and technical hackathons.
+            Direct contact details for academic and technical communication.
           </p>
         </div>
 
-        <dl className="mt-6 grid grid-cols-1 gap-6 text-sm sm:grid-cols-2 lg:grid-cols-4">
-          <div className="glass-surface glass-interactive rounded-xl p-5">
+        <dl className="mt-6 grid grid-cols-1 gap-4 text-sm sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
+          <div className="glass-surface glass-interactive rounded-xl p-4 sm:p-5">
             <dt className="flex items-center gap-2 text-xs text-[#A0B2B2]">
               <MailEnvelopeIcon className="h-3.5 w-3.5 text-[#F05BEA]" />
               <span>Email</span>
@@ -93,14 +93,14 @@ export function ContactView() {
                     e.preventDefault();
                   }
                 }}
-                className="break-all font-kalam text-sm font-normal text-[#FFFFFF] underline decoration-[#F05BEA]/60 underline-offset-4 hover:text-[#C8FF27] hover:decoration-[#C8FF27] select-text [-webkit-user-drag:none] [-webkit-touch-callout:default]"
+                className="touch-press inline-flex min-h-[44px] items-center break-all font-kalam text-sm font-normal text-[#FFFFFF] underline decoration-[#F05BEA]/60 underline-offset-4 hover:text-[#C8FF27] hover:decoration-[#C8FF27] select-text [-webkit-user-drag:none] [-webkit-touch-callout:default] sm:min-h-0"
               >
                 {PROFILE.email}
               </a>
             </dd>
           </div>
 
-          <div className="glass-surface glass-interactive rounded-xl p-5">
+          <div className="glass-surface glass-interactive rounded-xl p-4 sm:p-5">
             <dt className="flex items-center gap-2 text-xs text-[#A0B2B2]">
               <PhoneSignalIcon className="h-3.5 w-3.5 text-[#C8FF27]" />
               <span>Mobile</span>
@@ -117,7 +117,7 @@ export function ContactView() {
             </dd>
           </div>
 
-          <div className="glass-surface glass-interactive rounded-xl p-5">
+          <div className="glass-surface glass-interactive rounded-xl p-4 sm:p-5">
             <dt className="flex items-center gap-2 text-xs text-[#A0B2B2]">
               <LocationBeaconIcon className="h-3.5 w-3.5 text-[#F05BEA]" />
               <span>Location</span>
@@ -127,7 +127,7 @@ export function ContactView() {
             </dd>
           </div>
 
-          <div className="glass-surface glass-interactive rounded-xl p-5">
+          <div className="glass-surface glass-interactive rounded-xl p-4 sm:p-5">
             <dt className="flex items-center gap-2 text-xs text-[#A0B2B2]">
               <LinkedInModernIcon className="h-3.5 w-3.5 text-[#C8FF27]" aria-hidden="true" />
               <span>LinkedIn</span>

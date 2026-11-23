@@ -352,7 +352,7 @@ export function IntroLoader({
       ref={rootRef}
       role="status"
       aria-live="polite"
-      className="font-kalam pointer-events-auto fixed inset-0 z-50 flex h-dvh w-full touch-none flex-col items-center justify-center overflow-hidden px-5 py-6 pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] select-none"
+      className="font-kalam pointer-events-auto fixed inset-0 z-50 flex h-dvh w-full touch-none flex-col items-center justify-center overflow-hidden pt-[max(1.5rem,env(safe-area-inset-top))] pr-[max(1.25rem,env(safe-area-inset-right))] pb-[max(1.5rem,env(safe-area-inset-bottom))] pl-[max(1.25rem,env(safe-area-inset-left))] select-none"
     >
       {/* Initial 0.2s completely empty black screen */}
       {isInitialBlackout && (
@@ -669,11 +669,11 @@ export function IntroLoader({
           ref={brandingRef}
           className="portal-branding-wrap mt-7 flex w-full flex-col items-center text-center sm:mt-9"
         >
-          <p className="font-road-rage text-[clamp(1.85rem,min(6.4vw,4.2dvh),2.75rem)] font-normal tracking-[0.16em] text-[#FF0000] uppercase drop-shadow-[0_0_20px_rgba(240,91,234,0.34)]">
+          <p className="font-road-rage text-[clamp(1.55rem,min(6.4vw,4.2dvh),2.75rem)] font-normal tracking-[0.1em] text-[#FF0000] uppercase drop-shadow-[0_0_20px_rgba(240,91,234,0.34)] sm:tracking-[0.16em]">
             SABARIVASAN G
           </p>
 
-          <p className="font-caveat mt-1 text-sm font-normal tracking-[0.26em] text-[#FFFF00] sm:text-base">
+          <p className="font-caveat mt-1 text-sm font-normal tracking-[0.18em] text-[#FFFF00] sm:text-base sm:tracking-[0.26em]">
             portfolio website
           </p>
 

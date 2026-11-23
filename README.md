@@ -13,8 +13,8 @@ Built as a static client-side single-page application using **React**, **TypeScr
 - **Certifications**: Filterable explorer across 7 verified learning tracks and 25+ completed modules
 - **Education**: Degree progress, Higher Secondary / SSLC scores, areas of interest, and core subjects
 - **Projects**: In-progress work roadmap status
-- **Resume PDF Viewer**: Single-page resume preview and download (`public/assets/aistudio/Sabarivasan_G_Resume_Creative__1_-1_e4404cec.pdf`)
-- **Portfolio PDF Viewer**: Client-side 13-page PDF.js canvas rendering with page navigation, zoom controls, raw view, and direct PDF download (`public/assets/aistudio/my_resume_86a39148.pdf`)
+- **Resume PDF Viewer**: Single-page resume preview (`public/assets/aistudio/sabarivasan_resume.pdf`)
+- **Portfolio PDF Viewer**: 13-slide portfolio presentation and source PDF (`public/assets/aistudio/sabarivasan_portfolio.pdf`)
 - **Contact Details**: Read-only direct channels (email, mobile number, and location)
 
 ## Prerequisites

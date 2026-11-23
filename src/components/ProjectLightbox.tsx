@@ -70,7 +70,7 @@ export function ProjectLightbox({ item, onClose }: ProjectLightboxProps) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="lightbox-title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#041010]/82 p-4 backdrop-blur-sm sm:p-6 md:p-10"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#041010]/82 p-3 backdrop-blur-sm sm:p-6 md:p-10"
       onClick={onClose}
     >
       <div
@@ -83,15 +83,15 @@ export function ProjectLightbox({ item, onClose }: ProjectLightboxProps) {
           type="button"
           onClick={onClose}
           aria-label="Close item viewer"
-          className="touch-press absolute right-4 top-4 z-20 inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#F05BEA]/45 bg-[#071B1B]/80 text-[#FFFFFF] transition-colors duration-200 hover:border-[#C8FF27] hover:bg-[#C8FF27] hover:text-[#071B1B] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF27]"
+          className="touch-press absolute right-3 top-3 z-20 inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#F05BEA]/45 bg-[#071B1B]/85 text-[#FFFFFF] transition-colors duration-200 hover:border-[#C8FF27] hover:bg-[#C8FF27] hover:text-[#071B1B] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF27] sm:right-4 sm:top-4"
         >
           <CloseIcon className="h-5 w-5" />
         </button>
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain lg:grid lg:grid-cols-12 lg:overflow-hidden">
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain touch-pan-y lg:grid lg:grid-cols-12 lg:overflow-hidden">
           {/* Left Plate: Uploaded Image OR Typographic Slide Plate */}
           <div
-            className={`flex flex-col bg-gradient-to-br from-[#071B1B]/95 via-[#0B2626]/85 to-[#071B1B]/95 p-6 sm:p-10 lg:col-span-6 ${
+            className={`flex flex-col bg-gradient-to-br from-[#071B1B]/95 via-[#0B2626]/85 to-[#071B1B]/95 px-4 pt-16 pb-5 sm:px-8 sm:pt-16 sm:pb-8 lg:col-span-6 lg:p-10 ${
               item.imageUrl ? 'justify-center' : 'justify-between'
             }`}
           >
@@ -115,11 +115,11 @@ export function ProjectLightbox({ item, onClose }: ProjectLightboxProps) {
                   </span>
                 </div>
 
-                <div className="my-8">
+                <div className="my-5 sm:my-8">
                   <p className="font-caveat text-sm font-normal tracking-wide text-[#FFFF00]">
                     {item.organization}
                   </p>
-                  <h3 className="mt-2 font-road-rage text-4xl font-normal tracking-wide text-[#FF0000] sm:text-5xl [text-wrap:balance]">
+                  <h3 className="mt-2 font-road-rage text-3xl font-normal tracking-wide text-[#FF0000] sm:text-5xl [text-wrap:balance]">
                     {item.title}
                   </h3>
                   <p className="mt-4 font-kalam text-sm leading-relaxed text-[#A0B2B2]">
@@ -135,9 +135,9 @@ export function ProjectLightbox({ item, onClose }: ProjectLightboxProps) {
           </div>
 
           {/* Right: Structured Details */}
-          <div className="flex min-h-0 flex-col justify-between border-t border-white/10 bg-[#071B1B]/90 p-6 sm:p-8 lg:col-span-6 lg:overflow-y-auto lg:border-l lg:border-t-0">
+          <div className="flex min-h-0 flex-col justify-between border-t border-white/10 bg-[#071B1B]/90 p-4 sm:p-8 lg:col-span-6 lg:overflow-y-auto lg:border-l lg:border-t-0">
             <div>
-              <div className="flex flex-wrap items-center gap-2 pr-10 font-kalam text-xs text-[#A0B2B2]">
+              <div className="flex flex-wrap items-center gap-2 font-kalam text-xs text-[#A0B2B2] lg:pr-12">
                 <span className="font-kalam font-bold tabular-nums text-[#C8FF27]">
                   {item.indexNumber}
                 </span>
@@ -218,7 +218,7 @@ export function ProjectLightbox({ item, onClose }: ProjectLightboxProps) {
             </div>
 
             <div className="mt-8 border-t border-white/10 pt-5 font-kalam text-xs text-[#A0B2B2]">
-              <span className="text-[#C8FF27]">Verified</span> Portfolio Record
+              <span className="text-[#C8FF27]">Portfolio</span> Record
             </div>
           </div>
         </div>

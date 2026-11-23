@@ -108,7 +108,7 @@ export const MENU_FEATURES: MenuFeatureItem[] = [
   {
     id: 'resume',
     number: '07',
-    label: 'Resume PDF',
+    label: 'Resume',
     icon: FileDossierIcon,
     badgeStyle: PINK_BADGE,
     hoverStyle: PINK_HOVER,
@@ -119,7 +119,7 @@ export const MENU_FEATURES: MenuFeatureItem[] = [
   {
     id: 'portfolioPdf',
     number: '08',
-    label: 'Portfolio PDF',
+    label: 'Portfolio',
     icon: LayersDeckIcon,
     badgeStyle: LIME_BADGE,
     hoverStyle: LIME_HOVER,
@@ -143,9 +143,16 @@ export const MENU_FEATURES: MenuFeatureItem[] = [
 interface HeaderProps {
   activeFeature: FeatureId;
   onSelectFeature: (feature: FeatureId) => void;
+  isAboutOpen?: boolean;
+  onOpenAboutCard: () => void;
 }
 
-export function Header({ activeFeature, onSelectFeature }: HeaderProps) {
+export function Header({
+  activeFeature,
+  onSelectFeature,
+  isAboutOpen = false,
+  onOpenAboutCard,
+}: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -219,16 +226,49 @@ export function Header({ activeFeature, onSelectFeature }: HeaderProps) {
   return (
     <>
       <header className="sticky top-0 z-30 border-b border-white/10 bg-[#071B1B]/85 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-[1280px] items-center justify-between gap-6 px-6 py-3.5 sm:py-4 md:px-10">
-          {/* Left: Active Feature Context */}
-          <div className="flex items-center gap-2.5 min-w-0">
+        <div className="mx-auto flex max-w-[1280px] items-center justify-between gap-3 px-4 py-3 sm:gap-6 sm:px-6 sm:py-4 md:px-10">
+          {/* Left: App Logo & Active Feature Context */}
+          <div className="flex items-center gap-2.5 min-w-0 sm:gap-3">
+            <motion.button
+              type="button"
+              whileTap={{ scale: 0.95 }}
+              onClick={onOpenAboutCard}
+              aria-expanded={isAboutOpen}
+              aria-label="Open Sabarivasan G About Me Highlight Card"
+              title="About Me"
+              className="touch-press group relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#F05BEA]/40 bg-[#082020]/90 shadow-[0_0_16px_-4px_rgba(240,91,234,0.45),inset_0_1px_0_rgba(255,255,255,0.16)] transition-all duration-200 hover:border-[#C8FF27]/75 hover:shadow-[0_0_18px_-3px_rgba(200,255,39,0.5)] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF27]"
+            >
+              <motion.img
+                src="/assets/portal-logo.png"
+                alt="App logo"
+                width={28}
+                height={28}
+                decoding="async"
+                draggable={false}
+                animate={{ opacity: [1, 0.15, 1] }}
+                transition={{
+                  duration: 1.4,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                }}
+                className="h-7 w-7 object-contain drop-shadow-[0_0_8px_rgba(34,211,238,0.45)] transition-transform duration-200 group-hover:scale-105"
+              />
+            </motion.button>
+
             <span
               aria-hidden="true"
-              className="hidden sm:inline-block h-2 w-2 shrink-0 rounded-full bg-[#F05BEA] shadow-[0_0_8px_rgba(240,91,234,0.85)]"
+              className="inline-block h-4 w-px shrink-0 bg-white/15"
             />
-            <span className="hidden sm:inline truncate font-kalam text-sm font-normal text-[#FFFFFF]">
-              {currentFeature.label}
-            </span>
+
+            <div className="flex items-center gap-2 min-w-0">
+              <span
+                aria-hidden="true"
+                className="inline-block h-2 w-2 shrink-0 rounded-full bg-[#F05BEA] shadow-[0_0_8px_rgba(240,91,234,0.85)]"
+              />
+              <span className="truncate font-kalam text-sm font-normal text-[#FFFFFF]">
+                {currentFeature.label}
+              </span>
+            </div>
           </div>
 
           {/* Right: Primary Navigation CTA (Neon Lime + Deep Teal Text) */}
@@ -271,7 +311,7 @@ export function Header({ activeFeature, onSelectFeature }: HeaderProps) {
             />
 
             {/* Aligned Overlay Layer */}
-            <div className="pointer-events-none relative z-10 mx-auto max-w-[1280px] px-6 py-3.5 sm:py-4 md:px-10">
+            <div className="pointer-events-none relative z-10 mx-auto max-w-[1280px] px-4 py-3 sm:px-6 sm:py-4 md:px-10">
               {/* Top-Right Close Button aligned with Header Menu button */}
               <div className="flex justify-end">
                 <motion.button
@@ -300,7 +340,7 @@ export function Header({ activeFeature, onSelectFeature }: HeaderProps) {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -6, scale: 0.98 }}
                   transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
-                  className="glass-surface-strong glass-accent-pink pointer-events-auto flex max-h-[calc(100dvh-6rem)] w-full max-w-sm flex-col overflow-hidden rounded-2xl p-2.5"
+                  className="glass-surface-strong glass-accent-pink pointer-events-auto flex max-h-[calc(100dvh-5.5rem)] w-full flex-col overflow-hidden rounded-2xl p-2.5 sm:max-w-sm"
                 >
                   <div className="shrink-0 border-b border-white/10 px-3 py-2.5">
                     <p className="font-caveat text-sm font-normal tracking-wide text-[#FFFF00]">
@@ -308,7 +348,7 @@ export function Header({ activeFeature, onSelectFeature }: HeaderProps) {
                     </p>
                   </div>
 
-                  <div className="mt-1.5 min-h-0 flex-1 overflow-y-auto overscroll-contain">
+                  <div className="mt-1.5 min-h-0 flex-1 overflow-y-auto overscroll-contain touch-pan-y">
                     <ul className="space-y-1">
                       {MENU_FEATURES.map((item, idx) => {
                         const isActive = activeFeature === item.id;
