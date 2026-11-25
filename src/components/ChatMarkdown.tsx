@@ -1,4 +1,6 @@
-import { Fragment, type ReactNode } from 'react';
+import { Fragment, useState, type ReactNode } from 'react';
+import { Check, Copy } from 'lucide-react';
+import { tokenizeCode, type PrismTokenNode } from '../lib/prismSetup';
 
 interface ChatMarkdownProps {
   content: string;
@@ -294,7 +296,149 @@ const BULLET_RE = /^(\s*)(?:[-*+•▪])\s+(.*)$/;
 const ORDERED_RE = /^(\s*)(\d+)[.)]\s+(.*)$/;
 const BLOCKQUOTE_RE = /^>\s?(.*)$/;
 const HR_RE = /^(?:-{3,}|\*{3,}|_{3,})$/;
-const FENCE_RE = /^```([a-zA-Z0-9_-]*)\s*$/;
+const FENCE_RE = /^```([a-zA-Z0-9_+-]*)\s*$/;
+
+const TOKEN_COLOR_MAP: Record<string, string> = {
+  comment: 'text-teal-400/65 italic',
+  prolog: 'text-teal-400/65 italic',
+  doctype: 'text-teal-400/65 italic',
+  cdata: 'text-teal-400/65 italic',
+  punctuation: 'text-teal-200/75',
+  keyword: 'text-fuchsia-300 font-medium',
+  atrule: 'text-fuchsia-300 font-medium',
+  important: 'text-fuchsia-300 font-semibold',
+  rule: 'text-fuchsia-300 font-medium',
+  builtin: 'text-cyan-300',
+  'class-name': 'text-cyan-300',
+  'type-definition': 'text-cyan-300',
+  namespace: 'text-cyan-200',
+  function: 'text-sky-300',
+  method: 'text-sky-300',
+  'function-variable': 'text-sky-300',
+  string: 'text-emerald-300',
+  char: 'text-emerald-300',
+  'template-string': 'text-emerald-300',
+  'string-interpolation': 'text-emerald-300',
+  'attr-value': 'text-emerald-300',
+  regex: 'text-emerald-200',
+  number: 'text-amber-300',
+  boolean: 'text-amber-300',
+  constant: 'text-amber-300',
+  symbol: 'text-amber-300',
+  operator: 'text-teal-200',
+  entity: 'text-teal-200',
+  url: 'text-teal-200 underline',
+  property: 'text-lime-200',
+  'attr-name': 'text-lime-200',
+  variable: 'text-lime-200',
+  parameter: 'text-lime-200',
+  interpolation: 'text-amber-200',
+  decorator: 'text-pink-300',
+  annotation: 'text-pink-300',
+  tag: 'text-rose-300',
+  deleted: 'text-rose-400',
+  inserted: 'text-emerald-300',
+  bold: 'font-bold text-white',
+  italic: 'italic',
+};
+
+function getPrismTokenClass(type: string, alias?: string | string[]): string | undefined {
+  if (TOKEN_COLOR_MAP[type]) {
+    return TOKEN_COLOR_MAP[type];
+  }
+  if (typeof alias === 'string' && TOKEN_COLOR_MAP[alias]) {
+    return TOKEN_COLOR_MAP[alias];
+  }
+  if (Array.isArray(alias)) {
+    for (const a of alias) {
+      if (TOKEN_COLOR_MAP[a]) {
+        return TOKEN_COLOR_MAP[a];
+      }
+    }
+  }
+  return undefined;
+}
+
+function renderPrismTokenNode(node: PrismTokenNode, key: string): ReactNode {
+  if (typeof node === 'string') {
+    return <Fragment key={key}>{node}</Fragment>;
+  }
+
+  const className = getPrismTokenClass(node.type, node.alias);
+  const content = node.content;
+  let children: ReactNode;
+
+  if (typeof content === 'string') {
+    children = content;
+  } else if (Array.isArray(content)) {
+    children = content.map((child, idx) =>
+      renderPrismTokenNode(child as PrismTokenNode, `${key}-${idx}`)
+    );
+  } else {
+    children = renderPrismTokenNode(content as PrismTokenNode, `${key}-0`);
+  }
+
+  return (
+    <span key={key} className={className}>
+      {children}
+    </span>
+  );
+}
+
+function CodeBlock({ code, lang }: { code: string; lang: string }) {
+  const [copied, setCopied] = useState(false);
+  const tokens = tokenizeCode(code, lang);
+  const displayLang = lang.trim() || 'code';
+
+  const handleCopy = async () => {
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(code);
+        setCopied(true);
+        window.setTimeout(() => setCopied(false), 1600);
+      }
+    } catch {
+      // Ignore clipboard permission errors in restricted contexts
+    }
+  };
+
+  return (
+    <div className="my-1.5 overflow-hidden rounded-lg border border-teal-300/20 bg-[#031212]/95">
+      <div className="flex items-center justify-between gap-2 border-b border-teal-300/15 bg-[#020D0D]/90 px-2.5 py-1">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-teal-300/80">
+          {displayLang}
+        </span>
+        <button
+          type="button"
+          onClick={handleCopy}
+          aria-label={copied ? 'Copied code' : 'Copy code'}
+          className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium text-teal-200/80 transition-colors hover:bg-white/10 hover:text-white cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-400"
+        >
+          {copied ? (
+            <>
+              <Check className="h-3 w-3 text-emerald-400" />
+              <span className="text-emerald-300">Copied</span>
+            </>
+          ) : (
+            <>
+              <Copy className="h-3 w-3" />
+              <span>Copy</span>
+            </>
+          )}
+        </button>
+      </div>
+      <div className="overflow-x-auto p-2.5">
+        <pre className="m-0 font-['ui-monospace',SFMono-Regular,Menlo,Monaco,Consolas,monospace] text-[11.5px] leading-relaxed text-[#E6F4F1] whitespace-pre">
+          <code>
+            {tokens
+              ? tokens.map((tok, idx) => renderPrismTokenNode(tok, `tok-${idx}`))
+              : code}
+          </code>
+        </pre>
+      </div>
+    </div>
+  );
+}
 
 function isBlockStarter(lines: string[], idx: number): boolean {
   const line = lines[idx];
@@ -348,19 +492,11 @@ function renderBlocks(lines: string[], keyPrefix: string): ReactNode[] {
       }
       if (i < lines.length) i++;
       blocks.push(
-        <div
+        <CodeBlock
           key={`${keyPrefix}-code-${blockIdx}`}
-          className="my-1 overflow-x-auto rounded-lg border border-teal-300/20 bg-[#031212]/95 p-2.5"
-        >
-          {lang && (
-            <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-teal-300/70">
-              {lang}
-            </div>
-          )}
-          <pre className="m-0 font-['ui-monospace',SFMono-Regular,Menlo,Monaco,Consolas,monospace] text-[11.5px] leading-relaxed text-emerald-100 whitespace-pre">
-            <code>{codeLines.join('\n')}</code>
-          </pre>
-        </div>
+          code={codeLines.join('\n')}
+          lang={lang}
+        />
       );
       blockIdx++;
       continue;

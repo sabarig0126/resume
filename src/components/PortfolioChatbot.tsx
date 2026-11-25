@@ -206,9 +206,17 @@ export function PortfolioChatbot() {
 
       const controller = new AbortController();
       abortControllerRef.current = controller;
+      let timedOut = false;
+      const timeoutId = window.setTimeout(() => {
+        timedOut = true;
+        controller.abort();
+      }, 28000);
+
+      const apiBase = (import.meta.env.VITE_API_BASE_URL || '').trim().replace(/\/+$/, '');
+      const chatEndpoint = `${apiBase}/api/chat`;
 
       try {
-        const response = await fetch('/api/chat', {
+        const response = await fetch(chatEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ messages: payloadMessages }),
@@ -219,7 +227,7 @@ export function PortfolioChatbot() {
         if (!contentType.includes('application/json')) {
           setErrorInfo({
             message:
-              'Backend /api/chat returned a non-JSON response. Please ensure the Express server is running.',
+              'The AI chat service (/api/chat) returned an unexpected response. Please verify the API route is deployed and retry.',
             retryPayload: payloadMessages,
           });
           return;
@@ -230,7 +238,7 @@ export function PortfolioChatbot() {
           data = (await response.json()) as { reply?: string; error?: string };
         } catch {
           setErrorInfo({
-            message: 'Failed to parse JSON response from /api/chat. Please retry.',
+            message: 'Failed to parse response from /api/chat. Please retry.',
             retryPayload: payloadMessages,
           });
           return;
@@ -266,6 +274,12 @@ export function PortfolioChatbot() {
         ]);
       } catch (err: unknown) {
         if ((err as { name?: string })?.name === 'AbortError') {
+          if (timedOut) {
+            setErrorInfo({
+              message: 'The assistant request timed out. Please retry.',
+              retryPayload: payloadMessages,
+            });
+          }
           return;
         }
         setErrorInfo({
@@ -274,6 +288,7 @@ export function PortfolioChatbot() {
           retryPayload: payloadMessages,
         });
       } finally {
+        window.clearTimeout(timeoutId);
         if (abortControllerRef.current === controller) {
           abortControllerRef.current = null;
         }

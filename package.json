@@ -15,6 +15,7 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
     "@types/express": "^5.0.6",
+    "@types/prismjs": "^1.26.6",
     "@types/three": "^0.187.0",
     "@vitejs/plugin-react": "^6.1.1",
     "dotenv": "^18.0.10",
@@ -23,6 +24,7 @@
     "motion": "^12.23.24",
     "openai": "^7.64.0",
     "pdfjs-dist": "^6.5.438",
+    "prismjs": "^1.30.0",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
     "three": "^0.187.0",
