@@ -7,6 +7,7 @@ import {
   useState,
 } from 'react';
 import { ChevronDown, RotateCcw, Send, X } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import { FAQ_ITEMS, type FaqItem } from '../data/portfolioContext';
 import { ChatMarkdown } from './ChatMarkdown';
 import { RobotMascot } from './RobotMascot';
@@ -77,10 +78,11 @@ function getInitialPosition(boxWidth: number, boxHeight: number): ChatPosition {
 
 export function PortfolioChatbot() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isFaqSectionOpen, setIsFaqSectionOpen] = useState(false);
+  const [isFaqSectionOpen, setIsFaqSectionOpen] = useState(true);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isFaqThinking, setIsFaqThinking] = useState(false);
   const [errorInfo, setErrorInfo] = useState<{
     message: string;
     retryPayload: Array<{ role: 'user' | 'assistant'; content: string }>;
@@ -95,6 +97,13 @@ export function PortfolioChatbot() {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const inFlightRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const faqAnimRef = useRef<{
+    thinkingTimerId: number | null;
+    typingRafId: number | null;
+    assistantMsgId: string;
+    fullAnswer: string;
+    phase: 'thinking' | 'typing';
+  } | null>(null);
   const dragStateRef = useRef<{
     pointerId: number;
     startX: number;
@@ -119,7 +128,7 @@ export function PortfolioChatbot() {
   useEffect(() => {
     if (!isOpen) return;
     scrollToBottom();
-  }, [isOpen, messages, isLoading, errorInfo, scrollToBottom]);
+  }, [isOpen, messages, isLoading, isFaqThinking, errorInfo, scrollToBottom]);
 
   // Ensure opened position exists and remains clamped inside viewport on resize
   useEffect(() => {
@@ -148,10 +157,20 @@ export function PortfolioChatbot() {
     };
   }, [isOpen]);
 
-  // Abort any pending AI request only on unmount
+  // Abort any pending AI request and FAQ timers on unmount
   useEffect(() => {
     return () => {
       abortControllerRef.current?.abort();
+      const active = faqAnimRef.current;
+      if (active) {
+        if (active.thinkingTimerId !== null) {
+          window.clearTimeout(active.thinkingTimerId);
+        }
+        if (active.typingRafId !== null) {
+          window.cancelAnimationFrame(active.typingRafId);
+        }
+        faqAnimRef.current = null;
+      }
     };
   }, []);
 
@@ -194,7 +213,42 @@ export function PortfolioChatbot() {
     };
   }, [isOpen, handleClose]);
 
+  const finalizeFaqAnimation = useCallback((commitFullAnswer: boolean) => {
+    const active = faqAnimRef.current;
+    if (!active) return;
+
+    if (active.thinkingTimerId !== null) {
+      window.clearTimeout(active.thinkingTimerId);
+    }
+    if (active.typingRafId !== null) {
+      window.cancelAnimationFrame(active.typingRafId);
+    }
+    faqAnimRef.current = null;
+    setIsFaqThinking(false);
+
+    if (!commitFullAnswer) return;
+
+    if (active.phase === 'thinking') {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: active.assistantMsgId,
+          role: 'assistant',
+          content: active.fullAnswer,
+          isFaq: true,
+        },
+      ]);
+    } else {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === active.assistantMsgId ? { ...m, content: active.fullAnswer } : m
+        )
+      );
+    }
+  }, []);
+
   const handleClearChat = useCallback(() => {
+    finalizeFaqAnimation(false);
     abortControllerRef.current?.abort();
     abortControllerRef.current = null;
     inFlightRef.current = false;
@@ -202,8 +256,8 @@ export function PortfolioChatbot() {
     setErrorInfo(null);
     setMessages([]);
     setInputValue('');
-    setIsFaqSectionOpen(false);
-  }, []);
+    setIsFaqSectionOpen(true);
+  }, [finalizeFaqAnimation]);
 
   const handleToggleFaqSection = useCallback(() => {
     setIsFaqSectionOpen((prev) => {
@@ -326,24 +380,91 @@ export function PortfolioChatbot() {
   const handleFaqClick = useCallback(
     (faq: FaqItem) => {
       if (inFlightRef.current) return;
+
+      // Prevent overlapping animations if another FAQ is clicked mid-animation
+      finalizeFaqAnimation(true);
       setErrorInfo(null);
+
+      const userMsgId = createId();
+      const assistantMsgId = createId();
+      const fullAnswer = faq.answer;
+
       setMessages((prev) => [
         ...prev,
         {
-          id: createId(),
+          id: userMsgId,
           role: 'user',
           content: faq.question,
           isFaq: true,
         },
-        {
-          id: createId(),
-          role: 'assistant',
-          content: faq.answer,
-          isFaq: true,
-        },
       ]);
+      setIsFaqThinking(true);
+
+      const animState: NonNullable<typeof faqAnimRef.current> = {
+        thinkingTimerId: null,
+        typingRafId: null,
+        assistantMsgId,
+        fullAnswer,
+        phase: 'thinking',
+      };
+      faqAnimRef.current = animState;
+
+      animState.thinkingTimerId = window.setTimeout(() => {
+        if (faqAnimRef.current !== animState) return;
+
+        animState.thinkingTimerId = null;
+        animState.phase = 'typing';
+        setIsFaqThinking(false);
+
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: assistantMsgId,
+            role: 'assistant',
+            content: fullAnswer.slice(0, 1),
+            isFaq: true,
+          },
+        ]);
+
+        const startTime = performance.now();
+        const totalDurationMs = Math.min(1400, Math.max(650, fullAnswer.length * 2));
+        let lastShownLength = 1;
+
+        const step = (now: number) => {
+          if (faqAnimRef.current !== animState) return;
+
+          const elapsed = now - startTime;
+          const progress = Math.min(1, elapsed / totalDurationMs);
+          const nextLength =
+            progress >= 1
+              ? fullAnswer.length
+              : Math.max(lastShownLength, Math.floor(progress * fullAnswer.length));
+
+          if (nextLength > lastShownLength) {
+            lastShownLength = nextLength;
+            const partial = fullAnswer.slice(0, nextLength);
+            setMessages((prev) =>
+              prev.map((m) => (m.id === assistantMsgId ? { ...m, content: partial } : m))
+            );
+          }
+
+          if (nextLength >= fullAnswer.length) {
+            animState.typingRafId = null;
+            faqAnimRef.current = null;
+            return;
+          }
+
+          animState.typingRafId = window.requestAnimationFrame(step);
+        };
+
+        if (fullAnswer.length <= 1) {
+          faqAnimRef.current = null;
+          return;
+        }
+        animState.typingRafId = window.requestAnimationFrame(step);
+      }, 450);
     },
-    []
+    [finalizeFaqAnimation]
   );
 
   const handleSubmit = useCallback(
@@ -354,13 +475,36 @@ export function PortfolioChatbot() {
       const trimmed = inputValue.trim();
       if (!trimmed) return;
 
+      const pendingFaq = faqAnimRef.current;
+      let baseHistory = messages;
+      if (pendingFaq) {
+        if (pendingFaq.phase === 'thinking') {
+          baseHistory = [
+            ...messages,
+            {
+              id: pendingFaq.assistantMsgId,
+              role: 'assistant',
+              content: pendingFaq.fullAnswer,
+              isFaq: true,
+            },
+          ];
+        } else {
+          baseHistory = messages.map((m) =>
+            m.id === pendingFaq.assistantMsgId
+              ? { ...m, content: pendingFaq.fullAnswer }
+              : m
+          );
+        }
+        finalizeFaqAnimation(false);
+      }
+
       const userMsg: ChatMessage = {
         id: createId(),
         role: 'user',
         content: trimmed,
       };
 
-      const nextHistory = [...messages, userMsg];
+      const nextHistory = [...baseHistory, userMsg];
       setMessages(nextHistory);
       setInputValue('');
 
@@ -371,7 +515,7 @@ export function PortfolioChatbot() {
 
       void sendToGroq(payload);
     },
-    [inputValue, isLoading, messages, sendToGroq]
+    [finalizeFaqAnimation, inputValue, isLoading, messages, sendToGroq]
   );
 
   const handleRetry = useCallback(() => {
@@ -555,22 +699,33 @@ export function PortfolioChatbot() {
             className="no-scrollbar min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-3.5 py-3 text-[13px] focus:outline-none"
           >
             {/* Frequently Asked Questions (5 Vertical Buttons) */}
-            {isFaqSectionOpen && (
-              <div className="rounded-xl border border-teal-300/15 bg-[#041616]/60 p-2.5">
-                <div className="flex flex-col gap-1.5">
-                  {FAQ_ITEMS.map((faq) => (
-                    <button
-                      key={faq.id}
-                      type="button"
-                      onClick={() => handleFaqClick(faq)}
-                      className="w-full rounded-lg border border-teal-300/20 bg-[#092727]/80 px-2.5 py-1.5 text-left text-[12.5px] text-teal-50 transition-colors hover:border-emerald-400/50 hover:bg-emerald-500/15 hover:text-white cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
-                    >
-                      {faq.question}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+            <AnimatePresence initial={false}>
+              {isFaqSectionOpen && (
+                <motion.div
+                  key="faq-questions-list"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                  className="overflow-hidden"
+                >
+                  <div className="rounded-xl border border-teal-300/15 bg-[#041616]/60 p-2.5">
+                    <div className="flex flex-col gap-1.5">
+                      {FAQ_ITEMS.map((faq) => (
+                        <button
+                          key={faq.id}
+                          type="button"
+                          onClick={() => handleFaqClick(faq)}
+                          className="w-full rounded-lg border border-teal-300/20 bg-[#092727]/80 px-2.5 py-1.5 text-left text-[12.5px] text-teal-50 transition-colors hover:border-emerald-400/50 hover:bg-emerald-500/15 hover:text-white cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+                        >
+                          {faq.question}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Welcome Message Bubble (Below and Separate from FAQ Section) */}
             <div className="flex items-start gap-2">
@@ -602,8 +757,8 @@ export function PortfolioChatbot() {
               )
             )}
 
-            {/* Loading Indicator */}
-            {isLoading && (
+            {/* Loading Indicator (AI & FAQ Thinking...) */}
+            {(isLoading || isFaqThinking) && (
               <div
                 aria-live="polite"
                 className="flex items-start gap-2"
