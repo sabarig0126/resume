@@ -6,6 +6,7 @@ import { CursorGlow } from './components/CursorGlow';
 import { Header } from './components/Header';
 import { IntroLoader } from './components/IntroLoader';
 import { ParticleBackground } from './components/ParticleBackground';
+import { PortfolioChatbot } from './components/PortfolioChatbot';
 import { ProjectLightbox } from './components/ProjectLightbox';
 import { AchievementsView } from './components/views/AchievementsView';
 import { CertificationsView } from './components/views/CertificationsView';
@@ -291,6 +292,8 @@ export default function App() {
           isOpen={aboutCardOpen}
           onClose={closeAboutCard}
         />
+
+        {!showIntro && <PortfolioChatbot />}
       </div>
     </MotionConfig>
   );

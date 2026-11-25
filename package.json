@@ -4,22 +4,29 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port=3000 --host=0.0.0.0",
+    "dev": "tsx server.ts",
+    "start": "node server.ts",
     "build": "vite build",
     "preview": "vite preview",
     "clean": "node -e \"import('node:fs').then(fs=>{fs.rmSync('dist',{recursive:true,force:true});fs.rmSync('server.js',{force:true})})\"",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "diagnose:chat": "tsx scripts/diagnose-chat.ts"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
+    "@types/express": "^5.0.6",
     "@types/three": "^0.187.0",
     "@vitejs/plugin-react": "^6.1.1",
+    "dotenv": "^18.0.10",
+    "express": "^5.3.0",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
+    "openai": "^7.64.0",
     "pdfjs-dist": "^6.5.438",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
     "three": "^0.187.0",
+    "tsx": "^4.23.15",
     "vite": "^8.3.0"
   },
   "devDependencies": {

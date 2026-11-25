@@ -16,7 +16,7 @@ export function CertificationsView() {
     if (typeof window !== 'undefined' && window.innerWidth < 1024) {
       window.requestAnimationFrame(() => {
         detailPanelRef.current?.scrollIntoView({
-          behavior: 'smooth',
+          behavior: 'auto',
           block: 'nearest',
         });
       });
