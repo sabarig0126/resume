@@ -6,7 +6,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { Minus, Plus, RotateCcw, Send, X } from 'lucide-react';
+import { ChevronDown, RotateCcw, Send, X } from 'lucide-react';
 import { FAQ_ITEMS, type FaqItem } from '../data/portfolioContext';
 import { ChatMarkdown } from './ChatMarkdown';
 import { RobotMascot } from './RobotMascot';
@@ -77,7 +77,7 @@ function getInitialPosition(boxWidth: number, boxHeight: number): ChatPosition {
 
 export function PortfolioChatbot() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isFaqSectionOpen, setIsFaqSectionOpen] = useState(true);
+  const [isFaqSectionOpen, setIsFaqSectionOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -89,6 +89,7 @@ export function PortfolioChatbot() {
   const [position, setPosition] = useState<ChatPosition | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
+  const launcherRef = useRef<HTMLButtonElement | null>(null);
   const chatboxRef = useRef<HTMLDivElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -171,6 +172,28 @@ export function PortfolioChatbot() {
     dragStateRef.current = null;
   }, []);
 
+  // Auto-close chatbox when clicking/tapping anywhere outside it
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleOutsidePointerDown = (e: PointerEvent) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      if (dragStateRef.current) return;
+
+      const target = e.target;
+      if (!(target instanceof Node)) return;
+      if (chatboxRef.current?.contains(target)) return;
+      if (launcherRef.current?.contains(target)) return;
+
+      handleClose();
+    };
+
+    document.addEventListener('pointerdown', handleOutsidePointerDown, true);
+    return () => {
+      document.removeEventListener('pointerdown', handleOutsidePointerDown, true);
+    };
+  }, [isOpen, handleClose]);
+
   const handleClearChat = useCallback(() => {
     abortControllerRef.current?.abort();
     abortControllerRef.current = null;
@@ -179,20 +202,21 @@ export function PortfolioChatbot() {
     setErrorInfo(null);
     setMessages([]);
     setInputValue('');
-    setIsFaqSectionOpen(true);
-  }, []);
-
-  const handleCloseFaqSection = useCallback(() => {
     setIsFaqSectionOpen(false);
   }, []);
 
-  const handleOpenFaqSection = useCallback(() => {
-    setIsFaqSectionOpen(true);
-    window.requestAnimationFrame(() => {
-      scrollContainerRef.current?.scrollTo({
-        top: 0,
-        behavior: 'auto',
-      });
+  const handleToggleFaqSection = useCallback(() => {
+    setIsFaqSectionOpen((prev) => {
+      const next = !prev;
+      if (next) {
+        window.requestAnimationFrame(() => {
+          scrollContainerRef.current?.scrollTo({
+            top: 0,
+            behavior: 'auto',
+          });
+        });
+      }
+      return next;
     });
   }, []);
 
@@ -423,6 +447,7 @@ export function PortfolioChatbot() {
     <>
       {/* Fixed Non-Draggable Chatbox Starter Launcher */}
       <button
+        ref={launcherRef}
         type="button"
         onClick={handleOpenToggle}
         aria-expanded={isOpen}
@@ -501,41 +526,25 @@ export function PortfolioChatbot() {
             </div>
           </div>
 
-          {/* Top FAQ Section Bar with Minus (-) and Plus (+) Buttons */}
+          {/* Top FAQ Section Bar with Rotating Chevron Toggle */}
           <div className="flex shrink-0 items-center justify-between gap-2 border-b border-teal-200/15 bg-[#041818]/90 px-3.5 py-2">
             <p className="text-[11.5px] font-bold tracking-wide text-teal-200/95">
               Frequently Asked Questions
             </p>
-            <div className="flex shrink-0 items-center gap-1">
-              <button
-                type="button"
-                onClick={handleCloseFaqSection}
-                aria-label="Close FAQ section"
-                aria-pressed={!isFaqSectionOpen}
-                title="Close FAQ section"
-                className={`inline-flex h-6 w-6 items-center justify-center rounded-md border transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
-                  isFaqSectionOpen
-                    ? 'border-teal-300/30 bg-[#092727]/90 text-teal-100 hover:border-emerald-400/55 hover:bg-emerald-500/20 hover:text-white'
-                    : 'border-teal-300/15 bg-[#061C1C]/60 text-teal-200/45 hover:border-teal-300/30 hover:text-teal-100'
+            <button
+              type="button"
+              onClick={handleToggleFaqSection}
+              aria-expanded={isFaqSectionOpen}
+              aria-label={isFaqSectionOpen ? 'Collapse FAQ section' : 'Expand FAQ section'}
+              title={isFaqSectionOpen ? 'Collapse FAQ section' : 'Expand FAQ section'}
+              className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-teal-200/85 transition-colors hover:bg-white/10 hover:text-white cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+            >
+              <ChevronDown
+                className={`h-4 w-4 transition-transform duration-200 ease-out ${
+                  isFaqSectionOpen ? 'rotate-180' : 'rotate-0'
                 }`}
-              >
-                <Minus className="h-3.5 w-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={handleOpenFaqSection}
-                aria-label="Open FAQ section"
-                aria-pressed={isFaqSectionOpen}
-                title="Open FAQ section"
-                className={`inline-flex h-6 w-6 items-center justify-center rounded-md border transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
-                  !isFaqSectionOpen
-                    ? 'border-emerald-400/55 bg-emerald-500/20 text-emerald-200 hover:bg-emerald-500/35 hover:text-white'
-                    : 'border-teal-300/15 bg-[#061C1C]/60 text-teal-200/45 hover:border-teal-300/30 hover:text-teal-100'
-                }`}
-              >
-                <Plus className="h-3.5 w-3.5" />
-              </button>
-            </div>
+              />
+            </button>
           </div>
 
           {/* Scrollable FAQ (Collapsible) + Separate Welcome Message + Chat Messages */}
