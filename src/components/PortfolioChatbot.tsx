@@ -25,7 +25,7 @@ interface ChatPosition {
 }
 
 const WELCOME_MESSAGE =
-  "Hi! I'm Sabari's Assistant. Choose a frequently asked question below or ask me anything about Sabarivasan's skills, education, certifications, or programming.";
+  "Hey! I'm PEARL AI, created by Sabari. 💎";
 
 const VIEWPORT_MARGIN = 12;
 
