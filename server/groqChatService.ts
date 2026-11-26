@@ -14,6 +14,12 @@ export const MAX_MESSAGE_LENGTH = 2000;
 export const MAX_BODY_BYTES = 64 * 1024;
 export const GROQ_REQUEST_TIMEOUT_MS = 22000;
 
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX_REQUESTS = 12;
+const MAX_URLS_IN_SINGLE_MESSAGE = 4;
+
+const ipRequestTimestamps = new Map<string, number[]>();
+
 export interface IncomingChatMessage {
   role: 'user' | 'assistant';
   content: string;
@@ -21,11 +27,60 @@ export interface IncomingChatMessage {
 
 export interface ChatServiceResult {
   status: number;
+  retryAfterSeconds?: number;
   body: {
     reply?: string;
     error?: string;
     code?: string;
   };
+}
+
+export function extractClientIp(headers: Record<string, string | string[] | undefined>, fallbackIp?: string): string {
+  const forwarded = headers['x-forwarded-for'];
+  const rawForwarded = Array.isArray(forwarded) ? forwarded[0] : forwarded;
+  if (typeof rawForwarded === 'string' && rawForwarded.trim()) {
+    return rawForwarded.split(',')[0].trim();
+  }
+  const realIp = headers['x-real-ip'];
+  const rawReal = Array.isArray(realIp) ? realIp[0] : realIp;
+  if (typeof rawReal === 'string' && rawReal.trim()) {
+    return rawReal.trim();
+  }
+  return fallbackIp || 'unknown';
+}
+
+function checkRateLimit(clientIp: string): { allowed: boolean; retryAfterSeconds: number } {
+  const now = Date.now();
+  const windowStart = now - RATE_LIMIT_WINDOW_MS;
+
+  // Periodic bounded cleanup to avoid unbounded map growth
+  if (ipRequestTimestamps.size > 500) {
+    for (const [key, timestamps] of ipRequestTimestamps.entries()) {
+      const recent = timestamps.filter((ts) => ts > windowStart);
+      if (recent.length === 0) {
+        ipRequestTimestamps.delete(key);
+      } else {
+        ipRequestTimestamps.set(key, recent);
+      }
+    }
+  }
+
+  const existing = (ipRequestTimestamps.get(clientIp) ?? []).filter((ts) => ts > windowStart);
+  if (existing.length >= RATE_LIMIT_MAX_REQUESTS) {
+    const oldest = existing[0];
+    const retryAfterSeconds = Math.max(1, Math.ceil((oldest + RATE_LIMIT_WINDOW_MS - now) / 1000));
+    ipRequestTimestamps.set(clientIp, existing);
+    return { allowed: false, retryAfterSeconds };
+  }
+
+  existing.push(now);
+  ipRequestTimestamps.set(clientIp, existing);
+  return { allowed: true, retryAfterSeconds: 0 };
+}
+
+function containsExcessiveUrls(text: string): boolean {
+  const matches = text.match(/https?:\/\/[^\s]+/gi);
+  return Boolean(matches && matches.length > MAX_URLS_IN_SINGLE_MESSAGE);
 }
 
 export function sanitizeSecretStrings(text: string): string {
@@ -105,8 +160,70 @@ function isTimeoutError(err: unknown): boolean {
 
 export async function processGroqChat(
   rawBody: unknown,
-  requestId = `chat-${Date.now().toString(36)}`
+  requestId = `chat-${Date.now().toString(36)}`,
+  clientIp = 'unknown'
 ): Promise<ChatServiceResult> {
+  const bodyObj =
+    rawBody && typeof rawBody === 'object' ? (rawBody as Record<string, unknown>) : null;
+
+  // Honeypot bot trap validation
+  const honeypotValue =
+    typeof bodyObj?.website === 'string'
+      ? bodyObj.website.trim()
+      : typeof bodyObj?.company === 'string'
+        ? bodyObj.company.trim()
+        : '';
+
+  if (honeypotValue) {
+    console.warn(`[api/chat][${requestId}] Honeypot triggered; ignoring automated submission.`);
+    return {
+      status: 400,
+      body: {
+        error: 'Unable to validate this submission. Please refresh and try again.',
+        code: 'SPAM_DETECTED',
+      },
+    };
+  }
+
+  // Sliding-window rate limit per client IP
+  const rateCheck = checkRateLimit(clientIp);
+  if (!rateCheck.allowed) {
+    console.warn(`[api/chat][${requestId}] IP rate limit triggered (${rateCheck.retryAfterSeconds}s).`);
+    return {
+      status: 429,
+      retryAfterSeconds: rateCheck.retryAfterSeconds,
+      body: {
+        error: `Too many requests in a short window. Please wait ${rateCheck.retryAfterSeconds} seconds and try again.`,
+        code: 'RATE_LIMITED',
+      },
+    };
+  }
+
+  const messages = sanitizeMessages(bodyObj?.messages);
+
+  if (!messages) {
+    console.warn(`[api/chat][${requestId}] Rejected invalid chat payload.`);
+    return {
+      status: 400,
+      body: {
+        error: 'Please enter a valid message before sending.',
+        code: 'INVALID_REQUEST',
+      },
+    };
+  }
+
+  const latestUserMessage = messages[messages.length - 1].content;
+  if (containsExcessiveUrls(latestUserMessage)) {
+    console.warn(`[api/chat][${requestId}] Rejected message with excessive external URLs.`);
+    return {
+      status: 400,
+      body: {
+        error: 'Messages containing excessive links are not permitted.',
+        code: 'SPAM_LINKS_DETECTED',
+      },
+    };
+  }
+
   const { apiKey, model } = getRuntimeGroqConfig();
 
   if (!apiKey) {
@@ -117,21 +234,6 @@ export async function processGroqChat(
         error:
           'GROQ_API_KEY is not configured on the server. Add GROQ_API_KEY in your deployment environment variables and redeploy.',
         code: 'MISSING_API_KEY',
-      },
-    };
-  }
-
-  const bodyObj =
-    rawBody && typeof rawBody === 'object' ? (rawBody as Record<string, unknown>) : null;
-  const messages = sanitizeMessages(bodyObj?.messages);
-
-  if (!messages) {
-    console.warn(`[api/chat][${requestId}] Rejected invalid chat payload.`);
-    return {
-      status: 400,
-      body: {
-        error: 'Please enter a valid message before sending.',
-        code: 'INVALID_REQUEST',
       },
     };
   }

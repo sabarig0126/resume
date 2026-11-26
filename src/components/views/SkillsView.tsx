@@ -16,7 +16,7 @@ export function SkillsView() {
           <p className="font-kalam text-xs text-[#F05BEA] tabular-nums">
             03 · Skills, Strengths &amp; Hobbies
           </p>
-          <h1 className="mt-2 font-road-rage text-[2.2rem] font-normal leading-[1.06] tracking-wide text-[#FF0000] sm:text-5xl lg:text-[3.35rem] [text-wrap:balance]">
+          <h1 className="mt-2 font-road-rage text-[2.2rem] font-normal leading-[1.06] tracking-wide text-[#FF4D4D] sm:text-5xl lg:text-[3.35rem] [text-wrap:balance]">
             Technical skills, soft skills, strengths, and hobbies
           </h1>
         </div>
@@ -24,7 +24,7 @@ export function SkillsView() {
 
       <div className="mt-7 sm:mt-9">
         <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-          <h2 className="font-road-rage text-2xl font-normal tracking-wide text-[#FF0000] sm:text-3xl">
+          <h2 className="font-road-rage text-2xl font-normal tracking-wide text-[#FF4D4D] sm:text-3xl">
             Technical Skills
           </h2>
           <span className="font-kalam text-xs text-[#A0B2B2] tabular-nums sm:text-sm">
@@ -75,7 +75,7 @@ export function SkillsView() {
 
       <div className="mt-8 border-t border-white/10 pt-7 sm:mt-10 sm:pt-9">
         <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-          <h2 className="font-road-rage text-2xl font-normal tracking-wide text-[#FF0000] sm:text-3xl">
+          <h2 className="font-road-rage text-2xl font-normal tracking-wide text-[#FF4D4D] sm:text-3xl">
             Professional &amp; Soft Skills
           </h2>
           <span className="font-kalam text-xs text-[#A0B2B2] tabular-nums sm:text-sm">

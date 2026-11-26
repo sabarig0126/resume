@@ -9,7 +9,9 @@ export function RobotMascot({ className = 'h-7 w-7' }: RobotMascotProps) {
   return (
     <img
       src={ASSISTANT_LOGO_SRC}
-      alt="Sabari's Assistant logo"
+      alt="PEARL AI assistant avatar"
+      width={44}
+      height={44}
       draggable={false}
       decoding="async"
       className={`${className} rounded-full object-cover object-center select-none`}

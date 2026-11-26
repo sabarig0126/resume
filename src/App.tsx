@@ -1,79 +1,170 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { MotionConfig } from 'motion/react';
-import { AboutMeHighlightModal } from './components/AboutMeHighlightModal';
 import { CinematicTransition } from './components/CinematicTransition';
+import { CookieConsentBanner } from './components/CookieConsentBanner';
 import { CursorGlow } from './components/CursorGlow';
 import { Header } from './components/Header';
 import { IntroLoader } from './components/IntroLoader';
 import { ParticleBackground } from './components/ParticleBackground';
-import { PortfolioChatbot } from './components/PortfolioChatbot';
-import { ProjectLightbox } from './components/ProjectLightbox';
-import { AchievementsView } from './components/views/AchievementsView';
-import { CertificationsView } from './components/views/CertificationsView';
-import { ContactView } from './components/views/ContactView';
-import { EducationView } from './components/views/EducationView';
+import { SiteFooter } from './components/SiteFooter';
 import { OverviewView } from './components/views/OverviewView';
-import { PortfolioPdfView } from './components/views/PortfolioPdfView';
-import { ProjectsView } from './components/views/ProjectsView';
-import { ResumeView } from './components/views/ResumeView';
-import { SkillsView } from './components/views/SkillsView';
 import { INITIAL_PORTFOLIO_ITEMS } from './data/projects';
-import { updateFeatureSeo } from './lib/seo';
+import {
+  initializeAnalyticsWithConsent,
+  trackConsentAwarePageView,
+} from './lib/analytics';
+import {
+  type ConsentPreferences,
+  readConsent,
+  subscribeConsent,
+} from './lib/consent';
+import { FEATURE_PATHS, updateFeatureSeo } from './lib/seo';
 import { FeatureId, PortfolioItem } from './types/portfolio';
 
-const VALID_FEATURES: ReadonlySet<FeatureId> = new Set<FeatureId>([
-  'overview',
-  'achievements',
-  'skills',
-  'certifications',
-  'education',
-  'projects',
-  'resume',
-  'portfolioPdf',
-  'contact',
-]);
+// Code-split secondary views, modals, and assistant so initial overview payload loads swiftly
+const AchievementsView = lazy(() =>
+  import('./components/views/AchievementsView').then((m) => ({
+    default: m.AchievementsView,
+  }))
+);
+const SkillsView = lazy(() =>
+  import('./components/views/SkillsView').then((m) => ({
+    default: m.SkillsView,
+  }))
+);
+const CertificationsView = lazy(() =>
+  import('./components/views/CertificationsView').then((m) => ({
+    default: m.CertificationsView,
+  }))
+);
+const EducationView = lazy(() =>
+  import('./components/views/EducationView').then((m) => ({
+    default: m.EducationView,
+  }))
+);
+const ProjectsView = lazy(() =>
+  import('./components/views/ProjectsView').then((m) => ({
+    default: m.ProjectsView,
+  }))
+);
+const ResumeView = lazy(() =>
+  import('./components/views/ResumeView').then((m) => ({
+    default: m.ResumeView,
+  }))
+);
+const PortfolioPdfView = lazy(() =>
+  import('./components/views/PortfolioPdfView').then((m) => ({
+    default: m.PortfolioPdfView,
+  }))
+);
+const ContactView = lazy(() =>
+  import('./components/views/ContactView').then((m) => ({
+    default: m.ContactView,
+  }))
+);
+const PrivacyPolicyView = lazy(() =>
+  import('./components/views/PrivacyPolicyView').then((m) => ({
+    default: m.PrivacyPolicyView,
+  }))
+);
+const TermsView = lazy(() =>
+  import('./components/views/TermsView').then((m) => ({
+    default: m.TermsView,
+  }))
+);
+const NotFoundView = lazy(() =>
+  import('./components/views/NotFoundView').then((m) => ({
+    default: m.NotFoundView,
+  }))
+);
+const ProjectLightbox = lazy(() =>
+  import('./components/ProjectLightbox').then((m) => ({
+    default: m.ProjectLightbox,
+  }))
+);
+const AboutMeHighlightModal = lazy(() =>
+  import('./components/AboutMeHighlightModal').then((m) => ({
+    default: m.AboutMeHighlightModal,
+  }))
+);
+const PortfolioChatbot = lazy(() =>
+  import('./components/PortfolioChatbot').then((m) => ({
+    default: m.PortfolioChatbot,
+  }))
+);
 
-function readFeatureFromHash(): FeatureId {
+const ROUTE_SEGMENTS: Record<string, FeatureId> = {
+  '': 'overview',
+  overview: 'overview',
+  achievements: 'achievements',
+  skills: 'skills',
+  certifications: 'certifications',
+  education: 'education',
+  projects: 'projects',
+  resume: 'resume',
+  'portfolio-deck': 'portfolioPdf',
+  portfoliopdf: 'portfolioPdf',
+  portfolio: 'portfolioPdf',
+  contact: 'contact',
+  privacy: 'privacy',
+  'privacy-policy': 'privacy',
+  terms: 'terms',
+  'terms-and-conditions': 'terms',
+};
+
+function readFeatureFromLocation(): FeatureId {
   if (typeof window === 'undefined') return 'overview';
-  const raw = window.location.hash.replace(/^#\/?/, '').trim() as FeatureId;
-  return VALID_FEATURES.has(raw) ? raw : 'overview';
+
+  const rawHash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase();
+  if (rawHash) {
+    return ROUTE_SEGMENTS[rawHash] ?? 'notFound';
+  }
+
+  const normalizedPath = window.location.pathname
+    .replace(/^\/+|\/+$/g, '')
+    .toLowerCase();
+
+  if (!normalizedPath || normalizedPath === 'index.html') {
+    return 'overview';
+  }
+
+  return ROUTE_SEGMENTS[normalizedPath] ?? 'notFound';
 }
 
-function clearInitialNavigationHash(): void {
-  if (typeof window === 'undefined' || !window.location.hash) return;
-  try {
-    window.history.replaceState(
-      null,
-      '',
-      `${window.location.pathname}${window.location.search}`
-    );
-  } catch {
-    window.location.hash = '';
-  }
+function isDirectSubrouteOrNotFound(): boolean {
+  if (typeof window === 'undefined') return false;
+  return readFeatureFromLocation() !== 'overview';
 }
 
 export default function App() {
-  const [showIntro, setShowIntro] = useState(true);
-  const [activeFeature, setActiveFeature] = useState<FeatureId>('overview');
+  const initialFeature = useMemo(() => readFeatureFromLocation(), []);
+  const [showIntro, setShowIntro] = useState<boolean>(
+    () => !isDirectSubrouteOrNotFound()
+  );
+  const [activeFeature, setActiveFeature] = useState<FeatureId>(initialFeature);
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [aboutCardOpen, setAboutCardOpen] = useState(false);
+  const [consentPrefs, setConsentPrefs] = useState<ConsentPreferences | null>(
+    () => readConsent()
+  );
+
   const shellRef = useRef<HTMLDivElement | null>(null);
   const previousFeatureRef = useRef<FeatureId>('overview');
   const showIntroRef = useRef(showIntro);
   showIntroRef.current = showIntro;
 
-  // Always reset any prior route hash & scroll position on full page reload
-  useEffect(() => {
-    clearInitialNavigationHash();
-    if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, behavior: 'auto' });
-    }
-  }, []);
-
   const handleIntroComplete = useCallback(() => {
-    clearInitialNavigationHash();
+    const targetFeature = readFeatureFromLocation();
     previousFeatureRef.current = 'overview';
-    setActiveFeature('overview');
+    setActiveFeature(targetFeature);
     setSelectedItem(null);
     setAboutCardOpen(false);
     setShowIntro(false);
@@ -102,23 +193,36 @@ export default function App() {
     };
   }, [showIntro, handleIntroComplete]);
 
-  // Support browser back/forward navigation cleanly via URL hash after intro completes
+  // Support browser back/forward navigation cleanly across pathname and legacy hashes
   useEffect(() => {
-    const handleHashOrPop = () => {
+    const handleLocationChange = () => {
       if (showIntroRef.current) return;
-      setActiveFeature(readFeatureFromHash());
+      setActiveFeature(readFeatureFromLocation());
     };
-    window.addEventListener('hashchange', handleHashOrPop);
-    window.addEventListener('popstate', handleHashOrPop);
+    window.addEventListener('hashchange', handleLocationChange);
+    window.addEventListener('popstate', handleLocationChange);
     return () => {
-      window.removeEventListener('hashchange', handleHashOrPop);
-      window.removeEventListener('popstate', handleHashOrPop);
+      window.removeEventListener('hashchange', handleLocationChange);
+      window.removeEventListener('popstate', handleLocationChange);
     };
   }, []);
 
+  // Subscribe to consent changes & gate analytics initialization
+  useEffect(() => {
+    initializeAnalyticsWithConsent(Boolean(consentPrefs?.analytics));
+    return subscribeConsent((updated) => {
+      setConsentPrefs(updated);
+      initializeAnalyticsWithConsent(Boolean(updated?.analytics));
+    });
+  }, [consentPrefs?.analytics]);
+
+  // Update SEO metadata + consent-gated analytics page view on navigation
   useEffect(() => {
     updateFeatureSeo(activeFeature);
-  }, [activeFeature]);
+    if (!showIntro) {
+      trackConsentAwarePageView(activeFeature, Boolean(consentPrefs?.analytics));
+    }
+  }, [activeFeature, showIntro, consentPrefs?.analytics]);
 
   // Lightweight delegated touch feedback for mobile/pen taps with instant release
   useEffect(() => {
@@ -176,18 +280,18 @@ export default function App() {
 
   const navigateToFeature = useCallback((feature: FeatureId) => {
     setActiveFeature((current) => {
-      if (current !== feature) {
+      if (current !== feature && current !== 'notFound') {
         previousFeatureRef.current = current;
       }
       return feature;
     });
-    if (typeof window !== 'undefined') {
-      const nextHash = `#${feature}`;
-      if (window.location.hash !== nextHash) {
+    if (typeof window !== 'undefined' && feature !== 'notFound') {
+      const nextPath = FEATURE_PATHS[feature] ?? '/';
+      if (window.location.pathname !== nextPath || window.location.hash) {
         try {
-          window.history.pushState(null, '', nextHash);
+          window.history.pushState(null, '', nextPath);
         } catch {
-          window.location.hash = nextHash;
+          window.location.hash = `#${feature}`;
         }
       }
       window.scrollTo({ top: 0, behavior: 'auto' });
@@ -251,49 +355,87 @@ export default function App() {
               introActive={showIntro}
               className="flex flex-1 flex-col"
             >
-              {activeFeature === 'overview' && (
-                <OverviewView onNavigateFeature={navigateToFeature} />
-              )}
+              <Suspense
+                fallback={
+                  <div className="flex flex-1 items-center justify-center p-12 font-kalam text-sm text-[#B8C7C7]">
+                    Loading section...
+                  </div>
+                }
+              >
+                {activeFeature === 'overview' && (
+                  <OverviewView onNavigateFeature={navigateToFeature} />
+                )}
 
-              {activeFeature === 'achievements' && (
-                <AchievementsView
-                  achievements={achievementsList}
-                  onSelectItem={(item) => setSelectedItem(item)}
-                />
-              )}
+                {activeFeature === 'achievements' && (
+                  <AchievementsView
+                    achievements={achievementsList}
+                    onSelectItem={(item) => setSelectedItem(item)}
+                  />
+                )}
 
-              {activeFeature === 'skills' && <SkillsView />}
+                {activeFeature === 'skills' && <SkillsView />}
 
-              {activeFeature === 'certifications' && <CertificationsView />}
+                {activeFeature === 'certifications' && <CertificationsView />}
 
-              {activeFeature === 'education' && <EducationView />}
+                {activeFeature === 'education' && <EducationView />}
 
-              {activeFeature === 'projects' && (
-                <ProjectsView onNavigateFeature={navigateToFeature} />
-              )}
+                {activeFeature === 'projects' && (
+                  <ProjectsView onNavigateFeature={navigateToFeature} />
+                )}
 
-              {activeFeature === 'resume' && <ResumeView />}
+                {activeFeature === 'resume' && <ResumeView />}
 
-              {activeFeature === 'portfolioPdf' && (
-                <PortfolioPdfView onReturnPreviousView={returnToPreviousView} />
-              )}
+                {activeFeature === 'portfolioPdf' && (
+                  <PortfolioPdfView onReturnPreviousView={returnToPreviousView} />
+                )}
 
-              {activeFeature === 'contact' && <ContactView />}
+                {activeFeature === 'contact' && <ContactView />}
+
+                {activeFeature === 'privacy' && (
+                  <PrivacyPolicyView onNavigateFeature={navigateToFeature} />
+                )}
+
+                {activeFeature === 'terms' && (
+                  <TermsView onNavigateFeature={navigateToFeature} />
+                )}
+
+                {activeFeature === 'notFound' && (
+                  <NotFoundView onNavigateFeature={navigateToFeature} />
+                )}
+              </Suspense>
             </CinematicTransition>
           </main>
+
+          <SiteFooter
+            activeFeature={activeFeature}
+            onNavigateFeature={navigateToFeature}
+          />
         </div>
 
-        <ProjectLightbox
-          item={selectedItem}
-          onClose={() => setSelectedItem(null)}
-        />
+        <Suspense fallback={null}>
+          {selectedItem && (
+            <ProjectLightbox
+              item={selectedItem}
+              onClose={() => setSelectedItem(null)}
+            />
+          )}
 
-        <AboutMeHighlightModal
-          isOpen={aboutCardOpen}
-          onClose={closeAboutCard}
-        />
+          {aboutCardOpen && (
+            <AboutMeHighlightModal
+              isOpen={aboutCardOpen}
+              onClose={closeAboutCard}
+            />
+          )}
 
-        {!showIntro && <PortfolioChatbot />}
+          {!showIntro && <PortfolioChatbot />}
+        </Suspense>
+
+        {!showIntro && (
+          <CookieConsentBanner
+            onNavigateFeature={navigateToFeature}
+            onConsentChange={(prefs) => setConsentPrefs(prefs)}
+          />
+        )}
       </div>
     </MotionConfig>
   );

@@ -45,7 +45,7 @@ export function ContactView() {
         <p className="font-kalam text-xs text-[#F05BEA] tabular-nums">
           09 · Contact &amp; Networking
         </p>
-        <h1 className="mt-2 font-road-rage text-[2.2rem] font-normal leading-[1.06] tracking-[0.02em] text-[#FF0000] sm:text-5xl lg:text-[3.35rem]">
+        <h1 className="mt-2 font-road-rage text-[2.2rem] font-normal leading-[1.06] tracking-[0.02em] text-[#FF4D4D] sm:text-5xl lg:text-[3.35rem]">
           Connect with {PROFILE.name}
         </h1>
       </div>

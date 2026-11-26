@@ -169,7 +169,7 @@ export function AboutMeHighlightModal({
                 <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-[#F05BEA]/45 bg-gradient-to-br from-[#082020]/95 via-[#071B1B]/95 to-[#051414]/95 shadow-[0_0_28px_-6px_rgba(240,91,234,0.48),inset_0_1px_0_rgba(255,255,255,0.2)] sm:h-24 sm:w-24 md:h-28 md:w-28">
                   <img
                     src="/assets/portal-logo.png"
-                    alt="Sabarivasan G App Logo"
+                    alt="Sabarivasan G geometric portal emblem"
                     width={84}
                     height={84}
                     decoding="async"
@@ -181,7 +181,7 @@ export function AboutMeHighlightModal({
                 <div className="min-w-0 flex-1">
                   <h2
                     id="about-highlight-title"
-                    className="font-road-rage text-[1.75rem] font-normal tracking-[0.05em] text-[#FF0000] uppercase leading-none sm:text-4xl sm:tracking-[0.06em]"
+                    className="font-road-rage text-[1.75rem] font-normal tracking-[0.05em] text-[#FF4D4D] uppercase leading-none sm:text-4xl sm:tracking-[0.06em]"
                   >
                     SABARIVASAN G
                   </h2>

@@ -19,7 +19,7 @@ export function ProjectsView({
         <p className="font-kalam text-xs text-[#F05BEA] tabular-nums">
           06 · Projects
         </p>
-        <h1 className="mt-2 font-road-rage text-[2.2rem] font-normal leading-[1.06] tracking-wide text-[#FF0000] sm:text-5xl lg:text-[3.35rem] [text-wrap:balance]">
+        <h1 className="mt-2 font-road-rage text-[2.2rem] font-normal leading-[1.06] tracking-wide text-[#FF4D4D] sm:text-5xl lg:text-[3.35rem] [text-wrap:balance]">
           Projects Coming Soon
         </h1>
       </div>
@@ -40,7 +40,7 @@ export function ProjectsView({
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-[#F05BEA]/35 bg-[#F05BEA]/12 text-[#F05BEA] shadow-inner sm:h-20 sm:w-20">
               <KanbanBoardIcon className="h-8 w-8 sm:h-10 sm:w-10" />
             </div>
-            <h2 className="mt-6 font-road-rage text-4xl font-normal tracking-wide text-[#FF0000] sm:text-5xl lg:text-[3.25rem]">
+            <h2 className="mt-6 font-road-rage text-4xl font-normal tracking-wide text-[#FF4D4D] sm:text-5xl lg:text-[3.25rem]">
               Projects Coming Soon
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-[#A0B2B2] sm:text-lg">

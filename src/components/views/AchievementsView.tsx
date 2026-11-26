@@ -22,7 +22,7 @@ export function AchievementsView({
           <p className="font-kalam text-xs text-[#F05BEA] tabular-nums">
             02 · Achievements &amp; Participation
           </p>
-          <h1 className="mt-2 font-road-rage text-[2.2rem] font-normal leading-[1.06] tracking-wide text-[#FF0000] sm:text-5xl lg:text-[3.35rem] [text-wrap:balance]">
+          <h1 className="mt-2 font-road-rage text-[2.2rem] font-normal leading-[1.06] tracking-wide text-[#FF4D4D] sm:text-5xl lg:text-[3.35rem] [text-wrap:balance]">
             Certifications, campus participation, and bootcamp milestones
           </h1>
         </div>
@@ -109,7 +109,7 @@ export function AchievementsView({
 
                         <div className="mt-2.5 flex items-start justify-between gap-3 sm:gap-4">
                           <h2
-                            className={`font-road-rage font-normal tracking-wide text-[#FF0000] ${
+                            className={`font-road-rage font-normal tracking-wide text-[#FF4D4D] ${
                               isLead ? 'text-3xl sm:text-[2.15rem]' : 'text-2xl sm:text-[1.85rem]'
                             }`}
                           >

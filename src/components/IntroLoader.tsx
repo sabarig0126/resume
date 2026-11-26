@@ -427,6 +427,9 @@ export function IntroLoader({
                     <img
                       src="/assets/portal-logo.png"
                       alt=""
+                      aria-hidden="true"
+                      width={158}
+                      height={154}
                       loading="eager"
                       decoding="sync"
                       draggable={false}
@@ -669,7 +672,7 @@ export function IntroLoader({
           ref={brandingRef}
           className="portal-branding-wrap mt-7 flex w-full flex-col items-center text-center sm:mt-9"
         >
-          <p className="font-road-rage text-[clamp(1.55rem,min(6.4vw,4.2dvh),2.75rem)] font-normal tracking-[0.1em] text-[#FF0000] uppercase drop-shadow-[0_0_20px_rgba(240,91,234,0.34)] sm:tracking-[0.16em]">
+          <p className="font-road-rage text-[clamp(1.55rem,min(6.4vw,4.2dvh),2.75rem)] font-normal tracking-[0.1em] text-[#FF4D4D] uppercase drop-shadow-[0_0_20px_rgba(240,91,234,0.34)] sm:tracking-[0.16em]">
             SABARIVASAN G
           </p>
 

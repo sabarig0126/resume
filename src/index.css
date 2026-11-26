@@ -29,6 +29,13 @@
 }
 
 @layer base {
+  *,
+  *::before,
+  *::after {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
   html {
     font-family: var(--font-kalam);
     overflow-x: clip;
@@ -76,28 +83,47 @@
   }
 }
 
-/* Hide visible scrollbar tracks, thumbs, and arrows while preserving full scroll behavior */
+/* Hide all horizontal & vertical scrollbar tracks, thumbs, corners, and arrow buttons globally while preserving full scroll behavior */
+:root::-webkit-scrollbar,
 html::-webkit-scrollbar,
 body::-webkit-scrollbar,
+*::-webkit-scrollbar,
 .no-scrollbar::-webkit-scrollbar {
   display: none;
   width: 0;
   height: 0;
+  background: transparent;
 }
 
+:root::-webkit-scrollbar-track,
+:root::-webkit-scrollbar-track-piece,
+:root::-webkit-scrollbar-thumb,
+:root::-webkit-scrollbar-button,
+:root::-webkit-scrollbar-corner,
 html::-webkit-scrollbar-track,
+html::-webkit-scrollbar-track-piece,
 html::-webkit-scrollbar-thumb,
 html::-webkit-scrollbar-button,
 html::-webkit-scrollbar-corner,
 body::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track-piece,
 body::-webkit-scrollbar-thumb,
 body::-webkit-scrollbar-button,
 body::-webkit-scrollbar-corner,
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-track-piece,
+*::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-button,
+*::-webkit-scrollbar-corner,
+*::-webkit-resizer,
 .no-scrollbar::-webkit-scrollbar-track,
+.no-scrollbar::-webkit-scrollbar-track-piece,
 .no-scrollbar::-webkit-scrollbar-thumb,
 .no-scrollbar::-webkit-scrollbar-button,
 .no-scrollbar::-webkit-scrollbar-corner {
   display: none;
+  width: 0;
+  height: 0;
   background: transparent;
 }
 

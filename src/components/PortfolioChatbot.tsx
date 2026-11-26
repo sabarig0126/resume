@@ -81,6 +81,8 @@ export function PortfolioChatbot() {
   const [isFaqSectionOpen, setIsFaqSectionOpen] = useState(true);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
+  const [honeypotValue, setHoneypotValue] = useState('');
+  const [validationError, setValidationError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isFaqThinking, setIsFaqThinking] = useState(false);
   const [errorInfo, setErrorInfo] = useState<{
@@ -95,6 +97,7 @@ export function PortfolioChatbot() {
   const chatboxRef = useRef<HTMLDivElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const lastSubmitAtRef = useRef(0);
   const inFlightRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const faqAnimRef = useRef<{
@@ -297,7 +300,10 @@ export function PortfolioChatbot() {
         const response = await fetch(chatEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messages: payloadMessages }),
+          body: JSON.stringify({
+            messages: payloadMessages,
+            website: honeypotValue,
+          }),
           signal: controller.signal,
         });
 
@@ -374,7 +380,7 @@ export function PortfolioChatbot() {
         setIsLoading(false);
       }
     },
-    []
+    [honeypotValue]
   );
 
   const handleFaqClick = useCallback(
@@ -473,7 +479,25 @@ export function PortfolioChatbot() {
       if (inFlightRef.current || isLoading) return;
 
       const trimmed = inputValue.trim();
-      if (!trimmed) return;
+      if (!trimmed) {
+        setValidationError('Please enter a message before sending.');
+        inputRef.current?.focus();
+        return;
+      }
+
+      if (trimmed.length > 2000) {
+        setValidationError('Messages cannot exceed 2000 characters.');
+        inputRef.current?.focus();
+        return;
+      }
+
+      const now = Date.now();
+      if (now - lastSubmitAtRef.current < 900) {
+        setValidationError('Please wait a moment before sending another message.');
+        return;
+      }
+      lastSubmitAtRef.current = now;
+      setValidationError(null);
 
       const pendingFaq = faqAnimRef.current;
       let baseHistory = messages;
@@ -589,6 +613,23 @@ export function PortfolioChatbot() {
 
   return (
     <>
+      {/* Smooth Background Blur & Subtle Dark Glassmorphism Overlay */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            key="chatbox-backdrop-overlay"
+            aria-hidden="true"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+            className={`fixed inset-0 z-[35] bg-[#031010]/45 backdrop-blur-md ${
+              isOpen ? 'pointer-events-auto' : 'pointer-events-none'
+            }`}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Fixed Non-Draggable Chatbox Starter Launcher */}
       <button
         ref={launcherRef}
@@ -642,7 +683,7 @@ export function PortfolioChatbot() {
                 <h2 className="truncate font-sans text-sm font-bold tracking-normal text-white leading-tight">
                   Ask Sabari&apos;s Assistant
                 </h2>
-                <p className="truncate text-[11px] text-teal-200/75 leading-tight">
+                <p className="truncate text-[11px] text-teal-200/90 leading-tight">
                   Drag header to move
                 </p>
               </div>
@@ -799,27 +840,55 @@ export function PortfolioChatbot() {
           {/* Input Bar + Green Send Button */}
           <form
             onSubmit={handleSubmit}
-            className="flex shrink-0 items-center gap-2 border-t border-teal-200/15 bg-[#051818]/90 px-3 py-2.5"
+            noValidate
+            className="flex shrink-0 flex-col border-t border-teal-200/15 bg-[#051818]/90 px-3 py-2.5"
           >
+            {/* Offscreen Honeypot for Automated Bot Detection */}
             <input
-              ref={inputRef}
               type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Ask me anything..."
-              aria-label="Ask me anything"
-              maxLength={2000}
-              className="h-9 min-w-0 flex-1 rounded-xl border border-teal-300/20 bg-[#0A2626]/90 px-3 text-[13px] text-white placeholder:text-teal-200/55 focus:border-emerald-400/65 focus:outline-none focus:ring-2 focus:ring-emerald-400/25"
+              name="website"
+              value={honeypotValue}
+              onChange={(e) => setHoneypotValue(e.target.value)}
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              className="pointer-events-none absolute -left-[9999px] h-0 w-0 opacity-0"
             />
-            <button
-              type="submit"
-              disabled={isLoading || !inputValue.trim()}
-              aria-label="Send message"
-              title="Send"
-              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-[#031510] shadow-[0_0_16px_-3px_rgba(16,185,129,0.7)] transition-colors hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-emerald-700/40 disabled:text-white/45 disabled:shadow-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
-            >
-              <Send className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              <input
+                ref={inputRef}
+                type="text"
+                value={inputValue}
+                onChange={(e) => {
+                  setInputValue(e.target.value);
+                  if (validationError) setValidationError(null);
+                }}
+                placeholder="Ask me anything..."
+                aria-label="Ask me anything"
+                aria-invalid={validationError ? true : undefined}
+                aria-describedby={validationError ? 'chat-validation-error' : undefined}
+                maxLength={2001}
+                className="h-9 min-w-0 flex-1 rounded-xl border border-teal-300/25 bg-[#0A2626]/90 px-3 text-[13px] text-white placeholder:text-[#9FC7C7] focus:border-emerald-400/65 focus:outline-none focus:ring-2 focus:ring-emerald-400/25"
+              />
+              <button
+                type="submit"
+                disabled={isLoading}
+                aria-label="Send message"
+                title="Send"
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-[#031510] shadow-[0_0_16px_-3px_rgba(16,185,129,0.7)] transition-colors hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-emerald-700/40 disabled:text-white/60 disabled:shadow-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+              >
+                <Send className="h-4 w-4" />
+              </button>
+            </div>
+            {validationError && (
+              <p
+                id="chat-validation-error"
+                role="alert"
+                className="mt-1.5 text-[11.5px] font-medium text-rose-300"
+              >
+                {validationError}
+              </p>
+            )}
           </form>
         </div>
       )}

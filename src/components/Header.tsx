@@ -159,8 +159,15 @@ export function Header({
   const menuDialogRef = useRef<HTMLDivElement | null>(null);
   const wasMenuOpenRef = useRef(false);
 
-  const currentFeature =
-    MENU_FEATURES.find((f) => f.id === activeFeature) ?? MENU_FEATURES[0];
+  const extraLabels: Partial<Record<FeatureId, string>> = {
+    privacy: 'Privacy Policy',
+    terms: 'Terms & Conditions',
+    notFound: 'Page Not Found',
+  };
+  const currentLabel =
+    MENU_FEATURES.find((f) => f.id === activeFeature)?.label ??
+    extraLabels[activeFeature] ??
+    MENU_FEATURES[0].label;
 
   useEffect(() => {
     setMenuOpen(false);
@@ -240,7 +247,7 @@ export function Header({
             >
               <motion.img
                 src="/assets/portal-logo.png"
-                alt="App logo"
+                alt="Sabarivasan G portfolio portal emblem"
                 width={28}
                 height={28}
                 decoding="async"
@@ -266,7 +273,7 @@ export function Header({
                 className="inline-block h-2 w-2 shrink-0 rounded-full bg-[#F05BEA] shadow-[0_0_8px_rgba(240,91,234,0.85)]"
               />
               <span className="truncate font-kalam text-sm font-normal text-[#FFFFFF]">
-                {currentFeature.label}
+                {currentLabel}
               </span>
             </div>
           </div>

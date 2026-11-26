@@ -5,16 +5,109 @@ dotenv.config();
 import fs from 'node:fs';
 import path from 'node:path';
 import {
+  extractClientIp,
   getRuntimeGroqConfig,
   processGroqChat,
 } from './server/groqChatService.ts';
 
 const PORT = Number(process.env.PORT) || 3000;
 
+const SITEMAP_ROUTES = [
+  { path: '/', changefreq: 'weekly', priority: '1.0' },
+  { path: '/achievements', changefreq: 'monthly', priority: '0.8' },
+  { path: '/skills', changefreq: 'monthly', priority: '0.8' },
+  { path: '/certifications', changefreq: 'monthly', priority: '0.8' },
+  { path: '/education', changefreq: 'monthly', priority: '0.8' },
+  { path: '/projects', changefreq: 'monthly', priority: '0.7' },
+  { path: '/resume', changefreq: 'monthly', priority: '0.8' },
+  { path: '/portfolio-deck', changefreq: 'monthly', priority: '0.7' },
+  { path: '/contact', changefreq: 'monthly', priority: '0.8' },
+  { path: '/privacy', changefreq: 'yearly', priority: '0.3' },
+  { path: '/terms', changefreq: 'yearly', priority: '0.3' },
+] as const;
+
+function isLocalHostname(host: string): boolean {
+  const bare = host.split(':')[0]?.toLowerCase() ?? '';
+  return (
+    bare === 'localhost' ||
+    bare === '127.0.0.1' ||
+    bare === '0.0.0.0' ||
+    bare === '[::1]' ||
+    bare === '::1'
+  );
+}
+
+function resolveCanonicalBaseUrl(req: express.Request): string {
+  const envUrl = (process.env.SITE_URL || process.env.VITE_SITE_URL || '')
+    .trim()
+    .replace(/\/+$/, '');
+  if (envUrl) return envUrl;
+  const host = req.get('host');
+  if (!host) return '';
+  const proto = isLocalHostname(host) ? req.protocol || 'http' : 'https';
+  return `${proto}://${host}`;
+}
+
 async function startServer() {
   const app = express();
   app.disable('x-powered-by');
+  app.set('trust proxy', 1);
+
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  // Force HTTPS in production on public hosts & apply defensive security headers
+  app.use((req, res, next) => {
+    const host = req.get('host') || '';
+    const forwardedProto = req.get('x-forwarded-proto');
+
+    if (
+      isProduction &&
+      host &&
+      !isLocalHostname(host) &&
+      forwardedProto &&
+      forwardedProto.toLowerCase() === 'http'
+    ) {
+      res.redirect(301, `https://${host}${req.originalUrl}`);
+      return;
+    }
+
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+
+    if (isProduction && (req.secure || forwardedProto === 'https')) {
+      res.setHeader(
+        'Strict-Transport-Security',
+        'max-age=31536000; includeSubDomains; preload'
+      );
+    }
+
+    next();
+  });
+
   app.use(express.json({ limit: '64kb' }));
+
+  app.get('/robots.txt', (req, res) => {
+    const baseUrl = resolveCanonicalBaseUrl(req);
+    const sitemapUrl = baseUrl ? `${baseUrl}/sitemap.xml` : '/sitemap.xml';
+    res.type('text/plain; charset=utf-8');
+    res.send(
+      `User-agent: *\nAllow: /\nDisallow: /api/\n\nSitemap: ${sitemapUrl}\n`
+    );
+  });
+
+  app.get('/sitemap.xml', (req, res) => {
+    const baseUrl = resolveCanonicalBaseUrl(req);
+    const urlEntries = SITEMAP_ROUTES.map(
+      (entry) =>
+        `  <url>\n    <loc>${baseUrl}${entry.path}</loc>\n    <changefreq>${entry.changefreq}</changefreq>\n    <priority>${entry.priority}</priority>\n  </url>`
+    ).join('\n');
+
+    res.type('application/xml; charset=utf-8');
+    res.send(
+      `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urlEntries}\n</urlset>\n`
+    );
+  });
 
   app.get('/api/health', (_req, res) => {
     if (!process.env.GROQ_API_KEY?.trim()) {
@@ -37,7 +130,11 @@ async function startServer() {
     const requestId = `e-${Date.now().toString(36)}-${Math.random()
       .toString(36)
       .slice(2, 6)}`;
-    const result = await processGroqChat(req.body, requestId);
+    const clientIp = extractClientIp(req.headers, req.ip || req.socket.remoteAddress);
+    const result = await processGroqChat(req.body, requestId, clientIp);
+    if (result.retryAfterSeconds && result.retryAfterSeconds > 0) {
+      res.setHeader('Retry-After', String(result.retryAfterSeconds));
+    }
     res.status(result.status).json(result.body);
   });
 
@@ -77,8 +174,6 @@ async function startServer() {
       });
     }
   );
-
-  const isProduction = process.env.NODE_ENV === 'production';
 
   if (!isProduction) {
     const { createServer: createViteServer } = await import('vite');

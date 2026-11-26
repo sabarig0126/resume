@@ -16,7 +16,7 @@ export function EducationView() {
         <p className="font-kalam text-xs text-[#F05BEA] tabular-nums">
           05 · Academic Background &amp; Core Coursework
         </p>
-        <h1 className="mt-2 font-road-rage text-[2.2rem] font-normal leading-[1.06] tracking-wide text-[#FF0000] sm:text-5xl lg:text-[3.35rem] [text-wrap:balance]">
+        <h1 className="mt-2 font-road-rage text-[2.2rem] font-normal leading-[1.06] tracking-wide text-[#FF4D4D] sm:text-5xl lg:text-[3.35rem] [text-wrap:balance]">
           Undergraduate degree progress, academic record, and core AI/DS foundations
         </h1>
       </div>
@@ -38,7 +38,7 @@ export function EducationView() {
               <p className="font-caveat text-lg font-normal tracking-wide text-[#FFFF00]">
                 Undergraduate Degree
               </p>
-              <h2 className="mt-2.5 font-road-rage text-[2rem] font-normal leading-tight tracking-wide text-[#FF0000] sm:text-4xl">
+              <h2 className="mt-2.5 font-road-rage text-[2rem] font-normal leading-tight tracking-wide text-[#FF4D4D] sm:text-4xl">
                 {PROFILE.degree}
               </h2>
               <p className="mt-2.5 font-kalam text-base text-[#A0B2B2]">{PROFILE.college}</p>
@@ -117,7 +117,7 @@ export function EducationView() {
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
           className="flex flex-col lg:col-span-6"
         >
-          <h2 className="font-road-rage text-2xl font-normal tracking-wide text-[#FF0000] sm:text-3xl">
+          <h2 className="font-road-rage text-2xl font-normal tracking-wide text-[#FF4D4D] sm:text-3xl">
             Areas of Interest
           </h2>
           <div className="mt-5 grid flex-1 grid-cols-1 divide-y divide-white/10 border-y border-white/10 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
@@ -162,7 +162,7 @@ export function EducationView() {
           className="flex flex-col justify-between lg:col-span-6"
         >
           <div>
-            <h2 className="font-road-rage text-2xl font-normal tracking-wide text-[#FF0000] sm:text-3xl">
+            <h2 className="font-road-rage text-2xl font-normal tracking-wide text-[#FF4D4D] sm:text-3xl">
               Academic Learning
             </h2>
             <div className="mt-5 grid grid-cols-1 gap-x-8 gap-y-3.5 border-y border-white/10 py-5 sm:grid-cols-2 sm:py-6">

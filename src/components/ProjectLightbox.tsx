@@ -119,7 +119,7 @@ export function ProjectLightbox({ item, onClose }: ProjectLightboxProps) {
                   <p className="font-caveat text-sm font-normal tracking-wide text-[#FFFF00]">
                     {item.organization}
                   </p>
-                  <h3 className="mt-2 font-road-rage text-3xl font-normal tracking-wide text-[#FF0000] sm:text-5xl [text-wrap:balance]">
+                  <h3 className="mt-2 font-road-rage text-3xl font-normal tracking-wide text-[#FF4D4D] sm:text-5xl [text-wrap:balance]">
                     {item.title}
                   </h3>
                   <p className="mt-4 font-kalam text-sm leading-relaxed text-[#A0B2B2]">
@@ -151,7 +151,7 @@ export function ProjectLightbox({ item, onClose }: ProjectLightboxProps) {
 
               <h2
                 id="lightbox-title"
-                className="mt-3 font-road-rage text-3xl font-normal tracking-wide text-[#FF0000] sm:text-4xl [text-wrap:balance]"
+                className="mt-3 font-road-rage text-3xl font-normal tracking-wide text-[#FF4D4D] sm:text-4xl [text-wrap:balance]"
               >
                 {item.title}
               </h2>

@@ -1,5 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import {
+  extractClientIp,
   MAX_BODY_BYTES,
   processGroqChat,
   sanitizeSecretStrings,
@@ -17,11 +18,17 @@ type VercelLikeResponse = ServerResponse & {
 function sendJson(
   res: VercelLikeResponse,
   statusCode: number,
-  payload: unknown
+  payload: unknown,
+  retryAfterSeconds?: number
 ): void {
   res.statusCode = statusCode;
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  if (retryAfterSeconds && retryAfterSeconds > 0) {
+    res.setHeader('Retry-After', String(retryAfterSeconds));
+  }
   res.end(JSON.stringify(payload));
 }
 
@@ -118,8 +125,9 @@ export default async function handler(
       return;
     }
 
-    const result = await processGroqChat(parsedBody, requestId);
-    sendJson(res, result.status, result.body);
+    const clientIp = extractClientIp(req.headers, req.socket?.remoteAddress);
+    const result = await processGroqChat(parsedBody, requestId, clientIp);
+    sendJson(res, result.status, result.body, result.retryAfterSeconds);
   } catch (err: unknown) {
     const safeMsg = sanitizeSecretStrings(
       err instanceof Error ? err.message : String(err)

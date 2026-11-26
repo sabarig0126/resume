@@ -7,7 +7,10 @@ export type FeatureId =
   | 'projects'
   | 'resume'
   | 'portfolioPdf'
-  | 'contact';
+  | 'contact'
+  | 'privacy'
+  | 'terms'
+  | 'notFound';
 
 export type PortfolioCategory =
   | 'Achievements'

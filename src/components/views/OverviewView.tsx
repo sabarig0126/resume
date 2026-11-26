@@ -1,5 +1,10 @@
 import { motion } from 'motion/react';
-import { FileDossierIcon, LocationBeaconIcon } from '../NextGenIcons';
+import {
+  ArrowRightIcon,
+  FileDossierIcon,
+  LocationBeaconIcon,
+  SendVectorIcon,
+} from '../NextGenIcons';
 import { PROFILE, PROOF_METRICS } from '../../data/projects';
 import { FeatureId } from '../../types/portfolio';
 import { AnimatedCounter } from '../AnimatedCounter';
@@ -29,7 +34,7 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
             className="flex flex-col justify-center lg:col-span-7"
           >
             <div>
-              <h1 className="font-road-rage text-[2.85rem] font-normal leading-[1.04] tracking-[0.02em] text-[#FF0000] sm:text-6xl lg:text-[4.6rem] [text-wrap:balance]">
+              <h1 className="font-road-rage text-[2.85rem] font-normal leading-[1.04] tracking-[0.02em] text-[#FF4D4D] sm:text-6xl lg:text-[4.6rem] [text-wrap:balance]">
                 Sabarivasan&apos;s Profile
               </h1>
 
@@ -38,7 +43,7 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
                   <h2 className="font-caveat text-xl font-normal tracking-wide text-[#FFFF00] sm:text-2xl">
                     About Me
                   </h2>
-                  <p className="mt-2 max-w-[64ch] text-base leading-relaxed text-[#A0B2B2] sm:text-[1.1rem]">
+                  <p className="mt-2 max-w-[64ch] text-base leading-relaxed text-[#B8C7C7] sm:text-[1.1rem]">
                     {PROFILE.aboutLead}
                   </p>
                 </div>
@@ -47,9 +52,28 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
                   <h2 className="font-caveat text-xl font-normal tracking-wide text-[#FFFF00] sm:text-2xl">
                     Career Objective
                   </h2>
-                  <p className="mt-2 max-w-[64ch] text-[15px] leading-relaxed text-[#A0B2B2] sm:text-[1.05rem]">
+                  <p className="mt-2 max-w-[64ch] text-[15px] leading-relaxed text-[#B8C7C7] sm:text-[1.05rem]">
                     {PROFILE.careerObjective}
                   </p>
+                </div>
+
+                <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:flex-wrap sm:items-center">
+                  <button
+                    type="button"
+                    onClick={() => onNavigateFeature('contact')}
+                    className="touch-press inline-flex min-h-[46px] items-center justify-center gap-2 rounded-lg bg-[#C8FF27] px-5 py-2.5 text-sm font-bold text-[#071B1B] shadow-[0_0_24px_-6px_rgba(200,255,39,0.55)] hover:bg-[#d5ff52] hover:shadow-[0_0_28px_-4px_rgba(200,255,39,0.7)] whitespace-nowrap cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F05BEA]"
+                  >
+                    <SendVectorIcon className="h-4 w-4 text-[#071B1B]" />
+                    <span>Contact Me</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onNavigateFeature('projects')}
+                    className="touch-press inline-flex min-h-[46px] items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/[0.06] px-5 py-2.5 text-sm font-semibold text-[#FFFFFF] hover:border-[#F05BEA]/65 hover:bg-[#F05BEA]/15 whitespace-nowrap cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF27]"
+                  >
+                    <span>View My Projects</span>
+                    <ArrowRightIcon className="h-4 w-4 text-[#F05BEA]" />
+                  </button>
                 </div>
               </div>
             </div>
@@ -159,7 +183,7 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
                 glowColor={idx % 2 === 1 ? 'lime' : 'pink'}
                 className="glass-surface glass-interactive flex h-full flex-col justify-between space-y-2 rounded-xl p-5 sm:p-6"
               >
-                <div className="font-road-rage text-4xl font-normal tracking-wide text-[#FF0000] tabular-nums sm:text-[2.65rem]">
+                <div className="font-road-rage text-4xl font-normal tracking-wide text-[#FF4D4D] tabular-nums sm:text-[2.65rem]">
                   <AnimatedCounter value={metric.value} />
                 </div>
                 <div className="font-kalam text-base font-bold text-[#FFFFFF]">
