@@ -10,12 +10,12 @@ export const FAQ_ITEMS: readonly FaqItem[] = [
     question: 'Tell me about Sabari.',
     answer:
       "Sabarivasan G is a 2nd-year B.Tech student in Artificial Intelligence & Data Science (2026–2027) at Sri Ramakrishna Institute of Technology, Coimbatore.\n\n" +
-      "He is passionate about programming, data analysis, and emerging technologies, building his foundation through 25+ completed courses across NPTEL, IBM, MathWorks, Python, Databases, Data Analysis, and Cybersecurity.\n\n" +
+      "He is passionate about programming, data analysis, and emerging technologies, building his foundation through 34 verified certificates (32 technical courses and 2 event/bootcamp credentials) across 9 issuing organizations including MathWorks, Infosys Springboard, MongoDB, IBM, NPTEL – IIT Madras, Simplilearn SkillUP, and Tech Mahindra Foundation.\n\n" +
       "Academic & Participation Highlights:\n" +
       "• Higher Secondary (HSC): 85.5% and SSLC: 81% at Thanappa Gounder Matric Higher Secondary School, Dharmapuri\n" +
       "• NPTEL Elite Certification in Design Thinking – A Primer (IIT Madras, 63%)\n" +
       "• Smart India Hackathon (SIH) Internal Round participant at SRIT\n" +
-      "• Illuminate Entrepreneurship Bootcamp participant at IIT Bombay\n" +
+      "• Illuminate Entrepreneurship Bootcamp participant at SRIT (in association with E-Cell, IIT Bombay)\n" +
       "• TEDxSRIT ('Human in the Loop') participant",
   },
   {
@@ -27,7 +27,7 @@ export const FAQ_ITEMS: readonly FaqItem[] = [
       "• Database Technologies: SQL, DBMS, MongoDB\n" +
       "• Technical Tools: MATLAB, Microsoft Excel\n" +
       "• Technical Knowledge: Data Analysis, AI Fundamentals, Data Structures and Algorithms, Mathematical Computing\n\n" +
-      "He has reinforced these skills with 25+ completed courses across 7 learning tracks—including 8 MATLAB MathWorks courses, 7 Python & Data Science courses, IBM Career Education (Clean Coding; DevOps, Agile & Design Thinking), MySQL/MongoDB/Unix/Ethical AI/Excel VBA, Data Analysis, and Cybersecurity (Tech Mahindra Foundation, 10 Hours).",
+      "He has reinforced these skills with 32 completed technical courses across 7 learning tracks—including 12 MathWorks MATLAB & Data Analysis courses, 7 Infosys Springboard Python & Data Science courses, 5 MongoDB courses (Basics, AI Agents, RAG, Vector Search, AI Data Strategy), 2 IBM Career Education courses (Clean Coding; Devops, Agile & Design Thinking), MySQL/Unix/Ethical AI (Infosys), Excel Macros & VBA (Simplilearn), NPTEL Design Thinking Elite (63%), and Cybersecurity (Tech Mahindra Foundation, 10 Hours).",
   },
   {
     id: 'projects',
@@ -125,19 +125,19 @@ Hobbies:
 Exploring New Technologies, Learning Programming, Listening to Music, Improving Technical Knowledge, Exploring New Ideas.
 
 Achievements & Participation:
-1. Design Thinking – A Primer (Elite, 63%) — NPTEL – IIT Madras (Online)
+1. Design Thinking – A Primer (Elite, 63%) — NPTEL – IIT Madras (Online, Jan–Feb 2026)
 2. Smart India Hackathon (SIH) Internal Round — College Level Participant at Sri Ramakrishna Institute of Technology, Coimbatore
-3. Illuminate Entrepreneurship Bootcamp — Participant at IIT Bombay
-4. TEDxSRIT ("Human in the Loop") — Event Participant at Sri Ramakrishna Institute of Technology, Coimbatore
+3. Illuminate Entrepreneurship Bootcamp — Participant at Sri Ramakrishna Institute of Technology, Coimbatore in association with E-Cell, IIT Bombay (Oct 16, 2025)
+4. TEDxSRIT ("Human in the Loop", 1st Edition) — Event Participant at Sri Ramakrishna Institute of Technology, Coimbatore (Feb 24, 2026)
 
-Certifications & Completed Courses (25+ completed courses across 7 tracks):
-01. NPTEL – IIT Madras (National Certification): Design Thinking – A Primer (Elite, 63%)
-02. IBM Career Education Program (Software & Design Practices): Clean Coding; DevOps, Agile & Design Thinking
-03. MATLAB – MathWorks (8 courses): MATLAB Onramp, Symbolic Math Onramp, MATLAB Coder Onramp, The How and Why of Writing Functions, Introduction to Linear Algebra with MATLAB, Calculations with Vectors and Matrices, Statistics Onramp, Data Analysis Courses
-04. Python & Data Science (7 courses): Python for Data Science and Machine Learning Bootcamp, Introduction to Data Science, Data Science Foundation, Basics of Linear Algebra using Python, Probability and Statistics using Python, Statistical Inference using Python, Probability Distribution using Python
-05. Database & Programming (5 courses): Project on MySQL, MongoDB Courses, Unix Linux OS – Unix Fundamentals, Ethical AI, Excel Macros & VBA for Beginners
-06. Data Analysis (5 courses): Common Data Analysis Techniques, Calculations on Grouped Data, Find and Extract Subsets of Data, Clean and Prepare Data for Analysis, Tables
-07. Cybersecurity (Security Foundations): Tech Mahindra Foundation (Skill India Digital Hub, 10 Hours)
+Certifications & Completed Courses (34 verified certificates total: 32 technical course completions + 2 event/bootcamp certificates across 9 organizations):
+01. NPTEL – IIT Madras (1 course): Design Thinking – A Primer (Elite, 63%, Jan–Feb 2026)
+02. IBM Career Education Program (2 courses): Clean Coding; Devops, Agile & Design Thinking (Sep 22, 2026)
+03. MATLAB – MathWorks (7 core math & programming courses): MATLAB Onramp (Oct 7, 2025), Calculations with Vectors and Matrices (Oct 8, 2025), Introduction to Linear Algebra with MATLAB (Jan 20, 2026), MATLAB Coder Onramp (Jan 20, 2026), Symbolic Math Onramp (Jan 24, 2026), The How and Why of Writing Functions (Jan 30, 2026), Statistics Onramp (Jun 25, 2026)
+04. Python & Data Science – Infosys Springboard (7 courses): Python for Data Science and Machine Learning Bootcamp (Jul 20, 2026), Introduction to Data Science (Jul 25, 2026), Probability and Statistics using Python (Jul 25, 2026), Statistical Inference using Python (Jul 25, 2026), Probability Distribution using Python (Jul 25, 2026), Basics of Linear Algebra using Python (Jul 27, 2026), Data Science Foundation Certification (Oct 9, 2026)
+05. MongoDB, Databases & Systems (9 courses): MongoDB Basics for Students, AI Agents with MongoDB, RAG with MongoDB, Vector Search Fundamentals, AI Data Strategy with MongoDB (all Nov 7, 2026); Infosys Springboard: Unix Linux OS - Unix Fundamentals (Sep 10, 2026), Project on MySQL (Sep 22, 2026), Ethical AI (Oct 7, 2026); Simplilearn SkillUP (Powered by Microsoft): Excel Macros & VBA for Beginners (Sep 13, 2026)
+06. Data Analysis – MathWorks (5 courses): Common Data Analysis Techniques (Jun 25, 2026), Calculations on Grouped Data (Jun 25, 2026), Find and Extract Subsets of Data (Jul 2, 2026), Clean and Prepare Data for Analysis (Jul 2, 2026), Tables (Jul 2, 2026)
+07. Cybersecurity (1 course): Cybersecurity — Tech Mahindra Foundation via Skill India Digital Hub (Oct 9, 2026, 10 Hours)
 
 Projects Status:
 "Projects Coming Soon" — No completed standalone projects have been published yet. Upcoming academic and hands-on projects will be shared once completed during his 2nd-year B.Tech studies in AI & Data Science. (He has completed practical course modules like "Project on MySQL" and participated in the Smart India Hackathon internal round.)

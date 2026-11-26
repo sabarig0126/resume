@@ -37,7 +37,8 @@ const HIGHLIGHT_CARDS = [
   {
     id: 'achievements',
     title: 'Achievements',
-    value: 'NPTEL Elite (63%), Smart India Hackathon (Internal Round), IIT Bombay Bootcamp, TEDxSRIT',
+    value:
+      'NPTEL Elite (63%), Smart India Hackathon (Internal Round), E-Cell IIT Bombay Illuminate Bootcamp, TEDxSRIT',
     accent: 'text-[#FFFFFF]/90',
     iconTone: 'text-[#C8FF27]',
     Icon: TrophyIcon,

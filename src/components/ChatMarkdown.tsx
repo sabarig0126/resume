@@ -1,4 +1,4 @@
-import { Fragment, useState, type ReactNode } from 'react';
+import { Fragment, memo, useMemo, useState, type ReactNode } from 'react';
 import { Check, Copy } from 'lucide-react';
 import { tokenizeCode, type PrismTokenNode } from '../lib/prismSetup';
 
@@ -385,9 +385,9 @@ function renderPrismTokenNode(node: PrismTokenNode, key: string): ReactNode {
   );
 }
 
-function CodeBlock({ code, lang }: { code: string; lang: string }) {
+const CodeBlock = memo(function CodeBlock({ code, lang }: { code: string; lang: string }) {
   const [copied, setCopied] = useState(false);
-  const tokens = tokenizeCode(code, lang);
+  const tokens = useMemo(() => tokenizeCode(code, lang), [code, lang]);
   const displayLang = lang.trim() || 'code';
 
   const handleCopy = async () => {
@@ -438,7 +438,7 @@ function CodeBlock({ code, lang }: { code: string; lang: string }) {
       </div>
     </div>
   );
-}
+});
 
 function isBlockStarter(lines: string[], idx: number): boolean {
   const line = lines[idx];
@@ -738,13 +738,16 @@ function renderBlocks(lines: string[], keyPrefix: string): ReactNode[] {
   return blocks;
 }
 
-export function ChatMarkdown({ content }: ChatMarkdownProps) {
-  const normalized = normalizeInput(content);
-  const lines = normalized.split('\n');
+export const ChatMarkdown = memo(function ChatMarkdown({ content }: ChatMarkdownProps) {
+  const renderedBlocks = useMemo(() => {
+    const normalized = normalizeInput(content);
+    const lines = normalized.split('\n');
+    return renderBlocks(lines, 'md');
+  }, [content]);
 
   return (
     <div className="space-y-2 break-words text-[13px] text-[#E8F6F6]">
-      {renderBlocks(lines, 'md')}
+      {renderedBlocks}
     </div>
   );
-}
+});

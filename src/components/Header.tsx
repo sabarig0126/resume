@@ -174,6 +174,23 @@ export function Header({
   }, [activeFeature]);
 
   useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent('portfolio:overlay-blur', {
+        detail: { source: 'header-menu', active: menuOpen },
+      })
+    );
+    return () => {
+      if (menuOpen) {
+        window.dispatchEvent(
+          new CustomEvent('portfolio:overlay-blur', {
+            detail: { source: 'header-menu', active: false },
+          })
+        );
+      }
+    };
+  }, [menuOpen]);
+
+  useEffect(() => {
     if (!menuOpen) {
       if (wasMenuOpenRef.current) {
         wasMenuOpenRef.current = false;
@@ -245,20 +262,14 @@ export function Header({
               title="About Me"
               className="touch-press group relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#F05BEA]/40 bg-[#082020]/90 shadow-[0_0_16px_-4px_rgba(240,91,234,0.45),inset_0_1px_0_rgba(255,255,255,0.16)] transition-all duration-200 hover:border-[#C8FF27]/75 hover:shadow-[0_0_18px_-3px_rgba(200,255,39,0.5)] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF27]"
             >
-              <motion.img
+              <img
                 src="/assets/portal-logo.png"
                 alt="Sabarivasan G portfolio portal emblem"
                 width={28}
                 height={28}
                 decoding="async"
                 draggable={false}
-                animate={{ opacity: [1, 0.15, 1] }}
-                transition={{
-                  duration: 1.4,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
-                }}
-                className="h-7 w-7 object-contain drop-shadow-[0_0_8px_rgba(34,211,238,0.45)] transition-transform duration-200 group-hover:scale-105"
+                className="header-logo-pulse h-7 w-7 object-contain drop-shadow-[0_0_8px_rgba(34,211,238,0.45)] transition-transform duration-200 group-hover:scale-105"
               />
             </motion.button>
 

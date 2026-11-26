@@ -1251,7 +1251,7 @@ function renderSlideContent(index: number) {
                 <li>• Introduction to Linear Algebra with MATLAB</li>
                 <li>• Calculations with Vectors and Matrices</li>
                 <li>• Statistics Onramp</li>
-                <li>• Data Analysis Courses</li>
+                <li>• + 5 Data Analysis Courses (Slide 10)</li>
               </ul>
             </div>
           </div>
@@ -1264,8 +1264,8 @@ function renderSlideContent(index: number) {
           <SlideHeading>Technical Courses &amp; Data Specializations</SlideHeading>
           <div className="mt-5 grid flex-1 grid-cols-3 items-stretch gap-6 divide-x divide-white/15 py-1">
             <div className="flex flex-col justify-between pr-4">
-              <h2 className="font-kalam text-[1.18rem] font-bold text-[#C8FF27]">
-                4. Python &amp; Data Science
+              <h2 className="font-kalam text-[1.15rem] font-bold text-[#C8FF27]">
+                4. Python &amp; Data Science (Infosys)
               </h2>
               <ul className="mt-3 flex flex-1 flex-col justify-evenly font-kalam text-[0.98rem] leading-snug text-[#FFFFFF]">
                 <li>• Python for Data Science and Machine Learning Bootcamp</li>
@@ -1280,31 +1280,33 @@ function renderSlideContent(index: number) {
 
             <div className="flex flex-col justify-between px-4">
               <div className="flex flex-1 flex-col">
-                <h2 className="font-kalam text-[1.18rem] font-bold text-[#C8FF27]">
-                  5. Database &amp; Programming
+                <h2 className="font-kalam text-[1.15rem] font-bold text-[#C8FF27]">
+                  5. Databases &amp; Systems
                 </h2>
-                <ul className="mt-3 flex flex-1 flex-col justify-evenly font-kalam text-[0.98rem] leading-snug text-[#FFFFFF]">
+                <ul className="mt-3 flex flex-1 flex-col justify-evenly font-kalam text-[0.96rem] leading-snug text-[#FFFFFF]">
                   <li>• Project on MySQL</li>
-                  <li>• MongoDB Courses</li>
+                  <li>
+                    • MongoDB: Basics, AI Agents, RAG, Vector Search &amp; AI Data Strategy
+                  </li>
                   <li>• Unix Linux OS – Unix Fundamentals</li>
-                  <li>• Ethical AI</li>
+                  <li>• Ethical AI (Infosys Springboard)</li>
                   <li>• Excel Macros &amp; VBA for Beginners</li>
                 </ul>
               </div>
 
-              <div className="mt-4 border-t border-white/10 pt-3">
-                <h2 className="font-kalam text-[1.18rem] font-bold text-[#C8FF27]">
+              <div className="mt-3 border-t border-white/10 pt-3">
+                <h2 className="font-kalam text-[1.15rem] font-bold text-[#C8FF27]">
                   7. Cybersecurity
                 </h2>
-                <p className="mt-1.5 font-kalam text-[0.98rem] leading-snug text-[#A0B2B2]">
+                <p className="mt-1.5 font-kalam text-[0.96rem] leading-snug text-[#A0B2B2]">
                   • Tech Mahindra Foundation (Skill India Digital Hub, 10 Hours)
                 </p>
               </div>
             </div>
 
             <div className="flex flex-col justify-between pl-4">
-              <h2 className="font-kalam text-[1.18rem] font-bold text-[#C8FF27]">
-                6. Data Analysis
+              <h2 className="font-kalam text-[1.15rem] font-bold text-[#C8FF27]">
+                6. Data Analysis (MathWorks)
               </h2>
               <ul className="mt-3 flex flex-1 flex-col justify-evenly font-kalam text-[0.98rem] leading-snug text-[#FFFFFF]">
                 <li>• Common Data Analysis Techniques</li>
@@ -1346,7 +1348,7 @@ function renderSlideContent(index: number) {
                 • Technical Learning
               </h2>
               <p className="mt-1 text-[#A0B2B2]">
-                Completed MATLAB, Python and Data Science courses, building a strong base in databases and programming.
+                Completed 32 technical courses across MathWorks, Infosys Springboard, MongoDB, IBM, Simplilearn &amp; Tech Mahindra Foundation.
               </p>
             </li>
 
@@ -1355,7 +1357,7 @@ function renderSlideContent(index: number) {
                 • Entrepreneurship Participation
               </h2>
               <p className="mt-1 text-[#A0B2B2]">
-                Took part in the Illuminate Entrepreneurship Bootcamp at IIT Bombay.
+                Completed the Illuminate Entrepreneurship Bootcamp at SRIT in association with E-Cell, IIT Bombay.
               </p>
             </li>
 

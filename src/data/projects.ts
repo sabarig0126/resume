@@ -1,3 +1,4 @@
+import { CERTIFICATES } from './certificates';
 import {
   CertificationTrack,
   PortfolioItem,
@@ -6,6 +7,11 @@ import {
 
 export const RESUME_PDF_PATH = '/assets/aistudio/sabarivasan_resume.pdf';
 export const PORTFOLIO_PDF_PATH = '/assets/aistudio/sabarivasan_portfolio.pdf';
+
+export const VERIFIED_CERTIFICATES_COUNT = CERTIFICATES.length;
+export const VERIFIED_ISSUER_COUNT = new Set(
+  CERTIFICATES.map((cert) => cert.issuerShort)
+).size;
 
 export const PROFILE = {
   name: 'Sabarivasan G',
@@ -28,10 +34,9 @@ export const PROFILE = {
 
 export const PROOF_METRICS: ProofMetric[] = [
   {
-    value: '25+',
-    label: 'Completed Courses',
-    context:
-      'Completed across NPTEL, IBM, MathWorks, Python, Databases, Data Analysis & Cybersecurity',
+    value: String(VERIFIED_CERTIFICATES_COUNT),
+    label: 'Verified Certificates',
+    context: `32 technical courses & 2 event credentials across ${VERIFIED_ISSUER_COUNT} organizations (MathWorks, Infosys, MongoDB, IBM, NPTEL & Skill India)`,
   },
   {
     value: '85.5%',
@@ -109,25 +114,25 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItem[] = [
     indexNumber: '03',
     title: 'Illuminate Entrepreneurship Bootcamp',
     category: 'Achievements',
-    organization: 'IIT Bombay',
-    timeframe: 'Bootcamp',
-    location: 'IIT Bombay',
+    organization: 'E-Cell, IIT Bombay',
+    timeframe: 'Oct 2025 · Bootcamp',
+    location: 'SRIT, Coimbatore',
     imageUrl: '/assets/achievements/illuminate-iit-bombay.svg',
     imageAlt: 'Illuminate Entrepreneurship Bootcamp IIT Bombay visual emblem',
     summary:
-      'Took part in the Illuminate Entrepreneurship Bootcamp at IIT Bombay.',
+      'Completed the Illuminate Entrepreneurship Bootcamp held at Sri Ramakrishna Institute of Technology in association with E-Cell, IIT Bombay.',
     details:
-      'Participated in the Illuminate Entrepreneurship Bootcamp organized under IIT Bombay.',
+      'Completed the Illuminate Entrepreneurship Bootcamp at Sri Ramakrishna Institute of Technology (SRIT), Tamil Nadu, organized in association with E-Cell, IIT Bombay on October 16, 2025.',
     highlights: [
       'Program: Illuminate Entrepreneurship Bootcamp',
-      'Institution: IIT Bombay',
-      'Role: Bootcamp Participant',
+      'Organizer: E-Cell, IIT Bombay (at SRIT)',
+      'Date: October 16, 2025',
     ],
     specs: {
-      issuerOrContext: 'IIT Bombay (Illuminate)',
+      issuerOrContext: 'E-Cell, IIT Bombay',
       focusArea: 'Entrepreneurship Bootcamp',
-      credentialOrOutcome: 'Participant',
-      location: 'IIT Bombay',
+      credentialOrOutcome: 'Certificate of Appreciation',
+      location: 'SRIT, Coimbatore',
     },
   },
   {
@@ -136,69 +141,69 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItem[] = [
     title: 'TEDxSRIT — Human in the Loop',
     category: 'Achievements',
     organization: 'Sri Ramakrishna Institute of Technology',
-    timeframe: 'Event',
+    timeframe: 'Feb 2026 · Event',
     location: 'Coimbatore',
     imageUrl: '/assets/achievements/tedxsrit-human-in-the-loop.svg',
     imageAlt: 'TEDxSRIT Human in the Loop participation visual emblem',
     summary:
       'Participated in TEDxSRIT on the theme “Human in the Loop”.',
     details:
-      'Participated in the TEDxSRIT event centered on the theme “Human in the Loop” at Sri Ramakrishna Institute of Technology.',
+      'Participated in the 1st edition of TEDxSRIT centered on the theme “Human in the Loop” at Sri Ramakrishna Institute of Technology on February 24, 2026.',
     highlights: [
-      'Event: TEDxSRIT',
+      'Event: TEDxSRIT (1st Edition)',
       'Theme: Human in the Loop',
-      'Role: Participant',
+      'Date: February 24, 2026',
     ],
     specs: {
       issuerOrContext: 'TEDxSRIT',
       focusArea: 'Conference / Event Participation',
-      credentialOrOutcome: 'Participant',
+      credentialOrOutcome: 'Certificate of Participation',
       location: 'Coimbatore',
     },
   },
   {
     id: 'mathworks-matlab-track',
     indexNumber: '05',
-    title: 'MATLAB – MathWorks Track',
+    title: 'MATLAB & Data Analysis — MathWorks',
     category: 'Certifications',
-    organization: 'MathWorks',
-    timeframe: '8 Courses',
+    organization: 'MathWorks Training Services',
+    timeframe: '12 Courses',
     location: 'Online Certification',
     summary:
-      'Completed eight MathWorks courses covering MATLAB Onramp, Symbolic Math, MATLAB Coder, writing functions, linear algebra, vectors and matrices, statistics, and data analysis.',
+      'Completed twelve MathWorks self-paced training courses spanning MATLAB fundamentals, Symbolic Math, MATLAB Coder, linear algebra, statistics, and five data analysis & tables modules.',
     details:
-      'Completed MATLAB Onramp, Symbolic Math Onramp, MATLAB Coder Onramp, The How and Why of Writing Functions, Introduction to Linear Algebra with MATLAB, Calculations with Vectors and Matrices, Statistics Onramp, and Data Analysis Courses.',
+      'Completed MATLAB Onramp, Symbolic Math Onramp, MATLAB Coder Onramp, The How and Why of Writing Functions, Introduction to Linear Algebra with MATLAB, Calculations with Vectors and Matrices, Statistics Onramp, Common Data Analysis Techniques, Calculations on Grouped Data, Find and Extract Subsets of Data, Clean and Prepare Data for Analysis, and Tables.',
     highlights: [
-      'MATLAB, Symbolic Math & MATLAB Coder Onramp',
-      'Linear Algebra & Calculations with Vectors and Matrices',
-      'Writing Functions, Statistics Onramp & Data Analysis Courses',
+      'MATLAB, Symbolic Math, Coder & Writing Functions',
+      'Linear Algebra, Vectors & Matrices, Statistics Onramp',
+      '5 Data Analysis & Tables Modules',
     ],
     specs: {
-      issuerOrContext: 'MathWorks',
-      focusArea: 'MATLAB & Mathematical Computing',
-      credentialOrOutcome: '8 Completed Courses',
+      issuerOrContext: 'MathWorks Training Services',
+      focusArea: 'MATLAB, Math & Data Analysis',
+      credentialOrOutcome: '12 Completed Courses',
       location: 'Online',
     },
   },
   {
     id: 'python-data-science-track',
     indexNumber: '06',
-    title: 'Python & Data Science Track',
+    title: 'Python & Data Science — Infosys Springboard',
     category: 'Certifications',
-    organization: 'Python & Data Science Courses',
+    organization: 'Infosys Springboard',
     timeframe: '7 Courses',
     location: 'Online Certification',
     summary:
-      'Completed seven courses covering Python for Data Science and Machine Learning Bootcamp, Introduction to Data Science, Data Science Foundation, Linear Algebra, Probability, and Statistical Inference using Python.',
+      'Completed seven Infosys Springboard courses covering Python for Data Science and Machine Learning Bootcamp, Data Science Foundation, Linear Algebra, Probability, and Statistical Inference.',
     details:
-      'Completed Python for Data Science and Machine Learning Bootcamp, Introduction to Data Science, Data Science Foundation, Basics of Linear Algebra using Python, Probability and Statistics using Python, Statistical Inference using Python, and Probability Distribution using Python.',
+      'Completed Python for Data Science and Machine Learning Bootcamp, Introduction to Data Science, Data Science Foundation Certification, Basics of Linear Algebra using Python, Probability and Statistics using Python, Statistical Inference using Python, and Probability Distribution using Python.',
     highlights: [
       'Python for Data Science and Machine Learning Bootcamp',
       'Introduction to Data Science & Data Science Foundation',
       'Linear Algebra, Probability & Statistical Inference using Python',
     ],
     specs: {
-      issuerOrContext: 'Python & Data Science Track',
+      issuerOrContext: 'Infosys Springboard',
       focusArea: 'Python & Data Science',
       credentialOrOutcome: '7 Completed Courses',
       location: 'Online',
@@ -213,12 +218,12 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItem[] = [
     timeframe: '2 Courses',
     location: 'Online Certification',
     summary:
-      'Completed Clean Coding and DevOps, Agile & Design Thinking under the IBM Career Education Program.',
+      'Completed Clean Coding and Devops, Agile & Design Thinking under the IBM Career Education Program.',
     details:
-      'Completed Clean Coding as well as DevOps, Agile & Design Thinking through the IBM Career Education Program.',
+      'Completed Clean Coding as well as Devops, Agile & Design Thinking through the IBM Career Education Program.',
     highlights: [
       'Clean Coding',
-      'DevOps, Agile & Design Thinking',
+      'Devops, Agile & Design Thinking',
     ],
     specs: {
       issuerOrContext: 'IBM Career Education Program',
@@ -230,24 +235,24 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItem[] = [
   {
     id: 'databases-linux-cyber',
     indexNumber: '08',
-    title: 'Database, Programming & Cybersecurity Courses',
+    title: 'MongoDB, Databases, Systems & Cybersecurity',
     category: 'Certifications',
-    organization: 'Database, Systems & Tech Mahindra Foundation',
-    timeframe: '6 Courses',
+    organization: 'MongoDB, Infosys Springboard, Simplilearn & Tech Mahindra',
+    timeframe: '10 Courses',
     location: 'Online / Skill India Digital Hub',
     summary:
-      'Completed coursework covering Project on MySQL, MongoDB Courses, Unix Linux OS – Unix Fundamentals, Ethical AI, Excel Macros & VBA for Beginners, and Cybersecurity (Tech Mahindra Foundation, 10 Hours).',
+      'Completed ten courses across MongoDB (5 AI & database modules), Infosys Springboard (MySQL, Unix Linux OS, Ethical AI), Simplilearn SkillUP (Excel Macros & VBA), and Tech Mahindra Foundation (Cybersecurity, 10 Hours).',
     details:
-      'Completed structured learning modules covering Project on MySQL, MongoDB Courses, Unix Linux OS – Unix Fundamentals, Ethical AI, Excel Macros & VBA for Beginners, and the 10-hour Cybersecurity course from Tech Mahindra Foundation on Skill India Digital Hub.',
+      'Completed five MongoDB courses (MongoDB Basics for Students, AI Agents with MongoDB, RAG with MongoDB, Vector Search Fundamentals, AI Data Strategy with MongoDB), three Infosys Springboard courses (Project on MySQL, Unix Linux OS - Unix Fundamentals, Ethical AI), Excel Macros & VBA for Beginners (Simplilearn SkillUP), and Cybersecurity (Tech Mahindra Foundation, 10 Hours).',
     highlights: [
-      'Project on MySQL & MongoDB Courses',
-      'Unix Linux OS Fundamentals, Ethical AI & Excel Macros/VBA',
+      '5 MongoDB Courses (Basics, AI Agents, RAG, Vector Search & AI Data Strategy)',
+      'Project on MySQL, Unix Fundamentals, Ethical AI & Excel Macros/VBA',
       'Cybersecurity — Tech Mahindra Foundation (10 Hours)',
     ],
     specs: {
-      issuerOrContext: 'Databases, Systems & Tech Mahindra Foundation',
-      focusArea: 'Databases, OS, AI Ethics & Cybersecurity',
-      credentialOrOutcome: '6 Completed Courses',
+      issuerOrContext: 'MongoDB, Infosys, Simplilearn & Tech Mahindra',
+      focusArea: 'Databases, AI Agents, OS & Cybersecurity',
+      credentialOrOutcome: '10 Completed Courses',
       location: 'Online / Skill India Digital Hub',
     },
   },
@@ -334,7 +339,7 @@ export const CERTIFICATION_TRACKS: CertificationTrack[] = [
     number: '02.',
     provider: 'IBM Career Education Program',
     category: 'Software & Design Practices',
-    courses: ['Clean Coding', 'DevOps, Agile & Design Thinking'],
+    courses: ['Clean Coding', 'Devops, Agile & Design Thinking'],
   },
   {
     number: '03.',
@@ -348,17 +353,16 @@ export const CERTIFICATION_TRACKS: CertificationTrack[] = [
       'Introduction to Linear Algebra with MATLAB',
       'Calculations with Vectors and Matrices',
       'Statistics Onramp',
-      'Data Analysis Courses',
     ],
   },
   {
     number: '04.',
-    provider: 'Python & Data Science',
+    provider: 'Python & Data Science (Infosys Springboard)',
     category: 'Python, Math & Statistics',
     courses: [
       'Python for Data Science and Machine Learning Bootcamp',
       'Introduction to Data Science',
-      'Data Science Foundation',
+      'Data Science Foundation Certification',
       'Basics of Linear Algebra using Python',
       'Probability and Statistics using Python',
       'Statistical Inference using Python',
@@ -367,19 +371,23 @@ export const CERTIFICATION_TRACKS: CertificationTrack[] = [
   },
   {
     number: '05.',
-    provider: 'Database & Programming',
-    category: 'Databases, OS & Tools',
+    provider: 'MongoDB, Databases & Systems',
+    category: 'MongoDB, MySQL, OS & Tools',
     courses: [
+      'MongoDB Basics for Students',
+      'AI Agents with MongoDB',
+      'RAG with MongoDB',
+      'Vector Search Fundamentals',
+      'AI Data Strategy with MongoDB',
       'Project on MySQL',
-      'MongoDB Courses',
-      'Unix Linux OS – Unix Fundamentals',
+      'Unix Linux OS - Unix Fundamentals',
       'Ethical AI',
       'Excel Macros & VBA for Beginners',
     ],
   },
   {
     number: '06.',
-    provider: 'Data Analysis',
+    provider: 'Data Analysis (MathWorks)',
     category: 'Data Preparation & Analysis',
     courses: [
       'Common Data Analysis Techniques',
@@ -393,7 +401,7 @@ export const CERTIFICATION_TRACKS: CertificationTrack[] = [
     number: '07.',
     provider: 'Cybersecurity',
     category: 'Security Foundations',
-    courses: ['Tech Mahindra Foundation (Skill India Digital Hub, 10 Hours)'],
+    courses: ['Cybersecurity — Tech Mahindra Foundation (Skill India Digital Hub, 10 Hours)'],
   },
 ];
 

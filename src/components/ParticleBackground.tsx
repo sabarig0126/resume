@@ -50,8 +50,11 @@ export function ParticleBackground({ paused = false }: ParticleBackgroundProps) 
     let resizeRafId = 0;
     let isTabHidden = document.hidden;
 
+    const TARGET_FRAME_MS = 1000 / 30;
     const FOV = 520;
     const Z_RANGE = 480;
+    const activeBlurSources = new Set<string>();
+    let overlayBlurred = false;
 
     const pointer = {
       targetX: 0,
@@ -61,11 +64,11 @@ export function ParticleBackground({ paused = false }: ParticleBackgroundProps) 
     };
 
     const getParticleCount = () => {
-      if (prefersReducedMotion) return width < 640 ? 18 : 28;
-      if (isLowSpecDevice) return width < 640 ? 20 : 30;
-      if (width < 640) return 26;
-      if (width < 1024) return 38;
-      return 54;
+      if (prefersReducedMotion) return width < 640 ? 16 : 24;
+      if (isLowSpecDevice) return width < 640 ? 18 : 26;
+      if (width < 640) return 22;
+      if (width < 1024) return 34;
+      return 46;
     };
 
     const particles: Particle3D[] = [];
@@ -115,15 +118,18 @@ export function ParticleBackground({ paused = false }: ParticleBackgroundProps) 
       p: Particle3D;
     }[] = [];
 
-    const drawFrame = (time: number) => {
+    let lastDrawTime = 0;
+
+    const drawFrame = (time: number, dtScale: number) => {
       ctx.clearRect(0, 0, width, height);
 
       const centerX = width * 0.5;
       const centerY = height * 0.5;
 
-      // Ease camera parallax toward cursor
-      pointer.x += (pointer.targetX - pointer.x) * 0.045;
-      pointer.y += (pointer.targetY - pointer.y) * 0.045;
+      // Ease camera parallax toward cursor (scaled for 30fps cadence)
+      const easeFactor = Math.min(0.18, 0.045 * dtScale);
+      pointer.x += (pointer.targetX - pointer.x) * easeFactor;
+      pointer.y += (pointer.targetY - pointer.y) * easeFactor;
 
       const spreadX = Math.max(width * 0.65, 360);
       const spreadY = Math.max(height * 0.65, 360);
@@ -134,10 +140,10 @@ export function ParticleBackground({ paused = false }: ParticleBackgroundProps) 
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
 
-        if (!prefersReducedMotion) {
-          p.x += p.vx;
-          p.y += p.vy + Math.sin(time * 0.0008 + p.phase) * 0.05;
-          p.z += p.vz;
+        if (!prefersReducedMotion && dtScale > 0) {
+          p.x += p.vx * dtScale;
+          p.y += (p.vy + Math.sin(time * 0.0008 + p.phase) * 0.05) * dtScale;
+          p.z += p.vz * dtScale;
 
           if (p.x < -spreadX) p.x = spreadX;
           else if (p.x > spreadX) p.x = -spreadX;
@@ -167,7 +173,7 @@ export function ParticleBackground({ paused = false }: ParticleBackgroundProps) 
 
       // Draw connecting lines between nearby projected particles
       if (!isLowSpecDevice) {
-        const maxDist = width < 640 ? 115 : 145;
+        const maxDist = width < 640 ? 110 : 145;
         const maxDistSq = maxDist * maxDist;
 
         ctx.lineWidth = 1;
@@ -181,15 +187,15 @@ export function ParticleBackground({ paused = false }: ParticleBackgroundProps) 
             if (distSq < maxDistSq) {
               const distRatio = 1 - Math.sqrt(distSq) / maxDist;
               const depthFade = Math.min(a.scale, b.scale, 1.1);
-              const alpha = distRatio * depthFade * 0.2;
-              if (alpha > 0.015) {
+              const alpha = Math.round(distRatio * depthFade * 20) / 100;
+              if (alpha > 0.01) {
                 const rgb =
                   a.p.color === 'pink' || b.p.color === 'pink'
-                    ? '240, 91, 234'
+                    ? '240,91,234'
                     : a.p.color === 'lime'
-                      ? '200, 255, 39'
-                      : '160, 178, 178';
-                ctx.strokeStyle = `rgba(${rgb}, ${alpha.toFixed(3)})`;
+                      ? '200,255,39'
+                      : '160,178,178';
+                ctx.strokeStyle = `rgba(${rgb},${alpha})`;
                 ctx.beginPath();
                 ctx.moveTo(a.sx, a.sy);
                 ctx.lineTo(b.sx, b.sy);
@@ -201,32 +207,40 @@ export function ParticleBackground({ paused = false }: ParticleBackgroundProps) 
       }
 
       // Draw 3D particles with subtle depth glow
+      const allowHalo = !isLowSpecDevice && width >= 640;
       for (let i = 0; i < projected.length; i++) {
         const item = projected[i];
         const [r, g, b] = COLOR_MAP[item.p.color];
         const radius = Math.max(0.8, item.p.baseRadius * item.scale);
-        const alpha = Math.min(0.82, Math.max(0.16, item.scale * 0.54));
+        const alpha = Math.round(Math.min(0.82, Math.max(0.16, item.scale * 0.54)) * 100) / 100;
 
         ctx.beginPath();
         ctx.arc(item.sx, item.sy, radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha.toFixed(3)})`;
+        ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`;
         ctx.fill();
 
-        if (item.scale > 0.9 && !isLowSpecDevice) {
+        if (allowHalo && item.scale > 0.9) {
+          const haloAlpha = Math.round(alpha * 14) / 100;
           ctx.beginPath();
           ctx.arc(item.sx, item.sy, radius * 2.4, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${(alpha * 0.14).toFixed(3)})`;
+          ctx.fillStyle = `rgba(${r},${g},${b},${haloAlpha})`;
           ctx.fill();
         }
       }
     };
 
     const tick = (time: number) => {
-      if (isTabHidden || pausedRef.current || prefersReducedMotion) {
+      if (isTabHidden || pausedRef.current || overlayBlurred || prefersReducedMotion) {
         rafId = 0;
+        lastDrawTime = 0;
         return;
       }
-      drawFrame(time);
+
+      if (lastDrawTime === 0 || time - lastDrawTime >= TARGET_FRAME_MS) {
+        const elapsedMs = lastDrawTime === 0 ? TARGET_FRAME_MS : Math.min(time - lastDrawTime, 64);
+        lastDrawTime = time;
+        drawFrame(time, elapsedMs / 16.667);
+      }
       rafId = window.requestAnimationFrame(tick);
     };
 
@@ -235,8 +249,12 @@ export function ParticleBackground({ paused = false }: ParticleBackgroundProps) 
         window.cancelAnimationFrame(rafId);
         rafId = 0;
       }
+      lastDrawTime = 0;
       if (prefersReducedMotion || pausedRef.current) {
-        drawFrame(0);
+        drawFrame(0, 0);
+        return;
+      }
+      if (overlayBlurred) {
         return;
       }
       if (!isTabHidden) {
@@ -247,11 +265,27 @@ export function ParticleBackground({ paused = false }: ParticleBackgroundProps) 
     resumeRef.current = startOrRenderStatic;
     startOrRenderStatic();
 
+    const handleOverlayBlur = (e: Event) => {
+      const detail = (e as CustomEvent<{ source?: string; active?: boolean }>).detail;
+      if (!detail?.source) return;
+      if (detail.active) {
+        activeBlurSources.add(detail.source);
+      } else {
+        activeBlurSources.delete(detail.source);
+      }
+      const nextBlurred = activeBlurSources.size > 0;
+      if (nextBlurred !== overlayBlurred) {
+        overlayBlurred = nextBlurred;
+        startOrRenderStatic();
+      }
+    };
+
     const handleVisibilityChange = () => {
       isTabHidden = document.hidden;
       if (isTabHidden && rafId) {
         window.cancelAnimationFrame(rafId);
         rafId = 0;
+        lastDrawTime = 0;
       } else {
         startOrRenderStatic();
       }
@@ -264,7 +298,7 @@ export function ParticleBackground({ paused = false }: ParticleBackgroundProps) 
     };
 
     const handlePointerMove = (e: PointerEvent) => {
-      if (e.pointerType === 'touch') return;
+      if (e.pointerType === 'touch' || overlayBlurred) return;
       pointer.targetX = (e.clientX / Math.max(width, 1) - 0.5) * 2;
       pointer.targetY = (e.clientY / Math.max(height, 1) - 0.5) * 2;
     };
@@ -282,13 +316,14 @@ export function ParticleBackground({ paused = false }: ParticleBackgroundProps) 
         resizeRafId = 0;
         if (Math.abs(window.innerWidth - width) > 20 || Math.abs(window.innerHeight - height) > 80) {
           updateCanvasSize();
-          if (prefersReducedMotion) {
-            drawFrame(0);
+          if (prefersReducedMotion || pausedRef.current || overlayBlurred) {
+            drawFrame(0, 0);
           }
         }
       });
     };
 
+    window.addEventListener('portfolio:overlay-blur', handleOverlayBlur);
     document.addEventListener('visibilitychange', handleVisibilityChange);
     motionQuery.addEventListener('change', handleMotionChange);
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
@@ -299,6 +334,7 @@ export function ParticleBackground({ paused = false }: ParticleBackgroundProps) 
       resumeRef.current = null;
       if (rafId) window.cancelAnimationFrame(rafId);
       if (resizeRafId) window.cancelAnimationFrame(resizeRafId);
+      window.removeEventListener('portfolio:overlay-blur', handleOverlayBlur);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       motionQuery.removeEventListener('change', handleMotionChange);
       window.removeEventListener('pointermove', handlePointerMove);

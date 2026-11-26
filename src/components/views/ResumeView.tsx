@@ -21,12 +21,15 @@ const SOFT_SKILL_ITEMS = [
   'Critical Thinking',
   'Adaptability',
   'Quick Learning',
+  'Self-Motivation',
 ] as const;
 
 const STRENGTH_ITEMS = [
   'Self-Motivated',
   'Hardworking',
+  'Quick Learner',
   'Positive Attitude',
+  'Adaptability',
   'Willingness to Learn',
 ] as const;
 
@@ -34,6 +37,8 @@ const HOBBY_ITEMS = [
   'Exploring new technologies',
   'Learning programming',
   'Listening to music',
+  'Improving technical knowledge',
+  'Exploring new ideas',
 ] as const;
 
 const EDUCATION_ITEMS = [
@@ -60,8 +65,8 @@ const ACHIEVEMENT_ITEMS = [
     detail: 'Design Thinking – A Primer, IIT Madras (63%)',
   },
   {
-    label: 'IIT Bombay:',
-    detail: 'Illuminate Entrepreneurship Bootcamp',
+    label: 'E-Cell, IIT Bombay:',
+    detail: 'Illuminate Entrepreneurship Bootcamp (at SRIT)',
   },
   {
     label: 'TEDxSRIT:',
@@ -76,28 +81,32 @@ const ACHIEVEMENT_ITEMS = [
 const CERTIFICATION_ITEMS = [
   {
     label: 'MATLAB MathWorks:',
-    detail: 'Onramp, Symbolic Math, Coder, Linear Algebra, Statistics, Clean Coding',
-  },
-  {
-    label: 'Python & Data Science:',
     detail:
-      'ML Bootcamp, Intro to Data Science, Ethical AI, Probability and Statistics using Python',
+      'Onramp, Symbolic Math, Coder, Writing Functions, Linear Algebra, Vectors & Matrices, Statistics',
   },
   {
-    label: 'Database & Programming:',
-    detail: 'MySQL Project, MongoDB, Unix Fundamentals, Excel Macros & VBA',
+    label: 'Python & Data Science (Infosys):',
+    detail:
+      'ML Bootcamp, Intro to Data Science, Data Science Foundation, Linear Algebra, Probability & Statistics, Statistical Inference, Probability Distribution',
   },
   {
-    label: 'Data Analysis:',
-    detail: 'Analysis Techniques, Grouped Data, Subsets, Cleaning and Preparing Data',
+    label: 'MongoDB & Databases:',
+    detail:
+      'MongoDB (Basics, AI Agents, RAG, Vector Search, AI Data Strategy), Project on MySQL',
+  },
+  {
+    label: 'Data Analysis (MathWorks):',
+    detail:
+      'Analysis Techniques, Grouped Data, Subsets, Cleaning & Preparing Data, Tables',
   },
   {
     label: 'IBM Career Education:',
-    detail: 'DevOps, Agile & Design Thinking',
+    detail: 'Clean Coding, DevOps, Agile & Design Thinking',
   },
   {
-    label: 'Cybersecurity:',
-    detail: 'Tech Mahindra Foundation, Skill India Digital Hub (10 hrs)',
+    label: 'Systems, AI & Security:',
+    detail:
+      'Unix Fundamentals, Ethical AI (Infosys), Excel Macros & VBA (Simplilearn), Cybersecurity (Tech Mahindra, 10 hrs)',
   },
 ] as const;
 

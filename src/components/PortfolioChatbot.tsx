@@ -1,6 +1,8 @@
 import {
   type FormEvent,
   type PointerEvent as ReactPointerEvent,
+  type RefObject,
+  memo,
   useCallback,
   useEffect,
   useRef,
@@ -76,18 +78,227 @@ function getInitialPosition(boxWidth: number, boxHeight: number): ChatPosition {
   );
 }
 
+const ChatLauncher = memo(function ChatLauncher({
+  launcherRef,
+  isOpen,
+  onToggle,
+}: {
+  launcherRef: RefObject<HTMLButtonElement | null>;
+  isOpen: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      ref={launcherRef}
+      type="button"
+      onClick={onToggle}
+      aria-expanded={isOpen}
+      aria-label={isOpen ? "Close Ask Sabari's Assistant" : "Open Ask Sabari's Assistant"}
+      title="Ask Sabari's Assistant"
+      className="touch-press fixed bottom-4 right-4 z-40 max-w-[calc(100vw-2rem)] rounded-full transition-transform duration-200 hover:scale-[1.02] sm:bottom-6 sm:right-6 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+    >
+      <span className="glass-surface glass-interactive inline-flex max-w-full items-center gap-2.5 rounded-full border border-teal-300/30 bg-[#071E1E]/92 py-1.5 pl-2 pr-4 text-left shadow-[0_14px_34px_-8px_rgba(0,0,0,0.85),0_0_24px_-6px_rgba(56,189,248,0.32)] backdrop-blur-xl hover:border-teal-300/60 sm:gap-3 sm:pr-5">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-sky-400/50 bg-[#030914] shadow-[0_0_14px_-2px_rgba(56,189,248,0.55)] sm:h-11 sm:w-11">
+          <RobotMascot className="h-full w-full scale-105" />
+        </span>
+        <span className="min-w-0">
+          <span className="block truncate text-[15px] font-bold leading-tight text-[#FFFF00] sm:text-base">
+            Ask Sabari&apos;s Assistant
+          </span>
+          <span className="block truncate text-[11.5px] italic leading-tight text-[#A0B2B2] sm:text-xs">
+            FAQ &amp; AI Chat
+          </span>
+        </span>
+      </span>
+    </button>
+  );
+});
+
+const FaqSection = memo(function FaqSection({
+  isFaqSectionOpen,
+  onFaqClick,
+}: {
+  isFaqSectionOpen: boolean;
+  onFaqClick: (faq: FaqItem) => void;
+}) {
+  return (
+    <AnimatePresence initial={false}>
+      {isFaqSectionOpen && (
+        <motion.div
+          key="faq-questions-list"
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: 'auto', opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+          className="overflow-hidden"
+        >
+          <div className="rounded-xl border border-teal-300/15 bg-[#041616]/60 p-2.5">
+            <div className="flex flex-col gap-1.5">
+              {FAQ_ITEMS.map((faq) => (
+                <button
+                  key={faq.id}
+                  type="button"
+                  onClick={() => onFaqClick(faq)}
+                  className="w-full rounded-lg border border-teal-300/20 bg-[#092727]/80 px-2.5 py-1.5 text-left text-[12.5px] text-teal-50 transition-colors hover:border-emerald-400/50 hover:bg-emerald-500/15 hover:text-white cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+                >
+                  {faq.question}
+                </button>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+});
+
+const ChatMessageBubble = memo(function ChatMessageBubble({
+  msg,
+}: {
+  msg: ChatMessage;
+}) {
+  if (msg.role === 'user') {
+    return (
+      <div className="flex justify-end">
+        <div className="max-w-[84%] rounded-2xl rounded-tr-sm border border-emerald-400/35 bg-emerald-500/20 px-3 py-2 text-white shadow-sm">
+          <p className="leading-relaxed break-words">{msg.content}</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-start gap-2">
+      <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full border border-sky-400/45 bg-[#030914]">
+        <RobotMascot className="h-full w-full scale-105" />
+      </div>
+      <div className="min-w-0 max-w-[85%] rounded-2xl rounded-tl-sm border border-teal-300/20 bg-[#0A2929]/90 px-3 py-2 text-[#E8F6F6] shadow-sm">
+        <ChatMarkdown content={msg.content} />
+      </div>
+    </div>
+  );
+});
+
+const ChatInputForm = memo(function ChatInputForm({
+  isLoading,
+  clearNonce,
+  onSendMessage,
+}: {
+  isLoading: boolean;
+  clearNonce: number;
+  onSendMessage: (trimmedText: string, honeypot: string) => boolean;
+}) {
+  const [inputValue, setInputValue] = useState('');
+  const [honeypotValue, setHoneypotValue] = useState('');
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const lastSubmitAtRef = useRef(0);
+
+  useEffect(() => {
+    if (clearNonce > 0) {
+      setInputValue('');
+      setValidationError(null);
+    }
+  }, [clearNonce]);
+
+  const handleFormSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (isLoading) return;
+
+    const trimmed = inputValue.trim();
+    if (!trimmed) {
+      setValidationError('Please enter a message before sending.');
+      inputRef.current?.focus();
+      return;
+    }
+
+    if (trimmed.length > 2000) {
+      setValidationError('Messages cannot exceed 2000 characters.');
+      inputRef.current?.focus();
+      return;
+    }
+
+    const now = Date.now();
+    if (now - lastSubmitAtRef.current < 900) {
+      setValidationError('Please wait a moment before sending another message.');
+      return;
+    }
+
+    const accepted = onSendMessage(trimmed, honeypotValue);
+    if (accepted) {
+      lastSubmitAtRef.current = now;
+      setValidationError(null);
+      setInputValue('');
+    }
+  };
+
+  return (
+    <form
+      onSubmit={handleFormSubmit}
+      noValidate
+      className="flex shrink-0 flex-col border-t border-teal-200/15 bg-[#051818]/90 px-3 py-2.5"
+    >
+      {/* Offscreen Honeypot for Automated Bot Detection */}
+      <input
+        type="text"
+        name="website"
+        value={honeypotValue}
+        onChange={(e) => setHoneypotValue(e.target.value)}
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        className="pointer-events-none absolute -left-[9999px] h-0 w-0 opacity-0"
+      />
+      <div className="flex items-center gap-2">
+        <input
+          ref={inputRef}
+          type="text"
+          value={inputValue}
+          onChange={(e) => {
+            setInputValue(e.target.value);
+            if (validationError) setValidationError(null);
+          }}
+          placeholder="Ask me anything..."
+          aria-label="Ask me anything"
+          aria-invalid={validationError ? true : undefined}
+          aria-describedby={validationError ? 'chat-validation-error' : undefined}
+          maxLength={2001}
+          className="h-9 min-w-0 flex-1 rounded-xl border border-teal-300/25 bg-[#0A2626]/90 px-3 text-[13px] text-white placeholder:text-[#9FC7C7] focus:border-emerald-400/65 focus:outline-none focus:ring-2 focus:ring-emerald-400/25"
+        />
+        <button
+          type="submit"
+          disabled={isLoading}
+          aria-label="Send message"
+          title="Send"
+          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-[#031510] shadow-[0_0_16px_-3px_rgba(16,185,129,0.7)] transition-colors hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-emerald-700/40 disabled:text-white/60 disabled:shadow-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+        >
+          <Send className="h-4 w-4" />
+        </button>
+      </div>
+      {validationError && (
+        <p
+          id="chat-validation-error"
+          role="alert"
+          className="mt-1.5 text-[11.5px] font-medium text-rose-300"
+        >
+          {validationError}
+        </p>
+      )}
+    </form>
+  );
+});
+
 export function PortfolioChatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [isFaqSectionOpen, setIsFaqSectionOpen] = useState(true);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [inputValue, setInputValue] = useState('');
-  const [honeypotValue, setHoneypotValue] = useState('');
-  const [validationError, setValidationError] = useState<string | null>(null);
+  const [clearNonce, setClearNonce] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isFaqThinking, setIsFaqThinking] = useState(false);
   const [errorInfo, setErrorInfo] = useState<{
     message: string;
     retryPayload: Array<{ role: 'user' | 'assistant'; content: string }>;
+    honeypot: string;
   } | null>(null);
 
   const [position, setPosition] = useState<ChatPosition | null>(null);
@@ -96,8 +307,11 @@ export function PortfolioChatbot() {
   const launcherRef = useRef<HTMLButtonElement | null>(null);
   const chatboxRef = useRef<HTMLDivElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  const lastSubmitAtRef = useRef(0);
+  const scrollRafRef = useRef<number>(0);
+  const messagesRef = useRef<ChatMessage[]>(messages);
+  messagesRef.current = messages;
+  const positionRef = useRef<ChatPosition | null>(position);
+  positionRef.current = position;
   const inFlightRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const faqAnimRef = useRef<{
@@ -113,18 +327,20 @@ export function PortfolioChatbot() {
     startY: number;
     originX: number;
     originY: number;
+    nextX: number;
+    nextY: number;
     width: number;
     height: number;
+    rafId: number;
   } | null>(null);
 
   const scrollToBottom = useCallback(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-    window.requestAnimationFrame(() => {
-      container.scrollTo({
-        top: container.scrollHeight,
-        behavior: 'auto',
-      });
+    if (scrollRafRef.current) return;
+    scrollRafRef.current = window.requestAnimationFrame(() => {
+      scrollRafRef.current = 0;
+      const container = scrollContainerRef.current;
+      if (!container) return;
+      container.scrollTop = container.scrollHeight;
     });
   }, []);
 
@@ -132,6 +348,24 @@ export function PortfolioChatbot() {
     if (!isOpen) return;
     scrollToBottom();
   }, [isOpen, messages, isLoading, isFaqThinking, errorInfo, scrollToBottom]);
+
+  // Pause background 3D canvas while full-screen backdrop blur overlay is visible
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent('portfolio:overlay-blur', {
+        detail: { source: 'chatbot', active: isOpen },
+      })
+    );
+    return () => {
+      if (isOpen) {
+        window.dispatchEvent(
+          new CustomEvent('portfolio:overlay-blur', {
+            detail: { source: 'chatbot', active: false },
+          })
+        );
+      }
+    };
+  }, [isOpen]);
 
   // Ensure opened position exists and remains clamped inside viewport on resize
   useEffect(() => {
@@ -152,18 +386,21 @@ export function PortfolioChatbot() {
     };
 
     syncBounds();
-    window.addEventListener('resize', syncBounds);
-    window.addEventListener('orientationchange', syncBounds);
+    window.addEventListener('resize', syncBounds, { passive: true });
+    window.addEventListener('orientationchange', syncBounds, { passive: true });
     return () => {
       window.removeEventListener('resize', syncBounds);
       window.removeEventListener('orientationchange', syncBounds);
     };
   }, [isOpen]);
 
-  // Abort any pending AI request and FAQ timers on unmount
+  // Abort any pending AI request, scroll rAF, and FAQ timers on unmount
   useEffect(() => {
     return () => {
       abortControllerRef.current?.abort();
+      if (scrollRafRef.current) {
+        window.cancelAnimationFrame(scrollRafRef.current);
+      }
       const active = faqAnimRef.current;
       if (active) {
         if (active.thinkingTimerId !== null) {
@@ -180,17 +417,20 @@ export function PortfolioChatbot() {
   const handleOpenToggle = useCallback(() => {
     setIsOpen((prev) => {
       const next = !prev;
-      if (next && !position) {
+      if (next && !positionRef.current) {
         const { width, height } = getBoxDimensions();
         setPosition(getInitialPosition(width, height));
       }
       return next;
     });
-  }, [position]);
+  }, []);
 
   const handleClose = useCallback(() => {
     setIsOpen(false);
     setIsDragging(false);
+    if (dragStateRef.current?.rafId) {
+      window.cancelAnimationFrame(dragStateRef.current.rafId);
+    }
     dragStateRef.current = null;
   }, []);
 
@@ -258,7 +498,7 @@ export function PortfolioChatbot() {
     setIsLoading(false);
     setErrorInfo(null);
     setMessages([]);
-    setInputValue('');
+    setClearNonce((n) => n + 1);
     setIsFaqSectionOpen(true);
   }, [finalizeFaqAnimation]);
 
@@ -278,7 +518,10 @@ export function PortfolioChatbot() {
   }, []);
 
   const sendToGroq = useCallback(
-    async (payloadMessages: Array<{ role: 'user' | 'assistant'; content: string }>) => {
+    async (
+      payloadMessages: Array<{ role: 'user' | 'assistant'; content: string }>,
+      honeypot: string
+    ) => {
       if (inFlightRef.current) return;
 
       inFlightRef.current = true;
@@ -302,7 +545,7 @@ export function PortfolioChatbot() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             messages: payloadMessages,
-            website: honeypotValue,
+            website: honeypot,
           }),
           signal: controller.signal,
         });
@@ -313,6 +556,7 @@ export function PortfolioChatbot() {
             message:
               'The AI chat service (/api/chat) returned an unexpected response. Please verify the API route is deployed and retry.',
             retryPayload: payloadMessages,
+            honeypot,
           });
           return;
         }
@@ -324,6 +568,7 @@ export function PortfolioChatbot() {
           setErrorInfo({
             message: 'Failed to parse response from /api/chat. Please retry.',
             retryPayload: payloadMessages,
+            honeypot,
           });
           return;
         }
@@ -335,6 +580,7 @@ export function PortfolioChatbot() {
           setErrorInfo({
             message: errMessage,
             retryPayload: payloadMessages,
+            honeypot,
           });
           return;
         }
@@ -344,6 +590,7 @@ export function PortfolioChatbot() {
           setErrorInfo({
             message: 'Received an empty reply from the assistant. Please retry.',
             retryPayload: payloadMessages,
+            honeypot,
           });
           return;
         }
@@ -362,6 +609,7 @@ export function PortfolioChatbot() {
             setErrorInfo({
               message: 'The assistant request timed out. Please retry.',
               retryPayload: payloadMessages,
+              honeypot,
             });
           }
           return;
@@ -370,6 +618,7 @@ export function PortfolioChatbot() {
           message:
             'Network error while contacting the assistant. Please check your connection and retry.',
           retryPayload: payloadMessages,
+          honeypot,
         });
       } finally {
         window.clearTimeout(timeoutId);
@@ -380,7 +629,7 @@ export function PortfolioChatbot() {
         setIsLoading(false);
       }
     },
-    [honeypotValue]
+    []
   );
 
   const handleFaqClick = useCallback(
@@ -435,6 +684,7 @@ export function PortfolioChatbot() {
         const startTime = performance.now();
         const totalDurationMs = Math.min(1400, Math.max(650, fullAnswer.length * 2));
         let lastShownLength = 1;
+        let lastCommitTime = startTime;
 
         const step = (now: number) => {
           if (faqAnimRef.current !== animState) return;
@@ -446,15 +696,18 @@ export function PortfolioChatbot() {
               ? fullAnswer.length
               : Math.max(lastShownLength, Math.floor(progress * fullAnswer.length));
 
-          if (nextLength > lastShownLength) {
+          const isDone = nextLength >= fullAnswer.length;
+          // Throttle markdown re-parses to ~30fps during typing while always flushing final chunk
+          if (nextLength > lastShownLength && (isDone || now - lastCommitTime >= 32)) {
             lastShownLength = nextLength;
+            lastCommitTime = now;
             const partial = fullAnswer.slice(0, nextLength);
             setMessages((prev) =>
               prev.map((m) => (m.id === assistantMsgId ? { ...m, content: partial } : m))
             );
           }
 
-          if (nextLength >= fullAnswer.length) {
+          if (isDone) {
             animState.typingRafId = null;
             faqAnimRef.current = null;
             return;
@@ -473,38 +726,17 @@ export function PortfolioChatbot() {
     [finalizeFaqAnimation]
   );
 
-  const handleSubmit = useCallback(
-    (e: FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      if (inFlightRef.current || isLoading) return;
+  const handleSendMessage = useCallback(
+    (trimmed: string, honeypot: string): boolean => {
+      if (inFlightRef.current) return false;
 
-      const trimmed = inputValue.trim();
-      if (!trimmed) {
-        setValidationError('Please enter a message before sending.');
-        inputRef.current?.focus();
-        return;
-      }
-
-      if (trimmed.length > 2000) {
-        setValidationError('Messages cannot exceed 2000 characters.');
-        inputRef.current?.focus();
-        return;
-      }
-
-      const now = Date.now();
-      if (now - lastSubmitAtRef.current < 900) {
-        setValidationError('Please wait a moment before sending another message.');
-        return;
-      }
-      lastSubmitAtRef.current = now;
-      setValidationError(null);
-
+      const currentMessages = messagesRef.current;
       const pendingFaq = faqAnimRef.current;
-      let baseHistory = messages;
+      let baseHistory = currentMessages;
       if (pendingFaq) {
         if (pendingFaq.phase === 'thinking') {
           baseHistory = [
-            ...messages,
+            ...currentMessages,
             {
               id: pendingFaq.assistantMsgId,
               role: 'assistant',
@@ -513,7 +745,7 @@ export function PortfolioChatbot() {
             },
           ];
         } else {
-          baseHistory = messages.map((m) =>
+          baseHistory = currentMessages.map((m) =>
             m.id === pendingFaq.assistantMsgId
               ? { ...m, content: pendingFaq.fullAnswer }
               : m
@@ -530,24 +762,24 @@ export function PortfolioChatbot() {
 
       const nextHistory = [...baseHistory, userMsg];
       setMessages(nextHistory);
-      setInputValue('');
 
       const payload = nextHistory.map((m) => ({
         role: m.role,
         content: m.content,
       }));
 
-      void sendToGroq(payload);
+      void sendToGroq(payload, honeypot);
+      return true;
     },
-    [finalizeFaqAnimation, inputValue, isLoading, messages, sendToGroq]
+    [finalizeFaqAnimation, sendToGroq]
   );
 
   const handleRetry = useCallback(() => {
     if (inFlightRef.current || isLoading || !errorInfo) return;
-    void sendToGroq(errorInfo.retryPayload);
+    void sendToGroq(errorInfo.retryPayload, errorInfo.honeypot);
   }, [errorInfo, isLoading, sendToGroq]);
 
-  // Header dragging (mouse & touch via Pointer Events)
+  // Hardware-accelerated GPU header dragging (zero React re-renders while moving)
   const handleHeaderPointerDown = useCallback(
     (e: ReactPointerEvent<HTMLDivElement>) => {
       const target = e.target as HTMLElement | null;
@@ -558,7 +790,7 @@ export function PortfolioChatbot() {
       if (!boxEl) return;
 
       const rect = boxEl.getBoundingClientRect();
-      const currentPos = position ?? { x: rect.left, y: rect.top };
+      const currentPos = positionRef.current ?? { x: rect.left, y: rect.top };
 
       dragStateRef.current = {
         pointerId: e.pointerId,
@@ -566,18 +798,34 @@ export function PortfolioChatbot() {
         startY: e.clientY,
         originX: currentPos.x,
         originY: currentPos.y,
+        nextX: currentPos.x,
+        nextY: currentPos.y,
         width: rect.width,
         height: rect.height,
+        rafId: 0,
       };
 
+      boxEl.style.willChange = 'transform';
       setIsDragging(true);
       e.preventDefault();
     },
-    [position]
+    []
   );
 
   useEffect(() => {
     if (!isDragging) return;
+
+    const applyDragTransform = () => {
+      const drag = dragStateRef.current;
+      const boxEl = chatboxRef.current;
+      if (!drag) return;
+      drag.rafId = 0;
+      if (boxEl) {
+        const tx = drag.nextX - drag.originX;
+        const ty = drag.nextY - drag.originY;
+        boxEl.style.transform = `translate3d(${tx}px, ${ty}px, 0)`;
+      }
+    };
 
     const handlePointerMove = (e: PointerEvent) => {
       const drag = dragStateRef.current;
@@ -585,15 +833,34 @@ export function PortfolioChatbot() {
 
       const dx = e.clientX - drag.startX;
       const dy = e.clientY - drag.startY;
-      setPosition(
-        clampPosition(drag.originX + dx, drag.originY + dy, drag.width, drag.height)
+      const clamped = clampPosition(
+        drag.originX + dx,
+        drag.originY + dy,
+        drag.width,
+        drag.height
       );
+      drag.nextX = clamped.x;
+      drag.nextY = clamped.y;
+
+      if (!drag.rafId) {
+        drag.rafId = window.requestAnimationFrame(applyDragTransform);
+      }
     };
 
     const handlePointerEnd = (e: PointerEvent) => {
       const drag = dragStateRef.current;
       if (!drag || e.pointerId !== drag.pointerId) return;
+      if (drag.rafId) {
+        window.cancelAnimationFrame(drag.rafId);
+      }
+      const boxEl = chatboxRef.current;
+      if (boxEl) {
+        boxEl.style.transform = '';
+        boxEl.style.willChange = '';
+      }
+      const finalPos = { x: drag.nextX, y: drag.nextY };
       dragStateRef.current = null;
+      setPosition(finalPos);
       setIsDragging(false);
     };
 
@@ -602,6 +869,9 @@ export function PortfolioChatbot() {
     window.addEventListener('pointercancel', handlePointerEnd);
 
     return () => {
+      if (dragStateRef.current?.rafId) {
+        window.cancelAnimationFrame(dragStateRef.current.rafId);
+      }
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerEnd);
       window.removeEventListener('pointercancel', handlePointerEnd);
@@ -623,37 +893,17 @@ export function PortfolioChatbot() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
-            className={`fixed inset-0 z-[35] bg-[#031010]/45 backdrop-blur-md ${
-              isOpen ? 'pointer-events-auto' : 'pointer-events-none'
-            }`}
+            className="fixed inset-0 z-[35] pointer-events-auto bg-[#031010]/45 backdrop-blur-md"
           />
         )}
       </AnimatePresence>
 
       {/* Fixed Non-Draggable Chatbox Starter Launcher */}
-      <button
-        ref={launcherRef}
-        type="button"
-        onClick={handleOpenToggle}
-        aria-expanded={isOpen}
-        aria-label={isOpen ? "Close Ask Sabari's Assistant" : "Open Ask Sabari's Assistant"}
-        title="Ask Sabari's Assistant"
-        className="touch-press fixed bottom-4 right-4 z-40 max-w-[calc(100vw-2rem)] rounded-full transition-transform duration-200 hover:scale-[1.02] sm:bottom-6 sm:right-6 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
-      >
-        <span className="glass-surface glass-interactive inline-flex max-w-full items-center gap-2.5 rounded-full border border-teal-300/30 bg-[#071E1E]/92 py-1.5 pl-2 pr-4 text-left shadow-[0_14px_34px_-8px_rgba(0,0,0,0.85),0_0_24px_-6px_rgba(56,189,248,0.32)] backdrop-blur-xl hover:border-teal-300/60 sm:gap-3 sm:pr-5">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-sky-400/50 bg-[#030914] shadow-[0_0_14px_-2px_rgba(56,189,248,0.55)] sm:h-11 sm:w-11">
-            <RobotMascot className="h-full w-full scale-105" />
-          </span>
-          <span className="min-w-0">
-            <span className="block truncate text-[15px] font-bold leading-tight text-[#FFFF00] sm:text-base">
-              Ask Sabari&apos;s Assistant
-            </span>
-            <span className="block truncate text-[11.5px] italic leading-tight text-[#A0B2B2] sm:text-xs">
-              FAQ &amp; AI Chat
-            </span>
-          </span>
-        </span>
-      </button>
+      <ChatLauncher
+        launcherRef={launcherRef}
+        isOpen={isOpen}
+        onToggle={handleOpenToggle}
+      />
 
       {/* Opened Draggable Dark Teal Glassmorphism Chatbox */}
       {isOpen && (
@@ -740,33 +990,10 @@ export function PortfolioChatbot() {
             className="no-scrollbar min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-3.5 py-3 text-[13px] focus:outline-none"
           >
             {/* Frequently Asked Questions (5 Vertical Buttons) */}
-            <AnimatePresence initial={false}>
-              {isFaqSectionOpen && (
-                <motion.div
-                  key="faq-questions-list"
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-                  className="overflow-hidden"
-                >
-                  <div className="rounded-xl border border-teal-300/15 bg-[#041616]/60 p-2.5">
-                    <div className="flex flex-col gap-1.5">
-                      {FAQ_ITEMS.map((faq) => (
-                        <button
-                          key={faq.id}
-                          type="button"
-                          onClick={() => handleFaqClick(faq)}
-                          className="w-full rounded-lg border border-teal-300/20 bg-[#092727]/80 px-2.5 py-1.5 text-left text-[12.5px] text-teal-50 transition-colors hover:border-emerald-400/50 hover:bg-emerald-500/15 hover:text-white cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
-                        >
-                          {faq.question}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            <FaqSection
+              isFaqSectionOpen={isFaqSectionOpen}
+              onFaqClick={handleFaqClick}
+            />
 
             {/* Welcome Message Bubble (Below and Separate from FAQ Section) */}
             <div className="flex items-start gap-2">
@@ -779,24 +1006,9 @@ export function PortfolioChatbot() {
             </div>
 
             {/* Conversation History Bubbles */}
-            {messages.map((msg) =>
-              msg.role === 'user' ? (
-                <div key={msg.id} className="flex justify-end">
-                  <div className="max-w-[84%] rounded-2xl rounded-tr-sm border border-emerald-400/35 bg-emerald-500/20 px-3 py-2 text-white shadow-sm">
-                    <p className="leading-relaxed break-words">{msg.content}</p>
-                  </div>
-                </div>
-              ) : (
-                <div key={msg.id} className="flex items-start gap-2">
-                  <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full border border-sky-400/45 bg-[#030914]">
-                    <RobotMascot className="h-full w-full scale-105" />
-                  </div>
-                  <div className="min-w-0 max-w-[85%] rounded-2xl rounded-tl-sm border border-teal-300/20 bg-[#0A2929]/90 px-3 py-2 text-[#E8F6F6] shadow-sm">
-                    <ChatMarkdown content={msg.content} />
-                  </div>
-                </div>
-              )
-            )}
+            {messages.map((msg) => (
+              <ChatMessageBubble key={msg.id} msg={msg} />
+            ))}
 
             {/* Loading Indicator (AI & FAQ Thinking...) */}
             {(isLoading || isFaqThinking) && (
@@ -838,58 +1050,11 @@ export function PortfolioChatbot() {
           </div>
 
           {/* Input Bar + Green Send Button */}
-          <form
-            onSubmit={handleSubmit}
-            noValidate
-            className="flex shrink-0 flex-col border-t border-teal-200/15 bg-[#051818]/90 px-3 py-2.5"
-          >
-            {/* Offscreen Honeypot for Automated Bot Detection */}
-            <input
-              type="text"
-              name="website"
-              value={honeypotValue}
-              onChange={(e) => setHoneypotValue(e.target.value)}
-              tabIndex={-1}
-              autoComplete="off"
-              aria-hidden="true"
-              className="pointer-events-none absolute -left-[9999px] h-0 w-0 opacity-0"
-            />
-            <div className="flex items-center gap-2">
-              <input
-                ref={inputRef}
-                type="text"
-                value={inputValue}
-                onChange={(e) => {
-                  setInputValue(e.target.value);
-                  if (validationError) setValidationError(null);
-                }}
-                placeholder="Ask me anything..."
-                aria-label="Ask me anything"
-                aria-invalid={validationError ? true : undefined}
-                aria-describedby={validationError ? 'chat-validation-error' : undefined}
-                maxLength={2001}
-                className="h-9 min-w-0 flex-1 rounded-xl border border-teal-300/25 bg-[#0A2626]/90 px-3 text-[13px] text-white placeholder:text-[#9FC7C7] focus:border-emerald-400/65 focus:outline-none focus:ring-2 focus:ring-emerald-400/25"
-              />
-              <button
-                type="submit"
-                disabled={isLoading}
-                aria-label="Send message"
-                title="Send"
-                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-[#031510] shadow-[0_0_16px_-3px_rgba(16,185,129,0.7)] transition-colors hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-emerald-700/40 disabled:text-white/60 disabled:shadow-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
-              >
-                <Send className="h-4 w-4" />
-              </button>
-            </div>
-            {validationError && (
-              <p
-                id="chat-validation-error"
-                role="alert"
-                className="mt-1.5 text-[11.5px] font-medium text-rose-300"
-              >
-                {validationError}
-              </p>
-            )}
-          </form>
+          <ChatInputForm
+            isLoading={isLoading}
+            clearNonce={clearNonce}
+            onSendMessage={handleSendMessage}
+          />
         </div>
       )}
     </>

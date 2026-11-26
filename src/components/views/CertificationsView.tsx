@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useMemo, useState } from 'react';
+import { type FormEvent, memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   CheckVerifiedIcon,
@@ -16,6 +16,83 @@ import { TiltCard } from '../TiltCard';
 
 const MAX_FILTER_LENGTH = 80;
 const INVALID_FILTER_PATTERN = /[<>{}$`]/;
+
+interface CertificateCardProps {
+  cert: CertificateItem;
+  eager: boolean;
+  highPriority: boolean;
+  onSelect: (cert: CertificateItem) => void;
+}
+
+const CertificateCard = memo(function CertificateCard({
+  cert,
+  eager,
+  highPriority,
+  onSelect,
+}: CertificateCardProps) {
+  return (
+    <TiltCard
+      maxTiltDeg={2.4}
+      glowColor="pink"
+      scaleOnHover={1.008}
+      className="cert-grid-card glass-surface glass-interactive flex flex-col rounded-2xl"
+    >
+      <button
+        type="button"
+        onClick={() => onSelect(cert)}
+        aria-label={`Inspect ${cert.title} certificate issued by ${cert.issuer}`}
+        className="group touch-press flex h-full w-full flex-col rounded-2xl p-3.5 text-left sm:p-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF27]"
+      >
+        <div className="relative aspect-[14/10] w-full overflow-hidden rounded-xl border border-white/15 bg-white p-1.5 shadow-inner">
+          <img
+            src={cert.imageUrl}
+            alt={cert.alt}
+            width={1400}
+            height={1000}
+            loading={eager ? 'eager' : 'lazy'}
+            fetchPriority={highPriority ? 'high' : undefined}
+            decoding="async"
+            className="h-full w-full object-contain transition-transform duration-300 ease-out group-hover:scale-[1.02]"
+          />
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute right-2.5 bottom-2.5 inline-flex h-7 w-7 items-center justify-center rounded-lg border border-white/20 bg-[#071B1B]/80 text-[#FFFFFF] opacity-0 backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100"
+          >
+            <ZoomInLensIcon className="h-3.5 w-3.5 text-[#C8FF27]" />
+          </span>
+        </div>
+
+        <div className="mt-3.5 flex flex-1 flex-col justify-between gap-2.5 px-1 pb-0.5">
+          <div>
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-kalam text-xs font-bold text-[#F05BEA] tabular-nums">
+                {cert.number}
+              </span>
+              {cert.issuedDate && (
+                <span className="font-kalam text-[11px] text-[#B8C7C7] tabular-nums">
+                  {cert.issuedDate}
+                </span>
+              )}
+            </div>
+            <h2 className="mt-1 font-caveat text-[1.35rem] leading-snug font-normal tracking-wide text-[#FFFF00] transition-colors group-hover:text-[#FFF899]">
+              {cert.title}
+            </h2>
+          </div>
+
+          <div className="flex items-center gap-2 border-t border-white/10 pt-2.5">
+            <CheckVerifiedIcon
+              aria-hidden="true"
+              className="h-4 w-4 shrink-0 text-[#C8FF27]"
+            />
+            <span className="font-kalam text-xs text-[#D5E2E2] sm:text-[13px]">
+              {cert.issuer}
+            </span>
+          </div>
+        </div>
+      </button>
+    </TiltCard>
+  );
+});
 
 export function CertificationsView() {
   const [courseQuery, setCourseQuery] = useState('');
@@ -64,6 +141,28 @@ export function CertificationsView() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedCert, selectedIndex, filteredCertificates]);
+
+  useEffect(() => {
+    const isModalOpen = Boolean(selectedCert);
+    window.dispatchEvent(
+      new CustomEvent('portfolio:overlay-blur', {
+        detail: { source: 'cert-lightbox', active: isModalOpen },
+      })
+    );
+    return () => {
+      if (isModalOpen) {
+        window.dispatchEvent(
+          new CustomEvent('portfolio:overlay-blur', {
+            detail: { source: 'cert-lightbox', active: false },
+          })
+        );
+      }
+    };
+  }, [selectedCert]);
+
+  const handleSelectCert = useCallback((cert: CertificateItem) => {
+    setSelectedCert(cert);
+  }, []);
 
   const handleQueryChange = (rawValue: string) => {
     if (rawValue.length > MAX_FILTER_LENGTH) {
@@ -186,64 +285,13 @@ export function CertificationsView() {
       ) : (
         <div className="mt-6 grid grid-cols-1 gap-5 sm:mt-8 sm:gap-6 md:grid-cols-2 xl:grid-cols-3">
           {filteredCertificates.map((cert, idx) => (
-            <TiltCard
+            <CertificateCard
               key={cert.id}
-              maxTiltDeg={2.4}
-              glowColor="pink"
-              scaleOnHover={1.008}
-              className="glass-surface glass-interactive flex flex-col rounded-2xl"
-            >
-              <button
-                type="button"
-                onClick={() => setSelectedCert(cert)}
-                aria-label={`Inspect ${cert.title} certificate issued by ${cert.issuer}`}
-                className="group touch-press flex h-full w-full flex-col rounded-2xl p-3.5 text-left sm:p-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF27]"
-              >
-                <div className="relative aspect-[14/10] w-full overflow-hidden rounded-xl border border-white/15 bg-white p-1.5 shadow-inner">
-                  <img
-                    src={cert.imageUrl}
-                    alt={cert.alt}
-                    loading={idx < 6 ? 'eager' : 'lazy'}
-                    decoding="async"
-                    className="h-full w-full object-contain transition-transform duration-300 ease-out group-hover:scale-[1.02]"
-                  />
-                  <span
-                    aria-hidden="true"
-                    className="pointer-events-none absolute right-2.5 bottom-2.5 inline-flex h-7 w-7 items-center justify-center rounded-lg border border-white/20 bg-[#071B1B]/80 text-[#FFFFFF] opacity-0 backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100"
-                  >
-                    <ZoomInLensIcon className="h-3.5 w-3.5 text-[#C8FF27]" />
-                  </span>
-                </div>
-
-                <div className="mt-3.5 flex flex-1 flex-col justify-between gap-2.5 px-1 pb-0.5">
-                  <div>
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-kalam text-xs font-bold text-[#F05BEA] tabular-nums">
-                        {cert.number}
-                      </span>
-                      {cert.issuedDate && (
-                        <span className="font-kalam text-[11px] text-[#B8C7C7] tabular-nums">
-                          {cert.issuedDate}
-                        </span>
-                      )}
-                    </div>
-                    <h2 className="mt-1 font-caveat text-[1.35rem] leading-snug font-normal tracking-wide text-[#FFFF00] transition-colors group-hover:text-[#FFF899]">
-                      {cert.title}
-                    </h2>
-                  </div>
-
-                  <div className="flex items-center gap-2 border-t border-white/10 pt-2.5">
-                    <CheckVerifiedIcon
-                      aria-hidden="true"
-                      className="h-4 w-4 shrink-0 text-[#C8FF27]"
-                    />
-                    <span className="font-kalam text-xs text-[#D5E2E2] sm:text-[13px]">
-                      {cert.issuer}
-                    </span>
-                  </div>
-                </div>
-              </button>
-            </TiltCard>
+              cert={cert}
+              eager={idx < 6}
+              highPriority={idx < 3}
+              onSelect={handleSelectCert}
+            />
           ))}
         </div>
       )}

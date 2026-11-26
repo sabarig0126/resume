@@ -40,7 +40,7 @@ export const FEATURE_SEO_META: Record<FeatureId, FeatureSeoMeta> = {
   achievements: {
     title: 'Achievements — Sabarivasan G | AI & Data Science',
     description:
-      'Achievements and participation of Sabarivasan G: NPTEL IIT Madras Design Thinking Elite (63%), Smart India Hackathon internal round, IIT Bombay Illuminate Bootcamp, and TEDxSRIT.',
+      'Achievements and participation of Sabarivasan G: NPTEL IIT Madras Design Thinking Elite (63%), Smart India Hackathon internal round, E-Cell IIT Bombay Illuminate Bootcamp at SRIT, and TEDxSRIT.',
     path: '/achievements',
   },
   skills: {
@@ -52,7 +52,7 @@ export const FEATURE_SEO_META: Record<FeatureId, FeatureSeoMeta> = {
   certifications: {
     title: 'Certifications — Sabarivasan G | AI & Data Science',
     description:
-      'Explore 7 learning tracks and 25+ completed courses by Sabarivasan G across NPTEL, IBM, MathWorks MATLAB, Python, MySQL, MongoDB, Data Analysis, and Cybersecurity.',
+      'Explore 34 verified certificates across 9 issuing organizations by Sabarivasan G, including MathWorks MATLAB, Infosys Springboard, MongoDB, IBM, NPTEL IIT Madras, Simplilearn, and Tech Mahindra Foundation.',
     path: '/certifications',
   },
   education: {

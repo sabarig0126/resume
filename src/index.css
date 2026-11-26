@@ -1941,3 +1941,32 @@ body::-webkit-scrollbar-corner,
     transform: none;
   }
 }
+
+/* Defer off-screen layout/paint/backdrop-blur for large glassmorphism grids without changing visuals */
+.cert-grid-card {
+  content-visibility: auto;
+  contain-intrinsic-size: 320px 360px;
+  contain: layout style;
+}
+
+@keyframes header-logo-pulse-kf {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.15;
+  }
+}
+
+.header-logo-pulse {
+  animation: header-logo-pulse-kf 1.4s ease-in-out infinite;
+  will-change: opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header-logo-pulse {
+    animation: none;
+    opacity: 1;
+  }
+}
+

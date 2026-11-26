@@ -44,7 +44,7 @@ export function TermsView({ onNavigateFeature }: TermsViewProps) {
                 2. Intellectual Property &amp; Portfolio Content
               </h2>
               <p className="mt-2 text-[#C8D4D4]">
-                All original portfolio copy, layout design, branding assets, resume documents, and presentation materials displayed on this website belong to {PROFILE.name} unless attributed to third-party educational or certification organizations (such as NPTEL, IIT Madras, IIT Bombay, IBM, or MathWorks). You may view or download the resume and portfolio PDF solely for legitimate academic, internship, or recruitment evaluation.
+                All original portfolio copy, layout design, branding assets, resume documents, and presentation materials displayed on this website belong to {PROFILE.name} unless attributed to third-party educational or certification organizations (such as NPTEL, IIT Madras, E-Cell IIT Bombay, IBM, MathWorks, Infosys Springboard, MongoDB, Simplilearn SkillUP, or Tech Mahindra Foundation). You may view or download the resume and portfolio PDF solely for legitimate academic, internship, or recruitment evaluation.
               </p>
             </section>
 

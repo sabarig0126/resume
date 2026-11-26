@@ -90,6 +90,8 @@ export function CursorGlow({ disabled = false }: CursorGlowProps) {
     let pendingTarget: EventTarget | null = null;
     let lastInspectedEl: Element | null = null;
     let needsScrollInspect = false;
+    let lastScrollInspectTime = 0;
+    let scrollSettleTimer = 0;
 
     let rafId = 0;
     let lastFrameTime = 0;
@@ -258,6 +260,7 @@ export function CursorGlow({ disabled = false }: CursorGlowProps) {
 
       if (needsScrollInspect) {
         needsScrollInspect = false;
+        lastScrollInspectTime = now;
         pendingTarget = document.elementFromPoint(targetX, targetY);
       }
 
@@ -423,8 +426,21 @@ export function CursorGlow({ disabled = false }: CursorGlowProps) {
 
     const handleScroll = () => {
       if (!canUseCustomCursor || !isVisible || document.hidden) return;
-      needsScrollInspect = true;
-      scheduleTick();
+      const now = performance.now();
+      if (now - lastScrollInspectTime >= 110) {
+        needsScrollInspect = true;
+        scheduleTick();
+      }
+      if (scrollSettleTimer) {
+        window.clearTimeout(scrollSettleTimer);
+      }
+      scrollSettleTimer = window.setTimeout(() => {
+        scrollSettleTimer = 0;
+        if (canUseCustomCursor && isVisible && !document.hidden) {
+          needsScrollInspect = true;
+          scheduleTick();
+        }
+      }, 120);
     };
 
     const handleResize = () => {
@@ -472,6 +488,9 @@ export function CursorGlow({ disabled = false }: CursorGlowProps) {
       syncVisualRef.current = null;
       setHtmlCursorClass(false);
       stopLoop();
+      if (scrollSettleTimer) {
+        window.clearTimeout(scrollSettleTimer);
+      }
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerdown', handlePointerDown);
       window.removeEventListener('pointerup', handlePointerUp);
