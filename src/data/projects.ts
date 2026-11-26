@@ -64,8 +64,9 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItem[] = [
     organization: 'NPTEL – IIT Madras',
     timeframe: 'Elite · 63%',
     location: 'IIT Madras (Online)',
-    imageUrl: '/assets/achievements/nptel-design-thinking.svg',
-    imageAlt: 'NPTEL IIT Madras Design Thinking Elite certificate emblem',
+    imageUrl: '/assets/certificates/22-nptel-design-thinking-a-primer.webp',
+    imageAlt:
+      'NPTEL Online Certification Elite Certificate from IIT Madras awarded to Sabarivasan for Design Thinking - A Primer with 63% consolidated score',
     summary:
       'Earned the NPTEL Elite certificate in Design Thinking – A Primer offered by IIT Madras with a score of 63%.',
     details:
@@ -86,13 +87,14 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItem[] = [
   {
     id: 'smart-india-hackathon',
     indexNumber: '02',
-    title: 'Smart India Hackathon (SIH) Internal Round',
+    title: 'Smart India Hackathon (SIH) – Internal Round Participant',
     category: 'Achievements',
     organization: 'Sri Ramakrishna Institute of Technology',
     timeframe: 'College Level',
     location: 'Coimbatore',
-    imageUrl: '/assets/achievements/sih-hackathon-srit.svg',
-    imageAlt: 'Smart India Hackathon internal round participation visual emblem',
+    imageUrl: '/assets/aistudio/Watercolor_Dog-Filter_Group_Selfie_a2b3ea92.png',
+    imageAlt:
+      'Ghibli-style group photo from Smart India Hackathon (SIH) internal round at Sri Ramakrishna Institute of Technology',
     summary:
       'Participated in the internal round of the Smart India Hackathon (SIH) at Sri Ramakrishna Institute of Technology.',
     details:
@@ -117,8 +119,9 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItem[] = [
     organization: 'E-Cell, IIT Bombay',
     timeframe: 'Oct 2025 · Bootcamp',
     location: 'SRIT, Coimbatore',
-    imageUrl: '/assets/achievements/illuminate-iit-bombay.svg',
-    imageAlt: 'Illuminate Entrepreneurship Bootcamp IIT Bombay visual emblem',
+    imageUrl: '/assets/certificates/07-illuminate-iit-bombay.webp',
+    imageAlt:
+      'E-Cell IIT Bombay Certificate of Appreciation awarded to Sabarivasan G for Illuminate Entrepreneurship Bootcamp at SRIT',
     summary:
       'Completed the Illuminate Entrepreneurship Bootcamp held at Sri Ramakrishna Institute of Technology in association with E-Cell, IIT Bombay.',
     details:
@@ -143,8 +146,9 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItem[] = [
     organization: 'Sri Ramakrishna Institute of Technology',
     timeframe: 'Feb 2026 · Event',
     location: 'Coimbatore',
-    imageUrl: '/assets/achievements/tedxsrit-human-in-the-loop.svg',
-    imageAlt: 'TEDxSRIT Human in the Loop participation visual emblem',
+    imageUrl: '/assets/certificates/16-tedx-srit-human-in-the-loop.webp',
+    imageAlt:
+      'TEDxSRIT Certificate of Participation awarded to Sabarivasan G for Human in the Loop edition',
     summary:
       'Participated in TEDxSRIT on the theme “Human in the Loop”.',
     details:

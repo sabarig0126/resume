@@ -224,11 +224,17 @@ export default function App() {
     }
   }, [activeFeature, showIntro, consentPrefs?.analytics]);
 
-  // Lightweight delegated touch feedback for mobile/pen taps with instant release
+  // Lightweight delegated touch feedback for mobile/pen taps and interactive glass surfaces (never runs for mouse)
   useEffect(() => {
     let activeTapEl: HTMLElement | null = null;
     let startX = 0;
     let startY = 0;
+
+    let activeGlassEl: HTMLElement | null = null;
+    let activeGlassPointerId: number | null = null;
+    let glassRafId = 0;
+    let glassClientX = 0;
+    let glassClientY = 0;
 
     const clearTap = () => {
       if (activeTapEl) {
@@ -237,25 +243,101 @@ export default function App() {
       }
     };
 
+    const updateGlassTouch = () => {
+      glassRafId = 0;
+      const el = activeGlassEl;
+      if (!el) return;
+
+      const rect = el.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return;
+
+      const px = Math.min(1, Math.max(0, (glassClientX - rect.left) / rect.width));
+      const py = Math.min(1, Math.max(0, (glassClientY - rect.top) / rect.height));
+      const rotateY = (px - 0.5) * 5.2;
+      const rotateX = (0.5 - py) * 5.2;
+
+      el.style.setProperty('--glass-tx', `${(px * 100).toFixed(1)}%`);
+      el.style.setProperty('--glass-ty', `${(py * 100).toFixed(1)}%`);
+      el.style.setProperty('--glass-rx', `${rotateX.toFixed(2)}deg`);
+      el.style.setProperty('--glass-ry', `${rotateY.toFixed(2)}deg`);
+      el.setAttribute('data-glass-touch', 'true');
+    };
+
+    const clearGlassTouch = () => {
+      if (glassRafId) {
+        window.cancelAnimationFrame(glassRafId);
+        glassRafId = 0;
+      }
+      if (activeGlassEl) {
+        const el = activeGlassEl;
+        el.removeAttribute('data-glass-touch');
+        el.style.removeProperty('--glass-rx');
+        el.style.removeProperty('--glass-ry');
+        activeGlassEl = null;
+      }
+      activeGlassPointerId = null;
+    };
+
     const handlePointerDown = (e: PointerEvent) => {
       if (e.pointerType === 'mouse') return;
-      const target = e.target instanceof Element ? e.target.closest('.touch-press') : null;
-      if (!(target instanceof HTMLElement)) return;
-      if (target.hasAttribute('disabled') || target.getAttribute('aria-disabled') === 'true') {
-        return;
+
+      const rawTarget = e.target instanceof Element ? e.target : null;
+      if (rawTarget) {
+        const tapTarget = rawTarget.closest('.touch-press');
+        if (
+          tapTarget instanceof HTMLElement &&
+          !tapTarget.hasAttribute('disabled') &&
+          tapTarget.getAttribute('aria-disabled') !== 'true'
+        ) {
+          clearTap();
+          activeTapEl = tapTarget;
+          startX = e.clientX;
+          startY = e.clientY;
+          tapTarget.setAttribute('data-tap', 'true');
+        }
+
+        // Handle interactive glass surfaces that are not already managed by TiltCard
+        const glassTarget = rawTarget.closest('.glass-interactive');
+        if (
+          glassTarget instanceof HTMLElement &&
+          !glassTarget.closest('[data-tilt-card="true"]')
+        ) {
+          clearGlassTouch();
+          activeGlassEl = glassTarget;
+          activeGlassPointerId = e.pointerId;
+          glassClientX = e.clientX;
+          glassClientY = e.clientY;
+          if (glassRafId) {
+            window.cancelAnimationFrame(glassRafId);
+            glassRafId = 0;
+          }
+          updateGlassTouch();
+        }
       }
-      clearTap();
-      activeTapEl = target;
-      startX = e.clientX;
-      startY = e.clientY;
-      target.setAttribute('data-tap', 'true');
     };
 
     const handlePointerMove = (e: PointerEvent) => {
-      if (!activeTapEl || e.pointerType === 'mouse') return;
-      if (Math.hypot(e.clientX - startX, e.clientY - startY) > 8) {
+      if (e.pointerType === 'mouse') return;
+
+      if (activeTapEl && Math.hypot(e.clientX - startX, e.clientY - startY) > 8) {
         clearTap();
       }
+
+      if (
+        activeGlassEl &&
+        (activeGlassPointerId === null || e.pointerId === activeGlassPointerId)
+      ) {
+        glassClientX = e.clientX;
+        glassClientY = e.clientY;
+        if (!glassRafId) {
+          glassRafId = window.requestAnimationFrame(updateGlassTouch);
+        }
+      }
+    };
+
+    const handleReleaseAll = () => {
+      clearTap();
+      clearGlassTouch();
     };
 
     const noopTouch = () => {};
@@ -263,18 +345,20 @@ export default function App() {
     document.addEventListener('touchstart', noopTouch, { passive: true });
     window.addEventListener('pointerdown', handlePointerDown, { passive: true });
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
-    window.addEventListener('pointerup', clearTap, { passive: true });
-    window.addEventListener('pointercancel', clearTap, { passive: true });
-    window.addEventListener('blur', clearTap);
+    window.addEventListener('pointerup', handleReleaseAll, { passive: true });
+    window.addEventListener('pointercancel', handleReleaseAll, { passive: true });
+    window.addEventListener('scroll', clearGlassTouch, { capture: true, passive: true });
+    window.addEventListener('blur', handleReleaseAll);
 
     return () => {
-      clearTap();
+      handleReleaseAll();
       document.removeEventListener('touchstart', noopTouch);
       window.removeEventListener('pointerdown', handlePointerDown);
       window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', clearTap);
-      window.removeEventListener('pointercancel', clearTap);
-      window.removeEventListener('blur', clearTap);
+      window.removeEventListener('pointerup', handleReleaseAll);
+      window.removeEventListener('pointercancel', handleReleaseAll);
+      window.removeEventListener('scroll', clearGlassTouch, { capture: true });
+      window.removeEventListener('blur', handleReleaseAll);
     };
   }, []);
 

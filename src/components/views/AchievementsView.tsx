@@ -72,17 +72,29 @@ export function AchievementsView({
                         className="aspect-[16/10] w-full flex-1 md:aspect-auto md:min-h-[228px]"
                       >
                         {item.imageUrl ? (
-                          <div className="relative h-full w-full overflow-hidden bg-[#051414]">
+                          <div
+                            className={`relative h-full w-full overflow-hidden ${
+                              item.imageUrl.includes('/assets/certificates/')
+                                ? 'bg-white p-1.5'
+                                : 'bg-[#051414]'
+                            }`}
+                          >
                             <ResilientImage
                               src={item.imageUrl}
                               alt={item.imageAlt ?? item.title}
                               fallbackTitle={item.title}
-                              className="h-full w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+                              className={`h-full w-full transition-transform duration-500 ease-out ${
+                                item.imageUrl.includes('/assets/certificates/')
+                                  ? 'object-contain group-hover:scale-[1.02]'
+                                  : 'object-cover object-center group-hover:scale-[1.03]'
+                              }`}
                             />
-                            <div
-                              aria-hidden="true"
-                              className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#051414]/45 via-transparent to-[#071B1B]/25"
-                            />
+                            {!item.imageUrl.includes('/assets/certificates/') && (
+                              <div
+                                aria-hidden="true"
+                                className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#051414]/45 via-transparent to-[#071B1B]/25"
+                              />
+                            )}
                           </div>
                         ) : (
                           <DomainArtwork

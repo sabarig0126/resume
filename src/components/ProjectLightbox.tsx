@@ -96,7 +96,13 @@ export function ProjectLightbox({ item, onClose }: ProjectLightboxProps) {
             }`}
           >
             {item.imageUrl ? (
-              <ProjectImageReveal className="aspect-[16/10] w-full rounded-xl border border-white/10 bg-[#051414] shadow-[0_20px_50px_-16px_rgba(2,10,10,0.88)]">
+              <ProjectImageReveal
+                className={`aspect-[16/10] w-full rounded-xl border border-white/10 shadow-[0_20px_50px_-16px_rgba(2,10,10,0.88)] ${
+                  item.imageUrl.includes('/assets/certificates/')
+                    ? 'bg-white p-2'
+                    : 'bg-[#051414]'
+                }`}
+              >
                 <ResilientImage
                   src={item.imageUrl}
                   alt={item.imageAlt ?? item.title}

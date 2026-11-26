@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import {
+  ExternalPortalIcon,
+  GitHubOctoIcon,
   LinkedInModernIcon,
   LocationBeaconIcon,
   MailEnvelopeIcon,
@@ -54,7 +56,7 @@ export function ContactView() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className="mt-6 flex flex-1 flex-col sm:mt-8"
+        className="mt-6 flex flex-1 flex-col gap-6 sm:mt-8 sm:gap-7"
       >
         <GlassCard
           strong
@@ -155,6 +157,63 @@ export function ContactView() {
               </dd>
             </div>
           </dl>
+        </GlassCard>
+
+        <GlassCard
+          strong
+          accent="lime"
+          className="rounded-2xl p-5 sm:p-7 lg:p-8"
+        >
+          <section
+            aria-labelledby="connect-networking-heading"
+            className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <div>
+              <h2
+                id="connect-networking-heading"
+                className="font-caveat text-2xl font-normal tracking-wide text-[#FFFF00] sm:text-3xl"
+              >
+                Connect &amp; Networking
+              </h2>
+              <p className="mt-1.5 max-w-xl font-kalam text-sm leading-relaxed text-[#A0B2B2] sm:text-[15px]">
+                Connect across professional platforms for AI &amp; Data Science collaborations and opportunities.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <a
+                href={PROFILE.linkedinUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Connect on LinkedIn (opens in a new tab)"
+                className="touch-press group inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-white/12 bg-white/[0.05] px-4 py-2.5 font-kalam text-sm font-bold text-[#FFFFFF] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-1px_2px_rgba(0,0,0,0.45)] transition-all duration-150 ease-out hover:scale-[0.97] hover:border-[#F05BEA]/65 hover:bg-[#F05BEA]/15 hover:text-[#FFFFFF] active:scale-95 motion-reduce:hover:scale-100 motion-reduce:active:scale-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF27]"
+              >
+                <LinkedInModernIcon className="h-4.5 w-4.5 text-[#F05BEA]" aria-hidden="true" />
+                <span>LinkedIn</span>
+                <ExternalPortalIcon
+                  className="h-3.5 w-3.5 text-[#A0B2B2] transition-colors group-hover:text-[#FFFFFF]"
+                  aria-hidden="true"
+                />
+              </a>
+
+              <span
+                aria-label="GitHub (Coming Soon)"
+                className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-white/10 bg-white/[0.025] px-4 py-2.5 font-kalam text-sm font-medium text-[#A0B2B2] select-none"
+              >
+                <GitHubOctoIcon className="h-4.5 w-4.5 text-[#B8C7C7]" aria-hidden="true" />
+                <span>GitHub (Coming Soon)</span>
+              </span>
+
+              <a
+                href={`mailto:${PROFILE.email}`}
+                aria-label={`Email ${PROFILE.name} at ${PROFILE.email}`}
+                className="touch-press group inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-white/12 bg-white/[0.05] px-4 py-2.5 font-kalam text-sm font-bold text-[#FFFFFF] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-1px_2px_rgba(0,0,0,0.45)] transition-all duration-150 ease-out hover:scale-[0.97] hover:border-[#C8FF27]/55 hover:bg-white/[0.11] hover:text-[#C8FF27] active:scale-95 motion-reduce:hover:scale-100 motion-reduce:active:scale-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF27]"
+              >
+                <MailEnvelopeIcon className="h-4.5 w-4.5 text-[#C8FF27]" aria-hidden="true" />
+                <span>Email</span>
+              </a>
+            </div>
+          </section>
         </GlassCard>
       </motion.div>
     </section>

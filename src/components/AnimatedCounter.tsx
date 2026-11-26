@@ -162,23 +162,52 @@ export function AnimatedCounter({
       rafRef.current = window.requestAnimationFrame(step);
     };
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            startAnimation();
-            observer.disconnect();
-            break;
-          }
-        }
-      },
-      { threshold: 0.05 }
-    );
+    let intersectionObserver: IntersectionObserver | null = null;
+    let introObserver: MutationObserver | null = null;
+    let disposed = false;
 
-    observer.observe(el);
+    const attachIntersectionObserver = () => {
+      if (disposed || hasAnimatedRef.current) return;
+
+      intersectionObserver = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              startAnimation();
+              intersectionObserver?.disconnect();
+              intersectionObserver = null;
+              break;
+            }
+          }
+        },
+        { threshold: 0.05 }
+      );
+
+      intersectionObserver.observe(el);
+    };
+
+    const introAncestor = el.closest('.intro-active');
+    if (introAncestor && typeof MutationObserver !== 'undefined') {
+      introObserver = new MutationObserver(() => {
+        if (!el.closest('.intro-active')) {
+          introObserver?.disconnect();
+          introObserver = null;
+          attachIntersectionObserver();
+        }
+      });
+
+      introObserver.observe(introAncestor, {
+        attributes: true,
+        attributeFilter: ['class'],
+      });
+    } else {
+      attachIntersectionObserver();
+    }
 
     return () => {
-      observer.disconnect();
+      disposed = true;
+      introObserver?.disconnect();
+      intersectionObserver?.disconnect();
       if (rafRef.current) {
         window.cancelAnimationFrame(rafRef.current);
         rafRef.current = 0;

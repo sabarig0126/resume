@@ -362,6 +362,123 @@ body::-webkit-scrollbar-corner,
   border-color: rgba(var(--accent-pink-rgb), 0.52);
 }
 
+/* Mobile / touch glass-press & inward indentation at exact finger coordinates */
+[data-glass-touch-active="true"].glass-surface,
+[data-glass-touch-active="true"].glass-surface-strong,
+[data-glass-touch-active="true"] .glass-surface,
+[data-glass-touch-active="true"] .glass-surface-strong,
+.glass-interactive[data-glass-touch="true"] {
+  border-color: rgba(var(--accent-pink-rgb), 0.46);
+  box-shadow:
+    0 12px 28px -14px rgba(2, 10, 10, 0.9),
+    0 0 28px -10px rgba(var(--accent-pink-rgb), 0.3),
+    inset 0 2px 14px 0 rgba(2, 10, 10, 0.5),
+    inset 0 -1px 0 0 rgba(var(--accent-pink-rgb), 0.24);
+}
+
+[data-glass-touch-active="true"].glass-accent-lime,
+[data-glass-touch-active="true"] .glass-accent-lime,
+.glass-accent-lime.glass-interactive[data-glass-touch="true"] {
+  border-color: rgba(var(--accent-lime-rgb), 0.54);
+  box-shadow:
+    0 12px 28px -14px rgba(2, 10, 10, 0.9),
+    0 0 28px -10px rgba(var(--accent-lime-rgb), 0.28),
+    inset 0 2px 14px 0 rgba(2, 10, 10, 0.5),
+    inset 0 -1px 0 0 rgba(var(--accent-lime-rgb), 0.26);
+}
+
+[data-glass-touch-active="true"].glass-surface::before,
+[data-glass-touch-active="true"].glass-surface-strong::before,
+[data-glass-touch-active="true"] .glass-surface::before,
+[data-glass-touch-active="true"] .glass-surface-strong::before,
+.glass-interactive[data-glass-touch="true"]::before {
+  opacity: 1;
+}
+
+.glass-interactive[data-glass-touch="true"] {
+  transform: perspective(960px) rotateX(var(--glass-rx, 0deg)) rotateY(var(--glass-ry, 0deg)) scale3d(0.986, 0.986, 1);
+  transition:
+    transform 95ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+}
+
+.touch-press > .glass-interactive[data-glass-touch="true"] {
+  transform: none;
+}
+
+.glass-surface.glass-interactive[data-glass-touch="true"]::after,
+.glass-surface-strong.glass-interactive[data-glass-touch="true"]::after {
+  background:
+    radial-gradient(
+      52px circle at var(--glass-tx, 50%) var(--glass-ty, 50%),
+      rgba(2, 10, 10, 0.3) 0%,
+      rgba(2, 10, 10, 0.12) 56%,
+      transparent 100%
+    ),
+    radial-gradient(
+      110px circle at var(--glass-tx, 50%) var(--glass-ty, 50%),
+      transparent 30%,
+      rgba(255, 255, 255, 0.16) 52%,
+      rgba(var(--accent-pink-rgb), 0.18) 68%,
+      transparent 86%
+    ),
+    radial-gradient(
+      280px circle at var(--glass-tx, 50%) var(--glass-ty, 50%),
+      rgba(var(--accent-pink-rgb), 0.18) 0%,
+      rgba(var(--accent-lime-rgb), 0.05) 48%,
+      transparent 76%
+    ),
+    radial-gradient(
+      110% 72% at 14% 0%,
+      rgba(255, 255, 255, 0.08) 0%,
+      rgba(var(--accent-pink-rgb), 0.08) 32%,
+      transparent 64%
+    ),
+    radial-gradient(
+      90% 68% at 88% 100%,
+      rgba(var(--accent-pink-rgb), 0.09) 0%,
+      rgba(var(--accent-lime-rgb), 0.04) 36%,
+      transparent 68%
+    );
+}
+
+.glass-accent-lime.glass-interactive[data-glass-touch="true"]::after {
+  background:
+    radial-gradient(
+      52px circle at var(--glass-tx, 50%) var(--glass-ty, 50%),
+      rgba(2, 10, 10, 0.3) 0%,
+      rgba(2, 10, 10, 0.12) 56%,
+      transparent 100%
+    ),
+    radial-gradient(
+      110px circle at var(--glass-tx, 50%) var(--glass-ty, 50%),
+      transparent 30%,
+      rgba(255, 255, 255, 0.16) 52%,
+      rgba(var(--accent-lime-rgb), 0.18) 68%,
+      transparent 86%
+    ),
+    radial-gradient(
+      280px circle at var(--glass-tx, 50%) var(--glass-ty, 50%),
+      rgba(var(--accent-lime-rgb), 0.16) 0%,
+      rgba(var(--accent-pink-rgb), 0.07) 48%,
+      transparent 76%
+    ),
+    radial-gradient(
+      110% 72% at 14% 0%,
+      rgba(255, 255, 255, 0.08) 0%,
+      rgba(var(--accent-pink-rgb), 0.08) 32%,
+      transparent 64%
+    ),
+    radial-gradient(
+      90% 68% at 88% 100%,
+      rgba(var(--accent-pink-rgb), 0.09) 0%,
+      rgba(var(--accent-lime-rgb), 0.04) 36%,
+      transparent 68%
+    );
+}
+
 @keyframes touch-haptic-pulse {
   0% {
     box-shadow:
@@ -397,6 +514,10 @@ body::-webkit-scrollbar-corner,
   .glass-interactive,
   .touch-press {
     transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+  }
+
+  .glass-interactive[data-glass-touch="true"] {
+    transform: none;
   }
 
   .touch-press:active:not(:disabled):not([aria-disabled="true"]),
