@@ -139,7 +139,95 @@ export function buildRealtimeDateTimeContext(now: Date = new Date()): string {
     `Current Day of Week: ${weekday}`,
     `Current Date: ${fullDate} (${isoDate})`,
     `Current Time: ${time12} (${time24} 24-hour)`,
-    'When asked about the current date, current time, day of the week, today, tomorrow, or yesterday, ALWAYS answer directly using this authoritative Asia/Kolkata server clock above instead of guessing from training data.',
+    'When asked about the current date, current time, day of the week, today, tomorrow, or yesterday (in English, Tamil, or Tanglish), ALWAYS answer directly using this authoritative Asia/Kolkata server clock above instead of guessing from training data.',
+  ].join('\n');
+}
+
+const TAMIL_SCRIPT_RE = /[\u0B80-\u0BFF]/;
+
+const TANGLISH_WORDS_RE =
+  /\b(?:vanakkam|vanakam|vankam|namaskaram|nandri|nanri|machan|macha|machi|nanba|nanbaa|thala|thalaiva|thambi|neenga|namma|naanga|nanga|naan|avan|aval|avar|avaru|avaroda|avanga|avangaloda|ivan|ivaru|ivaroda|ivanga|idhu|ithu|adhu|athu|unga|enga|yenga|yenge|ennoda|unnoda|enakku|enaku|unakku|unaku|avangalukku|sabariku|sabariyoda|sabarioda|epdi|eppadi|yeppadi|epadi|epidi|epd|enna|yenna|ennanga|ennathu|entha|yentha|endha|yaaru|yaru|ethana|eththana|yeththana|evlo|yevlo|evvalavu|eppo|yeppo|eppothu|eppa|enge|engiruku|inniku|innikku|innaiku|inikki|innaikki|naalaiku|nalaiku|nethu|netru|ippo|ippothu|inga|anga|mela|keela|ulla|veliya|appuram|apram|apdiye|appadiye|kooda|mattum|matum|thaan|thaana|kitta|iruku|irukku|iruka|irukka|iruke|irukke|iruken|irukken|irukinga|irukeenga|irukanga|irukaanga|irukkanga|irukiraaru|irukar|irukaaru|irukkaaru|illa|illai|ille|illaya|aama|aamaa|sollu|sollunga|solunga|sollunge|solren|solra|solla|solli|solluva|solluvinga|pathi|paththi|padipu|padippu|padikira|padikkira|padikuran|padikkuran|padikaran|padikuraru|padikkiraaru|padikiraaru|padikkiraar|padikiraar|padicha|padichirukaru|padichirukkaaru|pannu|panna|panni|pannunga|panra|panraru|panrathu|pannirukaru|pannirukaaru|pannirukkaaru|pannirukanga|pannanga|pannalam|panlaam|pannuvaaru|pannuvaru|poraru|poraaru|poranga|vararu|varaaru|varuvaaru|mudicha|mudicharu|mudichirukaru|mudichirukaaru|mudichirukkaaru|mudichirukanga|vachirukaru|vechirukaru|vachirukaaru|vechirukaaru|vachirukanga|vechirukanga|vachiruka|theriyuma|theriyum|therila|theriyala|therinja|therinjikalam|puriyala|purinjidhu|puriyudha|kedaikum|kidaikum|kedaikuma|kidaikuma|kidaikkuma|mudiyuma|mudiyum|mudiyathu|mudiyala|venum|venaam|venam|pothum|seri|sari|romba|nalla|nallathu|nalladhu|paravala|paravailla|konjam|kandippa|semma|sema|kalakkal|veralevel|aachu|achu|aagum|aaguthu|paaru|parunga|kaatu|katunga|kelu|kelunga|vaanga|ponga|pesu|pesunga|pesalam|kudu|kudunga|kodunga|thanga|tharuvingala|edhachum|edhavathu|ethachum|ethavathu|onnum|onnume|ellam|ellaam|ellame|ellaame|dei)\b/i;
+
+const TANGLISH_PHRASE_OR_MORPH_RE =
+  /(?:\b(?:tamil|english|tanglish|college|school|project|skills?|certificates?|time|date|sabari|sir|bro)\s+(?:la|oda|kku|ku|nu|pathi|paththi)\b|\b(?:detail|brief|clear|correct|proper|fast|short|simple|full)\s+ah\b|-(?:la|oda|kku|ah)\b|\b(?:hi|hey|hello|ok|okay|seri|sari|thanks|thank\s+you|nandri|bye|sollu|anna|bro|super|semma|sema)\s+da\b|\bda\s*[?!.]*$|\b\w+(?:iruk[ku]+|pann(?:u|a|i|unga|iruk)|panr(?:a|aru|athu)|padik(?:ira|kira|ura)|mudich(?:a|iru)|vachiruk|vechiruk|theriy(?:um|ala)|mudiy(?:um|athu|ala))\b|\bvera\s+level\b)/i;
+
+export type DetectedChatLanguage = 'tamil' | 'tanglish' | 'english' | 'inherit';
+
+export function detectTurnLanguage(latestUserMessage: string): DetectedChatLanguage {
+  const text = latestUserMessage.trim();
+  if (!text) return 'inherit';
+
+  if (
+    /\b(?:in english|reply in english|english please|speak in english|explain in english|answer in english|english la)\b/i.test(
+      text
+    ) ||
+    text.includes('ஆங்கிலத்தில்')
+  ) {
+    return 'english';
+  }
+
+  if (
+    /\b(?:in tanglish|tanglish la|tanglish-la|reply in tanglish|speak in tanglish|write in tanglish)\b/i.test(
+      text
+    )
+  ) {
+    return 'tanglish';
+  }
+
+  if (
+    /\b(?:in tamil|reply in tamil|tamil please|speak in tamil|explain in tamil|answer in tamil|tamil script|tamil la)\b/i.test(
+      text
+    ) ||
+    text.includes('தமிழில்')
+  ) {
+    return 'tamil';
+  }
+
+  if (TAMIL_SCRIPT_RE.test(text)) {
+    return 'tamil';
+  }
+
+  if (TANGLISH_WORDS_RE.test(text) || TANGLISH_PHRASE_OR_MORPH_RE.test(text)) {
+    return 'tanglish';
+  }
+
+  if (/^[\s\d\p{P}\p{S}okhm]+$/iu.test(text) && text.length <= 8) {
+    return 'inherit';
+  }
+
+  return 'english';
+}
+
+export function buildTurnLanguageContext(latestUserMessage: string): string {
+  const detected = detectTurnLanguage(latestUserMessage);
+
+  if (detected === 'tamil') {
+    return [
+      '=== LANGUAGE INSTRUCTION FOR THIS TURN ===',
+      'Detected User Language: TAMIL (தமிழ்)',
+      'STRICT RULE: Reply ENTIRELY in clear, natural Tamil script (தமிழ்) from the first word to the last word. Write all headings, explanations, numbers/dates, and terms smoothly in Tamil script (e.g., சபரி, பி.டெக், பைதான், சி, எஸ்க்யூஎல், டிபிஎம்எஸ், மாங்கோடிபி, மேட்லேப், மைக்ரோசாஃப்ட் எக்ஸெல், செயற்கை நுண்ணறிவு, தரவு அறிவியல், ஸ்ரீ ராமகிருஷ்ணா இன்ஸ்டிடியூட் ஆஃப் டெக்னாலஜி, கோயம்புத்தூர்) without English words, English parentheticals, or English headings (only keep raw email/URL strings intact if asked for contact links). Never misstate B.Tech as PhD/பிஎச்.டி—always write பி.டெக்.',
+    ].join('\n');
+  }
+
+  if (detected === 'tanglish') {
+    return [
+      '=== LANGUAGE INSTRUCTION FOR THIS TURN ===',
+      'Detected User Language: TANGLISH (Tamil + English mix)',
+      'STRICT RULE: Do NOT confuse Tanglish with pure English. Reply using a natural mix of Tamil (written in English letters) and English throughout the entire response (e.g., "Sabari ippo 2nd year B.Tech Artificial Intelligence & Data Science padikkiraaru..."). Maintain this friendly Tamil + English Tanglish style consistently from start to finish.',
+    ].join('\n');
+  }
+
+  if (detected === 'inherit') {
+    return [
+      '=== LANGUAGE INSTRUCTION FOR THIS TURN ===',
+      'The latest message is brief/language-neutral. Continue consistently in the exact language style (entirely Tamil, entirely English, or Tanglish mix) used in the immediately preceding turn, or entirely English if starting fresh.',
+    ].join('\n');
+  }
+
+  return [
+    '=== LANGUAGE INSTRUCTION FOR THIS TURN ===',
+    'Detected User Language: ENGLISH',
+    'STRICT RULE: Reply ENTIRELY in clear, natural English from start to finish (even if earlier conversation turns were in Tamil or Tanglish). Do not mix Tamil or Tanglish words.',
   ].join('\n');
 }
 
@@ -292,7 +380,11 @@ export async function processGroqChat(
     });
 
     const candidateModels = Array.from(new Set([model, ...GROQ_MODELS]));
-    const runtimeSystemPrompt = `${PORTFOLIO_SYSTEM_PROMPT}\n\n${buildRealtimeDateTimeContext(new Date())}`;
+    const runtimeSystemPrompt = [
+      PORTFOLIO_SYSTEM_PROMPT,
+      buildRealtimeDateTimeContext(new Date()),
+      buildTurnLanguageContext(latestUserMessage),
+    ].join('\n\n');
 
     let reply = '';
     let lastModelError: unknown = null;

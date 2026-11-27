@@ -94,6 +94,9 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItem[] = [
     imageUrl: '/assets/aistudio/Watercolor_Dog-Filter_Group_Selfie_a2b3ea92.png',
     imageAlt:
       'Ghibli-style group photo from Smart India Hackathon (SIH) internal round at Sri Ramakrishna Institute of Technology',
+    badgeLogoUrl: '/assets/organizations/sih-logo.webp',
+    badgeLogoAlt: 'Smart India Hackathon (SIH) official logo',
+    preserveFullImage: true,
     summary:
       'Participated in the internal round of the Smart India Hackathon (SIH) at Sri Ramakrishna Institute of Technology.',
     details:

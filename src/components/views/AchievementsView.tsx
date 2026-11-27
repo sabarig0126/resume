@@ -72,33 +72,61 @@ export function AchievementsView({
                         className="aspect-[16/10] w-full flex-1 md:aspect-auto md:min-h-[228px]"
                       >
                         {item.imageUrl ? (
-                          <div
-                            className={`relative h-full w-full overflow-hidden ${
-                              item.imageUrl.includes('/assets/certificates/') ||
-                              item.imageUrl.includes('/assets/organizations/')
-                                ? 'bg-white p-3'
-                                : 'bg-[#051414]'
-                            }`}
-                          >
-                            <ResilientImage
-                              src={item.imageUrl}
-                              alt={item.imageAlt ?? item.title}
-                              fallbackTitle={item.title}
-                              className={`h-full w-full transition-transform duration-500 ease-out ${
-                                item.imageUrl.includes('/assets/certificates/') ||
-                                item.imageUrl.includes('/assets/organizations/')
-                                  ? 'object-contain group-hover:scale-[1.02]'
-                                  : 'object-cover object-center group-hover:scale-[1.03]'
-                              }`}
-                            />
-                            {!item.imageUrl.includes('/assets/certificates/') &&
-                              !item.imageUrl.includes('/assets/organizations/') && (
+                          item.preserveFullImage ? (
+                            <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-[#051414]">
+                              <div className="relative aspect-[16/9] max-h-full w-full max-w-full overflow-hidden">
+                                <ResilientImage
+                                  src={item.imageUrl}
+                                  alt={item.imageAlt ?? item.title}
+                                  fallbackTitle={item.title}
+                                  className="h-full w-full object-contain transition-transform duration-500 ease-out group-hover:scale-[1.02]"
+                                />
                                 <div
                                   aria-hidden="true"
-                                  className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#051414]/45 via-transparent to-[#071B1B]/25"
+                                  className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#051414]/35 via-transparent to-[#071B1B]/15"
                                 />
-                              )}
-                          </div>
+                                {item.badgeLogoUrl && (
+                                  <span className="pointer-events-none absolute right-2.5 top-2.5 z-20 flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-white/85 bg-white p-1 shadow-[0_6px_18px_rgba(0,0,0,0.55),0_0_0_2px_rgba(7,27,27,0.4)] sm:h-10 sm:w-10">
+                                    <img
+                                      src={item.badgeLogoUrl}
+                                      alt={item.badgeLogoAlt ?? `${item.title} logo`}
+                                      className="h-full w-full object-contain"
+                                      loading="lazy"
+                                      decoding="async"
+                                    />
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            <div
+                              className={`relative h-full w-full overflow-hidden ${
+                                item.imageUrl.includes('/assets/certificates/') ||
+                                item.imageUrl.includes('/assets/organizations/')
+                                  ? 'bg-white p-3'
+                                  : 'bg-[#051414]'
+                              }`}
+                            >
+                              <ResilientImage
+                                src={item.imageUrl}
+                                alt={item.imageAlt ?? item.title}
+                                fallbackTitle={item.title}
+                                className={`h-full w-full transition-transform duration-500 ease-out ${
+                                  item.imageUrl.includes('/assets/certificates/') ||
+                                  item.imageUrl.includes('/assets/organizations/')
+                                    ? 'object-contain group-hover:scale-[1.02]'
+                                    : 'object-cover object-center group-hover:scale-[1.03]'
+                                }`}
+                              />
+                              {!item.imageUrl.includes('/assets/certificates/') &&
+                                !item.imageUrl.includes('/assets/organizations/') && (
+                                  <div
+                                    aria-hidden="true"
+                                    className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#051414]/45 via-transparent to-[#071B1B]/25"
+                                  />
+                                )}
+                            </div>
+                          )
                         ) : (
                           <DomainArtwork
                             category={item.category}

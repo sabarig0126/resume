@@ -38,6 +38,9 @@ export interface PortfolioItem {
   highlights: string[];
   imageUrl?: string;
   imageAlt?: string;
+  badgeLogoUrl?: string;
+  badgeLogoAlt?: string;
+  preserveFullImage?: boolean;
   featured?: boolean;
   specs: ShowcaseSpecs;
 }

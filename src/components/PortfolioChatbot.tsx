@@ -1161,10 +1161,10 @@ export function PortfolioChatbot() {
                   </div>
                   <div className="min-w-0">
                     <h2 className="truncate font-sans text-sm font-bold leading-tight tracking-normal text-white">
-                      Ask Sabari&apos;s Assistant
+                      Pearl AI 🦪
                     </h2>
                     <p className="truncate text-[11px] leading-tight text-teal-200/85">
-                      PEARL AI · Drag header to move
+                      Sabari&apos;s Assistant · Drag header to move
                     </p>
                   </div>
                 </div>

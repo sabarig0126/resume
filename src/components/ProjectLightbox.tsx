@@ -104,12 +104,34 @@ export function ProjectLightbox({ item, onClose }: ProjectLightboxProps) {
                     : 'bg-[#051414]'
                 }`}
               >
-                <ResilientImage
-                  src={item.imageUrl}
-                  alt={item.imageAlt ?? item.title}
-                  fallbackTitle={item.title}
-                  className="h-full w-full object-contain"
-                />
+                {item.badgeLogoUrl ? (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <div className="relative aspect-[16/9] max-h-full w-full max-w-full overflow-hidden">
+                      <ResilientImage
+                        src={item.imageUrl}
+                        alt={item.imageAlt ?? item.title}
+                        fallbackTitle={item.title}
+                        className="h-full w-full object-contain"
+                      />
+                      <span className="pointer-events-none absolute right-3 top-3 z-20 flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/85 bg-white p-1 shadow-[0_6px_18px_rgba(0,0,0,0.55),0_0_0_2px_rgba(7,27,27,0.4)] sm:h-11 sm:w-11">
+                        <img
+                          src={item.badgeLogoUrl}
+                          alt={item.badgeLogoAlt ?? `${item.title} logo`}
+                          className="h-full w-full object-contain"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <ResilientImage
+                    src={item.imageUrl}
+                    alt={item.imageAlt ?? item.title}
+                    fallbackTitle={item.title}
+                    className="h-full w-full object-contain"
+                  />
+                )}
               </ProjectImageReveal>
             ) : (
               <div className="flex h-full flex-col justify-between py-2">
