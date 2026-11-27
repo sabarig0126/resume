@@ -397,7 +397,7 @@ export function updateFeatureSeo(activeFeature: FeatureId): void {
   const origin = resolveOrigin();
   const ogImageUrl = origin ? `${origin}/assets/og-preview.jpg` : '/assets/og-preview.jpg';
 
-  document.title = meta.title;
+  document.title = "Sabari's Resume";
   upsertCanonicalLink(pageUrl);
   upsertMetaTag('name', 'description', meta.description);
   upsertMetaTag('name', 'robots', meta.robots ?? 'index, follow');
