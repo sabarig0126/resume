@@ -205,7 +205,7 @@ export function buildTurnLanguageContext(latestUserMessage: string): string {
     return [
       '=== LANGUAGE INSTRUCTION FOR THIS TURN ===',
       'Detected User Language: TAMIL (தமிழ்)',
-      'STRICT RULE: Reply ENTIRELY in clear, natural Tamil script (தமிழ்) from the first word to the last word. Write all headings, explanations, numbers/dates, and terms smoothly in Tamil script (e.g., சபரி, பி.டெக், பைதான், சி, எஸ்க்யூஎல், டிபிஎம்எஸ், மாங்கோடிபி, மேட்லேப், மைக்ரோசாஃப்ட் எக்ஸெல், செயற்கை நுண்ணறிவு, தரவு அறிவியல், ஸ்ரீ ராமகிருஷ்ணா இன்ஸ்டிடியூட் ஆஃப் டெக்னாலஜி, கோயம்புத்தூர்) without English words, English parentheticals, or English headings (only keep raw email/URL strings intact if asked for contact links). Never misstate B.Tech as PhD/பிஎச்.டி—always write பி.டெக்.',
+      'STRICT RULE: Reply ENTIRELY in clear, natural Tamil script (தமிழ்) from the first word to the last word. Write EVERY word, heading, degree/department name, technical term, and explanation in Tamil script (for example: சபரி, பி.டெக் செயற்கை நுண்ணறிவு மற்றும் தரவு அறிவியல், பைதான், சி, எஸ்க்யூஎல், டிபிஎம்எஸ், மாங்கோடிபி, மேட்லேப், மைக்ரோசாஃப்ட் எக்ஸெல், ஸ்ரீ ராமகிருஷ்ணா இன்ஸ்டிடியூட் ஆஃப் டெக்னாலஜி, கோயம்புத்தூர்). NEVER include ANY Latin/English letters, English words, or English parentheticals like "(Artificial Intelligence & Data Science)" or "(Python)"—only keep raw email/URL strings intact if explicitly asked for contact links. Never misstate B.Tech as PhD/பிஎச்.டி—always write பி.டெக்.',
     ].join('\n');
   }
 
@@ -416,7 +416,7 @@ export async function processGroqChat(
       } catch (modelErr: unknown) {
         const errInfo = modelErr as { status?: number; message?: string };
         const status = errInfo?.status;
-        if (status === 404 || status === 400) {
+        if (status === 404 || status === 400 || status === 429 || status === 503) {
           console.warn(
             `[api/chat][${requestId}] Model "${modelId}" failed (${status}): ${sanitizeSecretStrings(
               errInfo?.message || 'Unknown model error'

@@ -672,25 +672,28 @@ export function PortfolioChatbot() {
       activeAnimRef.current = animState;
       setTypingMsgId(assistantMsgId);
 
+      const chars = Array.from(fullText);
+      const totalChars = chars.length;
+
       setMessages((prev) => [
         ...prev,
         {
           id: assistantMsgId,
           role: 'assistant',
-          content: fullText.slice(0, 1),
+          content: chars.slice(0, 1).join(''),
           isFaq: options?.isFaq,
           faqId: options?.faqId,
         },
       ]);
 
-      if (fullText.length <= 1) {
+      if (totalChars <= 1) {
         activeAnimRef.current = null;
         setTypingMsgId(null);
         return;
       }
 
       const startTime = performance.now();
-      const totalDurationMs = Math.min(2200, Math.max(380, fullText.length * 10));
+      const totalDurationMs = Math.min(2200, Math.max(380, totalChars * 10));
       let lastShownLength = 1;
       let lastCommitTime = startTime;
 
@@ -701,14 +704,14 @@ export function PortfolioChatbot() {
         const progress = Math.min(1, elapsed / totalDurationMs);
         const nextLength =
           progress >= 1
-            ? fullText.length
-            : Math.max(lastShownLength, Math.floor(progress * fullText.length));
+            ? totalChars
+            : Math.max(lastShownLength, Math.floor(progress * totalChars));
 
-        const isDone = nextLength >= fullText.length;
+        const isDone = nextLength >= totalChars;
         if (nextLength > lastShownLength && (isDone || now - lastCommitTime >= 24)) {
           lastShownLength = nextLength;
           lastCommitTime = now;
-          const partial = fullText.slice(0, nextLength);
+          const partial = chars.slice(0, nextLength).join('');
           setMessages((prev) =>
             prev.map((m) => (m.id === assistantMsgId ? { ...m, content: partial } : m))
           );
@@ -1128,7 +1131,7 @@ export function PortfolioChatbot() {
             key="pearl-chatbox-frame"
             ref={chatboxRef}
             role="complementary"
-            aria-label="Ask Sabari's Assistant"
+            aria-label="Pearl AI — Ask Sabari's Assistant"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
