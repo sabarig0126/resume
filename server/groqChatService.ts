@@ -100,6 +100,49 @@ export function getRuntimeGroqConfig() {
   };
 }
 
+export function buildRealtimeDateTimeContext(now: Date = new Date()): string {
+  const tz = 'Asia/Kolkata';
+  const weekday = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz,
+    weekday: 'long',
+  }).format(now);
+  const fullDate = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz,
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(now);
+  const isoDate = new Intl.DateTimeFormat('en-CA', {
+    timeZone: tz,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(now);
+  const time12 = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+  }).format(now);
+  const time24 = new Intl.DateTimeFormat('en-GB', {
+    timeZone: tz,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).format(now);
+
+  return [
+    '=== REAL-TIME SERVER CLOCK (AUTHORITATIVE) ===',
+    'Timezone: Asia/Kolkata (IST, UTC+05:30)',
+    `Current Day of Week: ${weekday}`,
+    `Current Date: ${fullDate} (${isoDate})`,
+    `Current Time: ${time12} (${time24} 24-hour)`,
+    'When asked about the current date, current time, day of the week, today, tomorrow, or yesterday, ALWAYS answer directly using this authoritative Asia/Kolkata server clock above instead of guessing from training data.',
+  ].join('\n');
+}
+
 export function sanitizeMessages(raw: unknown): IncomingChatMessage[] | null {
   if (!Array.isArray(raw) || raw.length === 0) {
     return null;
@@ -249,6 +292,7 @@ export async function processGroqChat(
     });
 
     const candidateModels = Array.from(new Set([model, ...GROQ_MODELS]));
+    const runtimeSystemPrompt = `${PORTFOLIO_SYSTEM_PROMPT}\n\n${buildRealtimeDateTimeContext(new Date())}`;
 
     let reply = '';
     let lastModelError: unknown = null;
@@ -258,7 +302,7 @@ export async function processGroqChat(
         const completion = await client.chat.completions.create({
           model: modelId,
           messages: [
-            { role: 'system', content: PORTFOLIO_SYSTEM_PROMPT },
+            { role: 'system', content: runtimeSystemPrompt },
             ...messages,
           ],
           temperature: 0.5,

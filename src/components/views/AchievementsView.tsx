@@ -74,8 +74,9 @@ export function AchievementsView({
                         {item.imageUrl ? (
                           <div
                             className={`relative h-full w-full overflow-hidden ${
-                              item.imageUrl.includes('/assets/certificates/')
-                                ? 'bg-white p-1.5'
+                              item.imageUrl.includes('/assets/certificates/') ||
+                              item.imageUrl.includes('/assets/organizations/')
+                                ? 'bg-white p-3'
                                 : 'bg-[#051414]'
                             }`}
                           >
@@ -84,17 +85,19 @@ export function AchievementsView({
                               alt={item.imageAlt ?? item.title}
                               fallbackTitle={item.title}
                               className={`h-full w-full transition-transform duration-500 ease-out ${
-                                item.imageUrl.includes('/assets/certificates/')
+                                item.imageUrl.includes('/assets/certificates/') ||
+                                item.imageUrl.includes('/assets/organizations/')
                                   ? 'object-contain group-hover:scale-[1.02]'
                                   : 'object-cover object-center group-hover:scale-[1.03]'
                               }`}
                             />
-                            {!item.imageUrl.includes('/assets/certificates/') && (
-                              <div
-                                aria-hidden="true"
-                                className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#051414]/45 via-transparent to-[#071B1B]/25"
-                              />
-                            )}
+                            {!item.imageUrl.includes('/assets/certificates/') &&
+                              !item.imageUrl.includes('/assets/organizations/') && (
+                                <div
+                                  aria-hidden="true"
+                                  className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#051414]/45 via-transparent to-[#071B1B]/25"
+                                />
+                              )}
                           </div>
                         ) : (
                           <DomainArtwork

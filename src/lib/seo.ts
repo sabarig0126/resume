@@ -6,6 +6,8 @@ import {
   PROFILE,
   RESUME_PDF_PATH,
   TECHNICAL_SKILLS,
+  VERIFIED_CERTIFICATES_COUNT,
+  VERIFIED_ISSUER_COUNT,
 } from '../data/projects';
 import { FeatureId } from '../types/portfolio';
 
@@ -52,7 +54,7 @@ export const FEATURE_SEO_META: Record<FeatureId, FeatureSeoMeta> = {
   certifications: {
     title: 'Certifications — Sabarivasan G | AI & Data Science',
     description:
-      'Explore 34 verified certificates across 9 issuing organizations by Sabarivasan G, including MathWorks MATLAB, Infosys Springboard, MongoDB, IBM, NPTEL IIT Madras, Simplilearn, and Tech Mahindra Foundation.',
+      `Explore ${VERIFIED_CERTIFICATES_COUNT} verified certificates across ${VERIFIED_ISSUER_COUNT} issuing organizations by Sabarivasan G, including MathWorks MATLAB, Infosys Springboard, MongoDB, IBM, NPTEL IIT Madras, Simplilearn, and Tech Mahindra Foundation.`,
     path: '/certifications',
   },
   education: {

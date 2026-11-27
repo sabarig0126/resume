@@ -10,7 +10,7 @@ export const FAQ_ITEMS: readonly FaqItem[] = [
     question: 'Tell me about Sabari.',
     answer:
       "Sabarivasan G is a 2nd-year B.Tech student in Artificial Intelligence & Data Science (2026–2027) at Sri Ramakrishna Institute of Technology, Coimbatore.\n\n" +
-      "He is passionate about programming, data analysis, and emerging technologies, building his foundation through 34 verified certificates (32 technical courses and 2 event/bootcamp credentials) across 9 issuing organizations including MathWorks, Infosys Springboard, MongoDB, IBM, NPTEL – IIT Madras, Simplilearn SkillUP, and Tech Mahindra Foundation.\n\n" +
+      "He is passionate about programming, data analysis, and emerging technologies, building his foundation through 36 verified certificates (34 technical courses and 2 event/bootcamp credentials) across 9 issuing organizations including MathWorks, Infosys Springboard, MongoDB, IBM, NPTEL – IIT Madras, Simplilearn SkillUP, and Tech Mahindra Foundation.\n\n" +
       "Academic & Participation Highlights:\n" +
       "• Higher Secondary (HSC): 85.5% and SSLC: 81% at Thanappa Gounder Matric Higher Secondary School, Dharmapuri\n" +
       "• NPTEL Elite Certification in Design Thinking – A Primer (IIT Madras, 63%)\n" +
@@ -27,7 +27,7 @@ export const FAQ_ITEMS: readonly FaqItem[] = [
       "• Database Technologies: SQL, DBMS, MongoDB\n" +
       "• Technical Tools: MATLAB, Microsoft Excel\n" +
       "• Technical Knowledge: Data Analysis, AI Fundamentals, Data Structures and Algorithms, Mathematical Computing\n\n" +
-      "He has reinforced these skills with 32 completed technical courses across 7 learning tracks—including 12 MathWorks MATLAB & Data Analysis courses, 7 Infosys Springboard Python & Data Science courses, 5 MongoDB courses (Basics, AI Agents, RAG, Vector Search, AI Data Strategy), 2 IBM Career Education courses (Clean Coding; Devops, Agile & Design Thinking), MySQL/Unix/Ethical AI (Infosys), Excel Macros & VBA (Simplilearn), NPTEL Design Thinking Elite (63%), and Cybersecurity (Tech Mahindra Foundation, 10 Hours).",
+      "He has reinforced these skills with 34 completed technical courses across 7 learning tracks—including 12 MathWorks MATLAB & Data Analysis courses, 7 Infosys Springboard Python & Data Science courses, 5 MongoDB courses (Basics, AI Agents, RAG, Vector Search, AI Data Strategy), 2 IBM Career Education courses (Clean Coding; Devops, Agile & Design Thinking), MySQL/Unix/Ethical AI (Infosys), 3 Simplilearn SkillUP courses (Excel Macros & VBA for Beginners, Fundamentals of Database : What is SQL?, Business Analytics with Excel), NPTEL Design Thinking Elite (63%), and Cybersecurity (Tech Mahindra Foundation, 10 Hours).",
   },
   {
     id: 'projects',
@@ -80,8 +80,9 @@ How to talk (Perspective & Tone):
 
 Capabilities & Grounding:
 1. Answer questions about Sabari's skills, education, certifications, projects, career goals, and contact details accurately using ONLY the verified portfolio details below.
-2. Helpfully answer general questions and programming/technical questions (Python, C, SQL, DBMS, MongoDB, MATLAB, Data Science, AI/ML concepts, Data Structures & Algorithms, etc.), including follow-up questions.
-3. STRICT GROUNDING RULE: Never invent or guess education details, GPA/CGPA, extra tools/libraries not listed, projects, internships, work experience, certificates, achievements (note: TEDxSRIT was as an Event Participant, not a speaker), social links, or contact details. If something isn't in Sabari's portfolio yet (like published standalone projects or work experience), state that clearly and naturally.
+2. Answer questions about the current date, day of the week, and current time accurately using the authoritative REAL-TIME SERVER CLOCK (Asia/Kolkata) injected at runtime—never guess from training data.
+3. Helpfully answer general questions and programming/technical questions (Python, C, SQL, DBMS, MongoDB, MATLAB, Data Science, AI/ML concepts, Data Structures & Algorithms, etc.), including follow-up questions.
+4. STRICT GROUNDING RULE: Never invent or guess education details, GPA/CGPA, extra tools/libraries not listed, projects, internships, work experience, certificates, achievements (note: TEDxSRIT was as an Event Participant, not a speaker), social links, or contact details. If something isn't known or isn't in Sabari's portfolio, state that honestly and clearly.
 
 === SABARIVASAN G'S PORTFOLIO DETAILS ===
 Name: Sabarivasan G
@@ -130,12 +131,12 @@ Achievements & Participation:
 3. Illuminate Entrepreneurship Bootcamp — Participant at Sri Ramakrishna Institute of Technology, Coimbatore in association with E-Cell, IIT Bombay (Oct 16, 2025)
 4. TEDxSRIT ("Human in the Loop", 1st Edition) — Event Participant at Sri Ramakrishna Institute of Technology, Coimbatore (Feb 24, 2026)
 
-Certifications & Completed Courses (34 verified certificates total: 32 technical course completions + 2 event/bootcamp certificates across 9 organizations):
+Certifications & Completed Courses (36 verified certificates total: 34 technical course completions + 2 event/bootcamp certificates across 9 organizations):
 01. NPTEL – IIT Madras (1 course): Design Thinking – A Primer (Elite, 63%, Jan–Feb 2026)
 02. IBM Career Education Program (2 courses): Clean Coding; Devops, Agile & Design Thinking (Sep 22, 2026)
 03. MATLAB – MathWorks (7 core math & programming courses): MATLAB Onramp (Oct 7, 2025), Calculations with Vectors and Matrices (Oct 8, 2025), Introduction to Linear Algebra with MATLAB (Jan 20, 2026), MATLAB Coder Onramp (Jan 20, 2026), Symbolic Math Onramp (Jan 24, 2026), The How and Why of Writing Functions (Jan 30, 2026), Statistics Onramp (Jun 25, 2026)
 04. Python & Data Science – Infosys Springboard (7 courses): Python for Data Science and Machine Learning Bootcamp (Jul 20, 2026), Introduction to Data Science (Jul 25, 2026), Probability and Statistics using Python (Jul 25, 2026), Statistical Inference using Python (Jul 25, 2026), Probability Distribution using Python (Jul 25, 2026), Basics of Linear Algebra using Python (Jul 27, 2026), Data Science Foundation Certification (Oct 9, 2026)
-05. MongoDB, Databases & Systems (9 courses): MongoDB Basics for Students, AI Agents with MongoDB, RAG with MongoDB, Vector Search Fundamentals, AI Data Strategy with MongoDB (all Nov 7, 2026); Infosys Springboard: Unix Linux OS - Unix Fundamentals (Sep 10, 2026), Project on MySQL (Sep 22, 2026), Ethical AI (Oct 7, 2026); Simplilearn SkillUP (Powered by Microsoft): Excel Macros & VBA for Beginners (Sep 13, 2026)
+05. MongoDB, Databases & Systems (11 courses): MongoDB Basics for Students, AI Agents with MongoDB, RAG with MongoDB, Vector Search Fundamentals, AI Data Strategy with MongoDB (all Nov 7, 2026); Infosys Springboard: Unix Linux OS - Unix Fundamentals (Sep 10, 2026), Project on MySQL (Sep 22, 2026), Ethical AI (Oct 7, 2026); Simplilearn SkillUP: Excel Macros & VBA for Beginners (Sep 13, 2026), Business Analytics with Excel (Powered by Microsoft, Sep 13, 2026), Fundamentals of Database : What is SQL? (Sep 22, 2026)
 06. Data Analysis – MathWorks (5 courses): Common Data Analysis Techniques (Jun 25, 2026), Calculations on Grouped Data (Jun 25, 2026), Find and Extract Subsets of Data (Jul 2, 2026), Clean and Prepare Data for Analysis (Jul 2, 2026), Tables (Jul 2, 2026)
 07. Cybersecurity (1 course): Cybersecurity — Tech Mahindra Foundation via Skill India Digital Hub (Oct 9, 2026, 10 Hours)
 

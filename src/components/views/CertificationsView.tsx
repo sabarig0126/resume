@@ -1,8 +1,8 @@
 import { type FormEvent, memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import {
+  ArrowRightIcon,
   CheckVerifiedIcon,
-  ChevronNextIcon,
   ChevronPrevIcon,
   CloseIcon,
   SearchLensIcon,
@@ -16,6 +16,241 @@ import { TiltCard } from '../TiltCard';
 
 const MAX_FILTER_LENGTH = 80;
 const INVALID_FILTER_PATTERN = /[<>{}$`]/;
+
+const PRIORITY_ORGANIZATION_ORDER: readonly string[] = [
+  'Infosys Springboard',
+  'Simplilearn SkillUP',
+  'Tech Mahindra Foundation',
+  'MongoDB, Inc.',
+  'E-Cell, IIT Bombay',
+  'IBM Career Education Program',
+  'TEDxSRIT',
+  'MathWorks Training Services',
+  'NPTEL – IIT Madras',
+];
+
+interface OrganizationLogoAsset {
+  src: string;
+  width: number;
+  height: number;
+  alt: string;
+  bgClassName?: string;
+}
+
+const ORGANIZATION_LOGOS: Record<string, OrganizationLogoAsset> = {
+  'infosys springboard': {
+    src: '/assets/organizations/infosys-springboard.webp',
+    width: 560,
+    height: 280,
+    alt: 'Infosys Springboard official logo',
+  },
+  'simplilearn skillup': {
+    src: '/assets/organizations/simplilearn-skillup.webp',
+    width: 560,
+    height: 280,
+    alt: 'Simplilearn SkillUP official logo',
+  },
+  'tech mahindra foundation': {
+    src: '/assets/organizations/tech-mahindra-foundation.webp',
+    width: 480,
+    height: 240,
+    alt: 'Tech Mahindra Foundation official logo',
+  },
+  'mongodb, inc.': {
+    src: '/assets/organizations/mongodb.webp',
+    width: 560,
+    height: 280,
+    alt: 'MongoDB, Inc. official logo',
+    bgClassName: 'bg-[#3C674F]',
+  },
+  'e-cell, iit bombay': {
+    src: '/assets/organizations/ecell-iit-bombay.webp',
+    width: 480,
+    height: 240,
+    alt: 'E-Cell, IIT Bombay official logo',
+  },
+  'ibm career education program': {
+    src: '/assets/organizations/ibm-career-education.webp',
+    width: 520,
+    height: 260,
+    alt: 'IBM Career Education Program official logo',
+  },
+  tedxsrit: {
+    src: '/assets/organizations/tedx-srit.webp',
+    width: 560,
+    height: 280,
+    alt: 'TEDxSRIT official logo',
+  },
+  'mathworks training services': {
+    src: '/assets/organizations/mathworks.webp',
+    width: 820,
+    height: 280,
+    alt: 'MathWorks Training Services official logo',
+  },
+  'nptel – iit madras': {
+    src: '/assets/organizations/nptel-iit-madras.webp',
+    width: 560,
+    height: 280,
+    alt: 'NPTEL – IIT Madras official logo',
+  },
+};
+
+function getOrganizationInitials(name: string): string {
+  const words = name
+    .replace(/[^a-zA-Z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean);
+  if (words.length === 0) return 'ORG';
+  if (words.length === 1) return words[0].slice(0, 3).toUpperCase();
+  return words
+    .slice(0, 3)
+    .map((word) => word[0])
+    .join('')
+    .toUpperCase();
+}
+
+interface OrganizationGroup {
+  name: string;
+  certificates: CertificateItem[];
+}
+
+function normalizeOrganizationName(issuer: string): string {
+  return issuer.replace(/\s*\|\s*/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function buildOrganizationGroups(certificates: readonly CertificateItem[]): OrganizationGroup[] {
+  const grouped = new Map<string, CertificateItem[]>();
+
+  for (const cert of certificates) {
+    const orgName = normalizeOrganizationName(cert.issuer || cert.issuerShort);
+    const existing = grouped.get(orgName);
+    if (existing) {
+      existing.push(cert);
+    } else {
+      grouped.set(orgName, [cert]);
+    }
+  }
+
+  const orderIndex = new Map<string, number>(
+    PRIORITY_ORGANIZATION_ORDER.map((name, idx) => [name.toLowerCase(), idx])
+  );
+
+  return Array.from(grouped.entries())
+    .sort(([nameA], [nameB]) => {
+      const rankA = orderIndex.get(nameA.toLowerCase()) ?? Number.MAX_SAFE_INTEGER;
+      const rankB = orderIndex.get(nameB.toLowerCase()) ?? Number.MAX_SAFE_INTEGER;
+      if (rankA !== rankB) return rankA - rankB;
+      return nameA.localeCompare(nameB);
+    })
+    .map(([name, orgCertificates]) => ({
+      name,
+      certificates: orgCertificates,
+    }));
+}
+
+interface OrganizationCardProps {
+  group: OrganizationGroup;
+  orderNumber: string;
+  matchingCount?: number;
+  eager: boolean;
+  isAccentLime: boolean;
+  onSelect: (orgName: string) => void;
+}
+
+const OrganizationCard = memo(function OrganizationCard({
+  group,
+  orderNumber,
+  matchingCount,
+  eager,
+  isAccentLime,
+  onSelect,
+}: OrganizationCardProps) {
+  const totalCount = group.certificates.length;
+  const logoAsset = ORGANIZATION_LOGOS[group.name.toLowerCase()];
+  const countLabel =
+    matchingCount !== undefined && matchingCount !== totalCount
+      ? `${matchingCount} of ${totalCount} matching`
+      : `${totalCount} ${totalCount === 1 ? 'Certificate' : 'Certificates'}`;
+
+  return (
+    <TiltCard
+      maxTiltDeg={2.4}
+      glowColor={isAccentLime ? 'lime' : 'pink'}
+      scaleOnHover={1.008}
+      className="cert-grid-card glass-surface glass-interactive flex flex-col rounded-2xl"
+    >
+      <button
+        type="button"
+        onClick={() => onSelect(group.name)}
+        aria-label={`View ${totalCount} ${totalCount === 1 ? 'certificate' : 'certificates'} from ${group.name}`}
+        className="group touch-press flex h-full w-full flex-col rounded-2xl p-3.5 text-left sm:p-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF27]"
+      >
+        <div
+          className={`relative flex aspect-[14/10] w-full items-center justify-center overflow-hidden rounded-xl border border-white/15 p-4 shadow-inner sm:p-5 ${
+            logoAsset
+              ? logoAsset.bgClassName ?? 'bg-white'
+              : 'bg-gradient-to-br from-[#0A2525] to-[#061515]'
+          }`}
+        >
+          {logoAsset ? (
+            <img
+              src={logoAsset.src}
+              alt={logoAsset.alt}
+              width={logoAsset.width}
+              height={logoAsset.height}
+              loading={eager ? 'eager' : 'lazy'}
+              decoding="async"
+              className="max-h-full max-w-full object-contain transition-transform duration-300 ease-out group-hover:scale-[1.03]"
+            />
+          ) : (
+            <div className="flex flex-col items-center justify-center gap-2 text-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-[#C8FF27]/35 bg-[#C8FF27]/10 font-road-rage text-2xl tracking-wider text-[#FFFF00]">
+                {getOrganizationInitials(group.name)}
+              </div>
+              <span className="font-kalam text-xs text-[#D5E2E2]">{group.name}</span>
+            </div>
+          )}
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute left-2.5 top-2.5 inline-flex items-center rounded-md border border-[#F05BEA]/45 bg-[#071B1B]/90 px-2.5 py-1 font-kalam text-[11px] font-bold text-[#C8FF27] tabular-nums backdrop-blur-md shadow-[0_4px_14px_rgba(0,0,0,0.45)]"
+          >
+            {countLabel}
+          </span>
+        </div>
+
+        <div className="mt-3.5 flex flex-1 flex-col justify-between gap-2.5 px-1 pb-0.5">
+          <div>
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-kalam text-xs font-bold text-[#F05BEA] tabular-nums">
+                Organization {orderNumber}
+              </span>
+              <span className="font-kalam text-[11px] text-[#B8C7C7] tabular-nums">
+                {totalCount} {totalCount === 1 ? 'Credential' : 'Credentials'}
+              </span>
+            </div>
+            <h2 className="mt-1 font-caveat text-[1.45rem] leading-snug font-normal tracking-wide text-[#FFFF00] transition-colors group-hover:text-[#FFF899]">
+              {group.name}
+            </h2>
+          </div>
+
+          <div className="flex items-center justify-between gap-2 border-t border-white/10 pt-2.5">
+            <span className="flex items-center gap-2 font-kalam text-xs text-[#D5E2E2] sm:text-[13px]">
+              <CheckVerifiedIcon
+                aria-hidden="true"
+                className="h-4 w-4 shrink-0 text-[#C8FF27]"
+              />
+              <span>View Certificates</span>
+            </span>
+            <ArrowRightIcon
+              aria-hidden="true"
+              className="h-4 w-4 shrink-0 text-[#A0B2B2] transition-transform duration-200 group-hover:translate-x-1 group-hover:text-[#C8FF27]"
+            />
+          </div>
+        </div>
+      </button>
+    </TiltCard>
+  );
+});
 
 interface CertificateCardProps {
   cert: CertificateItem;
@@ -97,29 +332,62 @@ const CertificateCard = memo(function CertificateCard({
 export function CertificationsView() {
   const [courseQuery, setCourseQuery] = useState('');
   const [filterError, setFilterError] = useState<string | null>(null);
+  const [selectedOrgName, setSelectedOrgName] = useState<string | null>(null);
   const [selectedCert, setSelectedCert] = useState<CertificateItem | null>(null);
 
-  const issuerCount = useMemo(
-    () => new Set(CERTIFICATES.map((cert) => cert.issuerShort)).size,
+  const organizationGroups = useMemo(
+    () => buildOrganizationGroups(CERTIFICATES),
     []
   );
 
-  const filteredCertificates = useMemo(() => {
-    const q = courseQuery.trim().toLowerCase();
-    if (!q) return CERTIFICATES;
-    return CERTIFICATES.filter(
-      (cert) =>
-        cert.title.toLowerCase().includes(q) ||
-        cert.issuer.toLowerCase().includes(q) ||
-        cert.issuerShort.toLowerCase().includes(q) ||
-        (cert.issuedDate?.toLowerCase().includes(q) ?? false)
-    );
-  }, [courseQuery]);
+  const selectedOrgGroup = useMemo(() => {
+    if (!selectedOrgName) return null;
+    return organizationGroups.find((group) => group.name === selectedOrgName) ?? null;
+  }, [organizationGroups, selectedOrgName]);
 
-  const selectedIndex = useMemo(() => {
-    if (!selectedCert) return -1;
-    return filteredCertificates.findIndex((c) => c.id === selectedCert.id);
-  }, [filteredCertificates, selectedCert]);
+  const normalizedQuery = courseQuery.trim().toLowerCase();
+
+  const matchesQuery = useCallback(
+    (cert: CertificateItem) => {
+      if (!normalizedQuery) return true;
+      const normalizedOrg = normalizeOrganizationName(cert.issuer || cert.issuerShort);
+      return (
+        cert.title.toLowerCase().includes(normalizedQuery) ||
+        cert.issuer.toLowerCase().includes(normalizedQuery) ||
+        cert.issuerShort.toLowerCase().includes(normalizedQuery) ||
+        normalizedOrg.toLowerCase().includes(normalizedQuery) ||
+        (cert.issuedDate?.toLowerCase().includes(normalizedQuery) ?? false)
+      );
+    },
+    [normalizedQuery]
+  );
+
+  const filteredOrganizationEntries = useMemo(() => {
+    return organizationGroups
+      .map((group, originalIndex) => {
+        const matchingCertificates = normalizedQuery
+          ? group.certificates.filter(matchesQuery)
+          : group.certificates;
+        return {
+          group,
+          originalIndex,
+          matchingCertificates,
+        };
+      })
+      .filter((entry) => entry.matchingCertificates.length > 0);
+  }, [organizationGroups, normalizedQuery, matchesQuery]);
+
+  const activeCertificates = useMemo(() => {
+    if (selectedOrgGroup) {
+      return normalizedQuery
+        ? selectedOrgGroup.certificates.filter(matchesQuery)
+        : selectedOrgGroup.certificates;
+    }
+    if (normalizedQuery) {
+      return filteredOrganizationEntries.flatMap((entry) => entry.matchingCertificates);
+    }
+    return CERTIFICATES;
+  }, [selectedOrgGroup, normalizedQuery, matchesQuery, filteredOrganizationEntries]);
 
   useEffect(() => {
     if (!selectedCert) return;
@@ -127,20 +395,12 @@ export function CertificationsView() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setSelectedCert(null);
-      } else if (e.key === 'ArrowRight' && filteredCertificates.length > 1) {
-        const nextIdx = (selectedIndex + 1) % filteredCertificates.length;
-        setSelectedCert(filteredCertificates[nextIdx]);
-      } else if (e.key === 'ArrowLeft' && filteredCertificates.length > 1) {
-        const prevIdx =
-          (selectedIndex - 1 + filteredCertificates.length) %
-          filteredCertificates.length;
-        setSelectedCert(filteredCertificates[prevIdx]);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedCert, selectedIndex, filteredCertificates]);
+  }, [selectedCert]);
 
   useEffect(() => {
     const isModalOpen = Boolean(selectedCert);
@@ -159,6 +419,20 @@ export function CertificationsView() {
       }
     };
   }, [selectedCert]);
+
+  const handleSelectOrg = useCallback((orgName: string) => {
+    setSelectedOrgName(orgName);
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, []);
+
+  const handleBackToOrganizations = useCallback(() => {
+    setSelectedOrgName(null);
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, []);
 
   const handleSelectCert = useCallback((cert: CertificateItem) => {
     setSelectedCert(cert);
@@ -192,14 +466,6 @@ export function CertificationsView() {
     setFilterError(null);
   };
 
-  const handleStepPreview = (direction: -1 | 1) => {
-    if (filteredCertificates.length <= 1 || selectedIndex === -1) return;
-    const nextIdx =
-      (selectedIndex + direction + filteredCertificates.length) %
-      filteredCertificates.length;
-    setSelectedCert(filteredCertificates[nextIdx]);
-  };
-
   return (
     <section className="mx-auto flex w-full max-w-[1280px] flex-1 flex-col px-4 py-6 sm:px-6 sm:py-10 md:px-10 md:py-12">
       <div className="flex shrink-0 flex-col gap-5 border-b border-white/10 pb-5 sm:gap-6 sm:pb-7 lg:flex-row lg:items-end lg:justify-between">
@@ -209,10 +475,12 @@ export function CertificationsView() {
           </p>
           <h1 className="mt-2 font-road-rage text-[2.2rem] font-normal leading-[1.06] tracking-wide text-[#FF4D4D] sm:text-5xl lg:text-[3.35rem] [text-wrap:balance]">
             <AnimatedCounter value={CERTIFICATES.length} /> verified certificates across{' '}
-            <AnimatedCounter value={issuerCount} /> issuing organizations
+            <AnimatedCounter value={organizationGroups.length} /> issuing organizations
           </h1>
           <p className="mt-2 font-kalam text-xs text-[#B8C7C7] sm:text-sm">
-            {PROFILE.learningGoal} · Select any certificate card to inspect full details
+            {selectedOrgGroup
+              ? `Viewing ${selectedOrgGroup.name} · Select any certificate card to inspect full details`
+              : `${PROFILE.learningGoal} · Select an issuing organization to view its certificates`}
           </p>
         </div>
 
@@ -263,7 +531,82 @@ export function CertificationsView() {
         </form>
       </div>
 
-      {filteredCertificates.length === 0 ? (
+      {selectedOrgGroup ? (
+        <motion.div
+          key={`org-${selectedOrgGroup.name}`}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+          className="mt-6 flex flex-1 flex-col sm:mt-8"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3.5 sm:px-5">
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={handleBackToOrganizations}
+                className="touch-press inline-flex min-h-[40px] items-center gap-1.5 rounded-lg border border-white/15 bg-white/[0.05] px-3.5 py-2 font-kalam text-xs font-bold text-[#FFFFFF] transition-colors hover:border-[#C8FF27]/65 hover:bg-[#C8FF27]/12 hover:text-[#C8FF27] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF27]"
+              >
+                <ChevronPrevIcon className="h-4 w-4 text-[#C8FF27]" aria-hidden="true" />
+                <span>All Organizations</span>
+              </button>
+
+              <div className="min-w-0">
+                <h2 className="font-caveat text-2xl leading-tight font-normal tracking-wide text-[#FFFF00] sm:text-[1.7rem]">
+                  {selectedOrgGroup.name}
+                </h2>
+              </div>
+            </div>
+
+            <span className="font-kalam text-xs font-bold text-[#F05BEA] tabular-nums">
+              {activeCertificates.length}{' '}
+              {activeCertificates.length === 1 ? 'Certificate' : 'Certificates'}
+              {normalizedQuery ? ' matching filter' : ''}
+            </span>
+          </div>
+
+          {activeCertificates.length === 0 ? (
+            <GlassCard
+              accent="pink"
+              className="mt-6 flex flex-1 flex-col items-center justify-center rounded-2xl px-6 py-16 text-center"
+            >
+              <p className="font-caveat text-3xl font-normal text-[#FFFF00]">
+                No matching certificates in {selectedOrgGroup.name}
+              </p>
+              <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCourseQuery('');
+                    setFilterError(null);
+                  }}
+                  className="touch-press inline-flex min-h-[44px] items-center rounded-lg bg-[#C8FF27] px-5 py-2.5 text-xs font-bold text-[#071B1B] hover:bg-[#d5ff52] cursor-pointer"
+                >
+                  Clear Filter
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBackToOrganizations}
+                  className="touch-press inline-flex min-h-[44px] items-center rounded-lg border border-white/15 bg-white/[0.04] px-5 py-2.5 text-xs font-semibold text-[#FFFFFF] hover:border-[#F05BEA]/65 hover:bg-[#F05BEA]/15 cursor-pointer"
+                >
+                  Back to All Organizations
+                </button>
+              </div>
+            </GlassCard>
+          ) : (
+            <div className="mt-6 grid grid-cols-1 gap-5 sm:gap-6 md:grid-cols-2 xl:grid-cols-3">
+              {activeCertificates.map((cert, idx) => (
+                <CertificateCard
+                  key={cert.id}
+                  cert={cert}
+                  eager={idx < 6}
+                  highPriority={idx < 3}
+                  onSelect={handleSelectCert}
+                />
+              ))}
+            </div>
+          )}
+        </motion.div>
+      ) : filteredOrganizationEntries.length === 0 ? (
         <GlassCard
           accent="pink"
           className="mt-8 flex flex-1 flex-col items-center justify-center rounded-2xl px-6 py-16 text-center"
@@ -279,21 +622,60 @@ export function CertificationsView() {
             }}
             className="touch-press mt-5 inline-flex min-h-[44px] items-center rounded-lg bg-[#C8FF27] px-5 py-2.5 text-xs font-bold text-[#071B1B] hover:bg-[#d5ff52] cursor-pointer"
           >
-            Reset Filter — Show All {CERTIFICATES.length} Certificates
+            Reset Filter — Show All {organizationGroups.length} Organizations
           </button>
         </GlassCard>
       ) : (
-        <div className="mt-6 grid grid-cols-1 gap-5 sm:mt-8 sm:gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {filteredCertificates.map((cert, idx) => (
-            <CertificateCard
-              key={cert.id}
-              cert={cert}
-              eager={idx < 6}
-              highPriority={idx < 3}
-              onSelect={handleSelectCert}
-            />
-          ))}
-        </div>
+        <motion.div
+          key="org-overview"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+          className="mt-6 flex flex-1 flex-col sm:mt-8"
+        >
+          <div className="grid grid-cols-1 gap-5 sm:gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {filteredOrganizationEntries.map(
+              ({ group, originalIndex, matchingCertificates }, idx) => (
+                <OrganizationCard
+                  key={group.name}
+                  group={group}
+                  orderNumber={String(originalIndex + 1).padStart(2, '0')}
+                  matchingCount={
+                    normalizedQuery ? matchingCertificates.length : undefined
+                  }
+                  eager={idx < 6}
+                  isAccentLime={idx % 2 === 1}
+                  onSelect={handleSelectOrg}
+                />
+              )
+            )}
+          </div>
+
+          {normalizedQuery && (
+            <div className="mt-8 border-t border-white/10 pt-7">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 className="font-caveat text-2xl font-normal tracking-wide text-[#FFFF00] sm:text-3xl">
+                  Matching Certificates
+                </h2>
+                <span className="font-kalam text-xs font-bold text-[#F05BEA] tabular-nums">
+                  {activeCertificates.length}{' '}
+                  {activeCertificates.length === 1 ? 'Certificate' : 'Certificates'}
+                </span>
+              </div>
+              <div className="mt-5 grid grid-cols-1 gap-5 sm:gap-6 md:grid-cols-2 xl:grid-cols-3">
+                {activeCertificates.map((cert, idx) => (
+                  <CertificateCard
+                    key={cert.id}
+                    cert={cert}
+                    eager={idx < 6}
+                    highPriority={idx < 3}
+                    onSelect={handleSelectCert}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </motion.div>
       )}
 
       <AnimatePresence>
@@ -307,7 +689,7 @@ export function CertificationsView() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
             onClick={() => setSelectedCert(null)}
-            className="fixed inset-0 z-[120] flex items-center justify-center bg-[#041010]/85 p-4 backdrop-blur-md sm:p-6"
+            className="fixed inset-0 z-[120] flex items-center justify-center bg-[#041010]/85 p-3 backdrop-blur-md sm:p-6"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.96, y: 10 }}
@@ -315,9 +697,9 @@ export function CertificationsView() {
               exit={{ opacity: 0, scale: 0.96, y: 8 }}
               transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
               onClick={(e) => e.stopPropagation()}
-              className="glass-surface-strong glass-accent-pink relative flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl p-4 sm:p-6"
+              className="glass-surface-strong glass-accent-pink relative flex max-h-[92dvh] w-full max-w-4xl flex-col overflow-y-auto rounded-2xl p-3.5 sm:p-6"
             >
-              <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-3.5">
+              <div className="flex shrink-0 items-start justify-between gap-3 border-b border-white/10 pb-3 sm:gap-4 sm:pb-3.5">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2.5">
                     <span className="font-kalam text-xs font-bold text-[#F05BEA] tabular-nums">
@@ -329,7 +711,7 @@ export function CertificationsView() {
                       </span>
                     )}
                   </div>
-                  <h2 className="mt-1 font-caveat text-2xl leading-tight font-normal tracking-wide text-[#FFFF00] sm:text-3xl">
+                  <h2 className="mt-1 font-caveat text-xl leading-tight font-normal tracking-wide text-[#FFFF00] sm:text-3xl">
                     {selectedCert.title}
                   </h2>
                   <p className="mt-0.5 flex items-center gap-1.5 font-kalam text-xs text-[#D5E2E2] sm:text-sm">
@@ -351,41 +733,13 @@ export function CertificationsView() {
                 </button>
               </div>
 
-              <div className="my-4 flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-xl border border-white/15 bg-white p-2 sm:p-3">
+              <div className="mt-3 flex min-h-0 flex-1 items-center justify-center rounded-xl border border-white/15 bg-white p-1.5 sm:mt-4 sm:p-3">
                 <img
                   src={selectedCert.imageUrl}
                   alt={selectedCert.alt}
-                  className="max-h-[65vh] w-auto max-w-full object-contain"
+                  className="block h-auto max-h-[calc(92dvh-12rem)] w-auto max-w-full object-contain sm:max-h-[calc(92dvh-13.5rem)]"
                 />
               </div>
-
-              {filteredCertificates.length > 1 && (
-                <div className="flex items-center justify-between gap-3 border-t border-white/10 pt-3">
-                  <button
-                    type="button"
-                    onClick={() => handleStepPreview(-1)}
-                    aria-label="Previous certificate"
-                    className="touch-press inline-flex min-h-[40px] items-center gap-1.5 rounded-lg border border-white/15 bg-white/5 px-3.5 py-2 font-kalam text-xs text-[#FFFFFF] transition-colors hover:border-[#F05BEA] hover:bg-white/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF27]"
-                  >
-                    <ChevronPrevIcon className="h-4 w-4 text-[#C8FF27]" />
-                    <span>Previous</span>
-                  </button>
-
-                  <span className="font-kalam text-xs text-[#B8C7C7] tabular-nums">
-                    {selectedIndex + 1} / {filteredCertificates.length}
-                  </span>
-
-                  <button
-                    type="button"
-                    onClick={() => handleStepPreview(1)}
-                    aria-label="Next certificate"
-                    className="touch-press inline-flex min-h-[40px] items-center gap-1.5 rounded-lg border border-white/15 bg-white/5 px-3.5 py-2 font-kalam text-xs text-[#FFFFFF] transition-colors hover:border-[#F05BEA] hover:bg-white/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF27]"
-                  >
-                    <span>Next</span>
-                    <ChevronNextIcon className="h-4 w-4 text-[#C8FF27]" />
-                  </button>
-                </div>
-              )}
             </motion.div>
           </motion.div>
         )}
