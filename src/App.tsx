@@ -1,5 +1,9 @@
 import {
+  Component,
+  type ComponentType,
+  type ErrorInfo,
   lazy,
+  type ReactNode,
   Suspense,
   useCallback,
   useEffect,
@@ -29,73 +33,183 @@ import {
 import { FEATURE_PATHS, updateFeatureSeo } from './lib/seo';
 import { FeatureId, PortfolioItem } from './types/portfolio';
 
+const CHUNK_RELOAD_STORAGE_KEY = 'sabari_chunk_reload_ts';
+const CHUNK_RELOAD_COOLDOWN_MS = 15_000;
+
+function lazyWithRetry<T extends ComponentType<any>>(
+  importer: () => Promise<{ default: T }>,
+  retries = 2,
+  delayMs = 300
+) {
+  return lazy(async () => {
+    let lastError: unknown;
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        return await importer();
+      } catch (err) {
+        lastError = err;
+        if (attempt < retries) {
+          await new Promise((resolve) =>
+            window.setTimeout(resolve, delayMs * (attempt + 1))
+          );
+        }
+      }
+    }
+
+    if (typeof window !== 'undefined') {
+      try {
+        const lastReload = Number(
+          window.sessionStorage.getItem(CHUNK_RELOAD_STORAGE_KEY) || '0'
+        );
+        const now = Date.now();
+        if (!lastReload || now - lastReload > CHUNK_RELOAD_COOLDOWN_MS) {
+          window.sessionStorage.setItem(CHUNK_RELOAD_STORAGE_KEY, String(now));
+          window.location.reload();
+          return await new Promise<{ default: T }>(() => {});
+        }
+      } catch {
+        // Ignore sessionStorage errors in restricted iframes
+      }
+    }
+
+    throw lastError;
+  });
+}
+
+interface LazyErrorBoundaryProps {
+  children: ReactNode;
+  resetKey?: string;
+  silentFallback?: boolean;
+}
+
+interface LazyErrorBoundaryState {
+  hasError: boolean;
+}
+
+class LazyErrorBoundary extends Component<
+  LazyErrorBoundaryProps,
+  LazyErrorBoundaryState
+> {
+  state: LazyErrorBoundaryState = { hasError: false };
+
+  static getDerivedStateFromError(): LazyErrorBoundaryState {
+    return { hasError: true };
+  }
+
+  componentDidUpdate(prevProps: LazyErrorBoundaryProps) {
+    if (this.state.hasError && prevProps.resetKey !== this.props.resetKey) {
+      this.setState({ hasError: false });
+    }
+  }
+
+  componentDidCatch(_error: Error, _info: ErrorInfo) {
+    // Handled via fallback UI
+  }
+
+  render() {
+    if (this.state.hasError) {
+      if (this.props.silentFallback) {
+        return null;
+      }
+      return (
+        <div className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center px-6 py-16 text-center">
+          <p className="font-kalam text-base text-[#FFFFFF]">
+            This section took a moment to load.
+          </p>
+          <p className="mt-2 text-sm text-[#A0B2B2]">
+            Please retry or refresh the page to load the latest view.
+          </p>
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={() => this.setState({ hasError: false })}
+              className="touch-press inline-flex min-h-[42px] items-center justify-center rounded-lg bg-[#C8FF27] px-5 py-2 text-sm font-bold text-[#071B1B] cursor-pointer"
+            >
+              Retry
+            </button>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="touch-press inline-flex min-h-[42px] items-center justify-center rounded-lg border border-white/20 bg-white/[0.06] px-5 py-2 text-sm font-semibold text-[#FFFFFF] cursor-pointer"
+            >
+              Refresh Page
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 // Code-split secondary views, modals, and assistant so initial overview payload loads swiftly
-const AchievementsView = lazy(() =>
+const AchievementsView = lazyWithRetry(() =>
   import('./components/views/AchievementsView').then((m) => ({
     default: m.AchievementsView,
   }))
 );
-const SkillsView = lazy(() =>
+const SkillsView = lazyWithRetry(() =>
   import('./components/views/SkillsView').then((m) => ({
     default: m.SkillsView,
   }))
 );
-const CertificationsView = lazy(() =>
+const CertificationsView = lazyWithRetry(() =>
   import('./components/views/CertificationsView').then((m) => ({
     default: m.CertificationsView,
   }))
 );
-const EducationView = lazy(() =>
+const EducationView = lazyWithRetry(() =>
   import('./components/views/EducationView').then((m) => ({
     default: m.EducationView,
   }))
 );
-const ProjectsView = lazy(() =>
+const ProjectsView = lazyWithRetry(() =>
   import('./components/views/ProjectsView').then((m) => ({
     default: m.ProjectsView,
   }))
 );
-const ResumeView = lazy(() =>
+const ResumeView = lazyWithRetry(() =>
   import('./components/views/ResumeView').then((m) => ({
     default: m.ResumeView,
   }))
 );
-const PortfolioPdfView = lazy(() =>
+const PortfolioPdfView = lazyWithRetry(() =>
   import('./components/views/PortfolioPdfView').then((m) => ({
     default: m.PortfolioPdfView,
   }))
 );
-const ContactView = lazy(() =>
+const ContactView = lazyWithRetry(() =>
   import('./components/views/ContactView').then((m) => ({
     default: m.ContactView,
   }))
 );
-const PrivacyPolicyView = lazy(() =>
+const PrivacyPolicyView = lazyWithRetry(() =>
   import('./components/views/PrivacyPolicyView').then((m) => ({
     default: m.PrivacyPolicyView,
   }))
 );
-const TermsView = lazy(() =>
+const TermsView = lazyWithRetry(() =>
   import('./components/views/TermsView').then((m) => ({
     default: m.TermsView,
   }))
 );
-const NotFoundView = lazy(() =>
+const NotFoundView = lazyWithRetry(() =>
   import('./components/views/NotFoundView').then((m) => ({
     default: m.NotFoundView,
   }))
 );
-const ProjectLightbox = lazy(() =>
+const ProjectLightbox = lazyWithRetry(() =>
   import('./components/ProjectLightbox').then((m) => ({
     default: m.ProjectLightbox,
   }))
 );
-const AboutMeHighlightModal = lazy(() =>
+const AboutMeHighlightModal = lazyWithRetry(() =>
   import('./components/AboutMeHighlightModal').then((m) => ({
     default: m.AboutMeHighlightModal,
   }))
 );
-const PortfolioChatbot = lazy(() =>
+const PortfolioChatbot = lazyWithRetry(() =>
   import('./components/PortfolioChatbot').then((m) => ({
     default: m.PortfolioChatbot,
   }))
@@ -439,54 +553,56 @@ export default function App() {
               introActive={showIntro}
               className="flex flex-1 flex-col"
             >
-              <Suspense
-                fallback={
-                  <div className="flex flex-1 items-center justify-center p-12 font-kalam text-sm text-[#B8C7C7]">
-                    Loading section...
-                  </div>
-                }
-              >
-                {activeFeature === 'overview' && (
-                  <OverviewView onNavigateFeature={navigateToFeature} />
-                )}
+              <LazyErrorBoundary resetKey={activeFeature}>
+                <Suspense
+                  fallback={
+                    <div className="flex flex-1 items-center justify-center p-12 font-kalam text-sm text-[#B8C7C7]">
+                      Loading section...
+                    </div>
+                  }
+                >
+                  {activeFeature === 'overview' && (
+                    <OverviewView onNavigateFeature={navigateToFeature} />
+                  )}
 
-                {activeFeature === 'achievements' && (
-                  <AchievementsView
-                    achievements={achievementsList}
-                    onSelectItem={(item) => setSelectedItem(item)}
-                  />
-                )}
+                  {activeFeature === 'achievements' && (
+                    <AchievementsView
+                      achievements={achievementsList}
+                      onSelectItem={(item) => setSelectedItem(item)}
+                    />
+                  )}
 
-                {activeFeature === 'skills' && <SkillsView />}
+                  {activeFeature === 'skills' && <SkillsView />}
 
-                {activeFeature === 'certifications' && <CertificationsView />}
+                  {activeFeature === 'certifications' && <CertificationsView />}
 
-                {activeFeature === 'education' && <EducationView />}
+                  {activeFeature === 'education' && <EducationView />}
 
-                {activeFeature === 'projects' && (
-                  <ProjectsView onNavigateFeature={navigateToFeature} />
-                )}
+                  {activeFeature === 'projects' && (
+                    <ProjectsView onNavigateFeature={navigateToFeature} />
+                  )}
 
-                {activeFeature === 'resume' && <ResumeView />}
+                  {activeFeature === 'resume' && <ResumeView />}
 
-                {activeFeature === 'portfolioPdf' && (
-                  <PortfolioPdfView onReturnPreviousView={returnToPreviousView} />
-                )}
+                  {activeFeature === 'portfolioPdf' && (
+                    <PortfolioPdfView onReturnPreviousView={returnToPreviousView} />
+                  )}
 
-                {activeFeature === 'contact' && <ContactView />}
+                  {activeFeature === 'contact' && <ContactView />}
 
-                {activeFeature === 'privacy' && (
-                  <PrivacyPolicyView onNavigateFeature={navigateToFeature} />
-                )}
+                  {activeFeature === 'privacy' && (
+                    <PrivacyPolicyView onNavigateFeature={navigateToFeature} />
+                  )}
 
-                {activeFeature === 'terms' && (
-                  <TermsView onNavigateFeature={navigateToFeature} />
-                )}
+                  {activeFeature === 'terms' && (
+                    <TermsView onNavigateFeature={navigateToFeature} />
+                  )}
 
-                {activeFeature === 'notFound' && (
-                  <NotFoundView onNavigateFeature={navigateToFeature} />
-                )}
-              </Suspense>
+                  {activeFeature === 'notFound' && (
+                    <NotFoundView onNavigateFeature={navigateToFeature} />
+                  )}
+                </Suspense>
+              </LazyErrorBoundary>
             </CinematicTransition>
           </main>
 
@@ -496,23 +612,25 @@ export default function App() {
           />
         </div>
 
-        <Suspense fallback={null}>
-          {selectedItem && (
-            <ProjectLightbox
-              item={selectedItem}
-              onClose={() => setSelectedItem(null)}
-            />
-          )}
+        <LazyErrorBoundary silentFallback>
+          <Suspense fallback={null}>
+            {selectedItem && (
+              <ProjectLightbox
+                item={selectedItem}
+                onClose={() => setSelectedItem(null)}
+              />
+            )}
 
-          {aboutCardOpen && (
-            <AboutMeHighlightModal
-              isOpen={aboutCardOpen}
-              onClose={closeAboutCard}
-            />
-          )}
+            {aboutCardOpen && (
+              <AboutMeHighlightModal
+                isOpen={aboutCardOpen}
+                onClose={closeAboutCard}
+              />
+            )}
 
-          {!showIntro && <PortfolioChatbot />}
-        </Suspense>
+            {!showIntro && <PortfolioChatbot />}
+          </Suspense>
+        </LazyErrorBoundary>
 
         {!showIntro && (
           <CookieConsentBanner
