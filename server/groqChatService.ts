@@ -3,22 +3,27 @@ import { PORTFOLIO_SYSTEM_PROMPT } from '../src/data/portfolioContext.ts';
 
 export const GROQ_BASE_URL = 'https://api.groq.com/openai/v1';
 export const GROQ_MODELS = [
+  'llama-3.3-70b-versatile',
   'openai/gpt-oss-120b',
   'openai/gpt-oss-20b',
   'qwen/qwen3.8-27b',
   'llama-3.1-8b-instant',
 ] as const;
 
-export const MAX_HISTORY_MESSAGES = 20;
+export const MAX_HISTORY_MESSAGES = 10;
+export const MAX_HISTORY_CHARS = 3600;
 export const MAX_MESSAGE_LENGTH = 2000;
 export const MAX_BODY_BYTES = 64 * 1024;
 export const GROQ_REQUEST_TIMEOUT_MS = 22000;
+export const GROQ_MAX_TOKENS = 850;
 
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX_REQUESTS = 12;
 const MAX_URLS_IN_SINGLE_MESSAGE = 4;
 
 const ipRequestTimestamps = new Map<string, number[]>();
+const modelCooldownUntil = new Map<string, number>();
+const unavailableModels = new Set<string>();
 
 export interface IncomingChatMessage {
   role: 'user' | 'assistant';
@@ -134,12 +139,9 @@ export function buildRealtimeDateTimeContext(now: Date = new Date()): string {
   }).format(now);
 
   return [
-    '=== REAL-TIME SERVER CLOCK (AUTHORITATIVE) ===',
-    'Timezone: Asia/Kolkata (IST, UTC+05:30)',
-    `Current Day of Week: ${weekday}`,
-    `Current Date: ${fullDate} (${isoDate})`,
-    `Current Time: ${time12} (${time24} 24-hour)`,
-    'When asked about the current date, current time, day of the week, today, tomorrow, or yesterday (in English, Tamil, or Tanglish), ALWAYS answer directly using this authoritative Asia/Kolkata server clock above instead of guessing from training data.',
+    '=== REAL-TIME SERVER CLOCK (Asia/Kolkata, IST UTC+05:30) ===',
+    `Day: ${weekday} | Date: ${fullDate} (${isoDate}) | Time: ${time12} (${time24} 24h)`,
+    'Always use this authoritative clock for current date, weekday, time, today, tomorrow, or yesterday.',
   ].join('\n');
 }
 
@@ -202,33 +204,18 @@ export function buildTurnLanguageContext(latestUserMessage: string): string {
   const detected = detectTurnLanguage(latestUserMessage);
 
   if (detected === 'tamil') {
-    return [
-      '=== LANGUAGE INSTRUCTION FOR THIS TURN ===',
-      'Detected User Language: TAMIL (தமிழ்)',
-      'STRICT RULE: Reply ENTIRELY in clear, natural Tamil script (தமிழ்) from the first word to the last word. Write EVERY word, heading, degree/department name, technical term, and explanation in Tamil script (for example: சபரி, பி.டெக் செயற்கை நுண்ணறிவு மற்றும் தரவு அறிவியல், பைதான், சி, எஸ்க்யூஎல், டிபிஎம்எஸ், மாங்கோடிபி, மேட்லேப், மைக்ரோசாஃப்ட் எக்ஸெல், ஸ்ரீ ராமகிருஷ்ணா இன்ஸ்டிடியூட் ஆஃப் டெக்னாலஜி, கோயம்புத்தூர்). NEVER include ANY Latin/English letters, English words, or English parentheticals like "(Artificial Intelligence & Data Science)" or "(Python)"—only keep raw email/URL strings intact if explicitly asked for contact links. Never misstate B.Tech as PhD/பிஎச்.டி—always write பி.டெக்.',
-    ].join('\n');
+    return '=== TURN LANGUAGE: TAMIL (தமிழ்) ===\nReply 100% in natural Tamil script (தமிழ்) from first word to last—write every heading, degree, and tech term in Tamil script (e.g., சபரி, பி.டெக் செயற்கை நுண்ணறிவு மற்றும் தரவு அறிவியல், பைதான், சி, எஸ்க்யூஎல், டிபிஎம்எஸ், மாங்கோடிபி, மேட்லேப், மைக்ரோசாஃப்ட் எக்ஸெல், ஸ்ரீ ராமகிருஷ்ணா இன்ஸ்டிடியூட் ஆஃப் டெக்னாலஜி, கோயம்புத்தூர்). Zero English words or parentheticals (except raw email/URLs if asked for links). Always write பி.டெக், never பிஎச்.டி.';
   }
 
   if (detected === 'tanglish') {
-    return [
-      '=== LANGUAGE INSTRUCTION FOR THIS TURN ===',
-      'Detected User Language: TANGLISH (Tamil + English mix)',
-      'STRICT RULE: Do NOT confuse Tanglish with pure English. Reply using a natural mix of Tamil (written in English letters) and English throughout the entire response (e.g., "Sabari ippo 2nd year B.Tech Artificial Intelligence & Data Science padikkiraaru..."). Maintain this friendly Tamil + English Tanglish style consistently from start to finish.',
-    ].join('\n');
+    return '=== TURN LANGUAGE: TANGLISH (Tamil + English) ===\nReply in a natural Tamil + English mix written in English letters from start to finish (e.g., "Sabari ippo 2nd year B.Tech AI & Data Science padikkiraaru..."). Never slip into pure English.';
   }
 
   if (detected === 'inherit') {
-    return [
-      '=== LANGUAGE INSTRUCTION FOR THIS TURN ===',
-      'The latest message is brief/language-neutral. Continue consistently in the exact language style (entirely Tamil, entirely English, or Tanglish mix) used in the immediately preceding turn, or entirely English if starting fresh.',
-    ].join('\n');
+    return '=== TURN LANGUAGE: INHERIT ===\nMatch the exact language style (Tamil script, English, or Tanglish) of the immediately preceding turn, or English if starting fresh.';
   }
 
-  return [
-    '=== LANGUAGE INSTRUCTION FOR THIS TURN ===',
-    'Detected User Language: ENGLISH',
-    'STRICT RULE: Reply ENTIRELY in clear, natural English from start to finish (even if earlier conversation turns were in Tamil or Tanglish). Do not mix Tamil or Tanglish words.',
-  ].join('\n');
+  return '=== TURN LANGUAGE: ENGLISH ===\nReply 100% in clear, natural English from start to finish. Do not mix Tamil or Tanglish words.';
 }
 
 export function sanitizeMessages(raw: unknown): IncomingChatMessage[] | null {
@@ -270,7 +257,57 @@ export function sanitizeMessages(raw: unknown): IncomingChatMessage[] | null {
     return null;
   }
 
-  return sanitized;
+  // Keep recent turns within a compact character budget so TPM limits stay healthy
+  const budgeted: IncomingChatMessage[] = [];
+  let charBudget = 0;
+  for (let i = sanitized.length - 1; i >= 0; i -= 1) {
+    const msg = sanitized[i];
+    const isLatestUser = i === sanitized.length - 1;
+    if (!isLatestUser && charBudget + msg.content.length > MAX_HISTORY_CHARS) {
+      break;
+    }
+    budgeted.unshift(msg);
+    charBudget += msg.content.length;
+  }
+
+  return budgeted;
+}
+
+function parseRetryDelayMs(err: unknown): number {
+  if (!err || typeof err !== 'object') return 0;
+  const candidate = err as {
+    message?: string;
+    headers?: { get?: (name: string) => string | null; [key: string]: unknown };
+  };
+
+  const retryHeader =
+    typeof candidate.headers?.get === 'function'
+      ? candidate.headers.get('retry-after')
+      : typeof candidate.headers?.['retry-after'] === 'string'
+        ? candidate.headers['retry-after']
+        : null;
+
+  if (retryHeader) {
+    const seconds = Number(retryHeader);
+    if (Number.isFinite(seconds) && seconds > 0) {
+      return Math.min(Math.ceil(seconds * 1000), 60_000);
+    }
+  }
+
+  const msg = candidate.message || '';
+  const msMatch = msg.match(/try again in\s+(\d+(?:\.\d+)?)\s*ms/i);
+  if (msMatch) {
+    return Math.min(Math.ceil(Number(msMatch[1])), 60_000);
+  }
+  const secMatch = msg.match(/try again in\s+(\d+(?:\.\d+)?)\s*s/i);
+  if (secMatch) {
+    return Math.min(Math.ceil(Number(secMatch[1]) * 1000), 60_000);
+  }
+  return 0;
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function isTimeoutError(err: unknown): boolean {
@@ -379,7 +416,21 @@ export async function processGroqChat(
       maxRetries: 0,
     });
 
-    const candidateModels = Array.from(new Set([model, ...GROQ_MODELS]));
+    const baseModels = Array.from(new Set([model, ...GROQ_MODELS])).filter(
+      (id) => !unavailableModels.has(id)
+    );
+    const activeBaseModels = baseModels.length > 0 ? baseModels : [...GROQ_MODELS];
+    const now = Date.now();
+    const readyModels = activeBaseModels.filter(
+      (id) => (modelCooldownUntil.get(id) ?? 0) <= now
+    );
+    const coolingModels = activeBaseModels
+      .filter((id) => (modelCooldownUntil.get(id) ?? 0) > now)
+      .sort(
+        (a, b) => (modelCooldownUntil.get(a) ?? 0) - (modelCooldownUntil.get(b) ?? 0)
+      );
+    const candidateModels = [...readyModels, ...coolingModels];
+
     const runtimeSystemPrompt = [
       PORTFOLIO_SYSTEM_PROMPT,
       buildRealtimeDateTimeContext(new Date()),
@@ -388,48 +439,96 @@ export async function processGroqChat(
 
     let reply = '';
     let lastModelError: unknown = null;
+    const attemptNotes: string[] = [];
 
-    for (const modelId of candidateModels) {
-      try {
-        const completion = await client.chat.completions.create({
-          model: modelId,
-          messages: [
-            { role: 'system', content: runtimeSystemPrompt },
-            ...messages,
-          ],
-          temperature: 0.5,
-          max_tokens: 1600,
-        });
+    for (let idx = 0; idx < candidateModels.length; idx += 1) {
+      const modelId = candidateModels[idx];
+      let retriedShortWait = false;
 
-        const rawContent = completion.choices[0]?.message?.content;
-        const candidateReply =
-          typeof rawContent === 'string' ? rawContent.trim() : '';
+      while (true) {
+        try {
+          const completion = await client.chat.completions.create({
+            model: modelId,
+            messages: [
+              { role: 'system', content: runtimeSystemPrompt },
+              ...messages,
+            ],
+            temperature: 0.5,
+            max_tokens: GROQ_MAX_TOKENS,
+          });
 
-        if (candidateReply) {
-          reply = candidateReply;
+          const rawContent = completion.choices[0]?.message?.content;
+          const candidateReply =
+            typeof rawContent === 'string' ? rawContent.trim() : '';
+
+          if (candidateReply) {
+            modelCooldownUntil.delete(modelId);
+            reply = candidateReply;
+            break;
+          }
+
+          attemptNotes.push(`${modelId}: empty content`);
           break;
-        }
+        } catch (modelErr: unknown) {
+          const errInfo = modelErr as { status?: number; message?: string };
+          const status = errInfo?.status;
 
-        console.warn(
-          `[api/chat][${requestId}] Model "${modelId}" returned empty message content.`
-        );
-      } catch (modelErr: unknown) {
-        const errInfo = modelErr as { status?: number; message?: string };
-        const status = errInfo?.status;
-        if (status === 404 || status === 400 || status === 429 || status === 503) {
-          console.warn(
-            `[api/chat][${requestId}] Model "${modelId}" failed (${status}): ${sanitizeSecretStrings(
-              errInfo?.message || 'Unknown model error'
-            )}`
-          );
-          lastModelError = modelErr;
-          continue;
+          if (status === 429) {
+            const retryDelayMs = parseRetryDelayMs(modelErr);
+            const hasMoreReadyModels = candidateModels
+              .slice(idx + 1)
+              .some((nextId) => (modelCooldownUntil.get(nextId) ?? 0) <= Date.now());
+
+            // If retry wait is tiny (e.g. 285ms) and no other un-cooled model is immediately ready, wait & retry once
+            if (!retriedShortWait && !hasMoreReadyModels && retryDelayMs > 0 && retryDelayMs <= 1100) {
+              retriedShortWait = true;
+              await sleep(retryDelayMs + 60);
+              continue;
+            }
+
+            modelCooldownUntil.set(
+              modelId,
+              Date.now() + Math.max(retryDelayMs + 250, 5000)
+            );
+            attemptNotes.push(
+              `${modelId} (429): ${sanitizeSecretStrings(errInfo?.message || 'Rate limited')}`
+            );
+            lastModelError = modelErr;
+            break;
+          }
+
+          if (status === 404) {
+            unavailableModels.add(modelId);
+            attemptNotes.push(
+              `${modelId} (404): ${sanitizeSecretStrings(errInfo?.message || 'Model unavailable')}`
+            );
+            lastModelError = modelErr;
+            break;
+          }
+
+          if (status === 400 || status === 503) {
+            attemptNotes.push(
+              `${modelId} (${status}): ${sanitizeSecretStrings(errInfo?.message || 'Model error')}`
+            );
+            lastModelError = modelErr;
+            break;
+          }
+
+          throw modelErr;
         }
-        throw modelErr;
+      }
+
+      if (reply) {
+        break;
       }
     }
 
     if (!reply) {
+      if (attemptNotes.length > 0) {
+        console.warn(
+          `[api/chat][${requestId}] All candidate models failed: ${attemptNotes.join(' | ')}`
+        );
+      }
       if (lastModelError) {
         throw lastModelError;
       }

@@ -24,9 +24,9 @@ export function EducationView() {
       {/* Undergraduate & School Education */}
       <div className="mt-6 grid grid-cols-1 gap-5 sm:mt-8 sm:gap-6 lg:grid-cols-2">
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.09, ease: [0.16, 1, 0.3, 1] }}
           className="h-full"
         >
           <TiltCard
@@ -61,9 +61,9 @@ export function EducationView() {
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.06, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.09, delay: 0.02, ease: [0.16, 1, 0.3, 1] }}
           className="h-full"
         >
           <TiltCard
@@ -111,10 +111,10 @@ export function EducationView() {
       <SectionReveal>
       <div className="mt-8 grid flex-1 grid-cols-1 gap-8 border-t border-white/10 pt-8 sm:mt-10 sm:gap-10 sm:pt-10 lg:grid-cols-12 lg:items-stretch">
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 6 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          viewport={{ once: true, amount: 0.05 }}
+          transition={{ duration: 0.09, ease: [0.16, 1, 0.3, 1] }}
           className="flex flex-col lg:col-span-6"
         >
           <h2 className="font-road-rage text-2xl font-normal tracking-wide text-[#FF4D4D] sm:text-3xl">
@@ -155,10 +155,10 @@ export function EducationView() {
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 6 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.3, delay: 0.06, ease: [0.16, 1, 0.3, 1] }}
+          viewport={{ once: true, amount: 0.05 }}
+          transition={{ duration: 0.09, delay: 0.02, ease: [0.16, 1, 0.3, 1] }}
           className="flex flex-col justify-between lg:col-span-6"
         >
           <div>

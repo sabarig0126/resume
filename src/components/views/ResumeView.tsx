@@ -147,7 +147,7 @@ export function ResumeView() {
       <motion.article
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.26, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 0.09, ease: [0.16, 1, 0.3, 1] }}
         aria-label="Sabarivasan G Broadsheet Newspaper Resume"
         className="relative overflow-hidden rounded-none border border-[#C6C6C0] bg-[#F3F3EF] p-3 text-[#121212] shadow-[inset_0_0_32px_rgba(0,0,0,0.06),0_26px_64px_-16px_rgba(0,0,0,0.85)] sm:p-5 md:p-6 lg:px-[clamp(1.2rem,2.3vw,1.9rem)] lg:py-[clamp(0.8rem,1.5dvh,1.25rem)]"
       >

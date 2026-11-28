@@ -13,7 +13,7 @@ export function NotFoundView({ onNavigateFeature }: NotFoundViewProps) {
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 0.09, ease: [0.16, 1, 0.3, 1] }}
       >
         <GlassCard
           strong
@@ -33,6 +33,7 @@ export function NotFoundView({ onNavigateFeature }: NotFoundViewProps) {
           <div className="mt-8 flex flex-col items-stretch justify-center gap-3.5 sm:flex-row sm:items-center">
             <button
               type="button"
+              data-sfx="custom"
               onClick={() => onNavigateFeature('overview')}
               className="touch-press inline-flex min-h-[46px] items-center justify-center gap-2 rounded-lg bg-[#C8FF27] px-6 py-2.5 text-sm font-bold text-[#071B1B] shadow-[0_0_24px_-6px_rgba(200,255,39,0.55)] hover:bg-[#d5ff52] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F05BEA]"
             >
@@ -41,6 +42,7 @@ export function NotFoundView({ onNavigateFeature }: NotFoundViewProps) {
             </button>
             <button
               type="button"
+              data-sfx="custom"
               onClick={() => onNavigateFeature('contact')}
               className="touch-press inline-flex min-h-[46px] items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/[0.05] px-6 py-2.5 text-sm font-semibold text-white hover:border-[#F05BEA]/65 hover:bg-[#F05BEA]/15 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF27]"
             >

@@ -39,12 +39,14 @@ export function ProjectImageReveal({
           }
         }
       },
-      { threshold: 0.12, rootMargin: '0px 0px -16px 0px' }
+      { threshold: 0.02, rootMargin: '96px 0px 96px 0px' }
     );
 
     observer.observe(el);
     return () => observer.disconnect();
   }, [revealed]);
+
+  const effectiveDelayMs = Math.min(Math.max(0, delayMs), 50);
 
   return (
     <div
@@ -54,12 +56,12 @@ export function ProjectImageReveal({
       <div
         style={{
           transitionProperty: 'opacity, transform',
-          transitionDuration: '560ms',
+          transitionDuration: '100ms',
           transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
-          transitionDelay: `${delayMs}ms`,
+          transitionDelay: `${effectiveDelayMs}ms`,
         }}
-        className={`h-full w-full transition-transform duration-500 ease-out group-hover/reveal:scale-[1.035] group-active/reveal:scale-[0.985] ${
-          revealed ? 'opacity-100 scale-100' : 'opacity-0 scale-[1.06]'
+        className={`h-full w-full transition-transform duration-300 ease-out group-hover/reveal:scale-[1.035] group-active/reveal:scale-[0.985] ${
+          revealed ? 'opacity-100 scale-100' : 'opacity-0 scale-[1.02]'
         }`}
       >
         {children}

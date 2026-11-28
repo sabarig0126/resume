@@ -15,6 +15,13 @@ import {
   SendVectorIcon,
   TrophyIcon,
 } from './NextGenIcons';
+import {
+  prefetchAllNavigationChunks,
+  prefetchModalChunk,
+  prefetchViewChunk,
+} from '../lib/assetPreloader';
+import { triggerCrystalBurst } from '../lib/glassEffects';
+import { soundEffects } from '../lib/soundEffects';
 import { FeatureId } from '../types/portfolio';
 
 export interface MenuFeatureItem {
@@ -211,6 +218,8 @@ export function Header({
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        soundEffects.playModalClose();
+        triggerCrystalBurst(closeButtonRef.current, 'dissolve');
         setMenuOpen(false);
         return;
       }
@@ -241,6 +250,20 @@ export function Header({
     };
   }, [menuOpen]);
 
+  const handleOpenMenu = () => {
+    prefetchAllNavigationChunks();
+    soundEffects.playModalOpen();
+    setMenuOpen(true);
+  };
+
+  const handleCloseMenu = (burstOrigin?: Element | null) => {
+    soundEffects.playModalClose();
+    if (burstOrigin) {
+      triggerCrystalBurst(burstOrigin, 'dissolve');
+    }
+    setMenuOpen(false);
+  };
+
   const handleChooseFeature = (id: FeatureId) => {
     onSelectFeature(id);
     setMenuOpen(false);
@@ -256,6 +279,9 @@ export function Header({
             <motion.button
               type="button"
               whileTap={{ scale: 0.95 }}
+              data-sfx="custom"
+              onPointerEnter={() => prefetchModalChunk('aboutModal')}
+              onFocus={() => prefetchModalChunk('aboutModal')}
               onClick={onOpenAboutCard}
               aria-expanded={isAboutOpen}
               aria-label="Open Sabarivasan G About Me Highlight Card"
@@ -290,12 +316,15 @@ export function Header({
           </div>
 
           {/* Right: Primary Navigation CTA (Neon Lime + Deep Teal Text) */}
-          <div className="shrink-0">
+          <div className="flex shrink-0 items-center">
             <motion.button
               ref={menuButtonRef}
               type="button"
               whileTap={{ scale: 0.96 }}
-              onClick={() => setMenuOpen(true)}
+              data-sfx="custom"
+              onPointerEnter={prefetchAllNavigationChunks}
+              onFocus={prefetchAllNavigationChunks}
+              onClick={handleOpenMenu}
               aria-expanded={menuOpen}
               aria-controls="top-right-feature-menu"
               className="touch-press inline-flex min-h-[44px] sm:min-h-[40px] items-center gap-2 rounded-lg border border-[#C8FF27] bg-[#C8FF27] px-4 py-2 text-xs font-bold text-[#071B1B] shadow-[0_0_20px_-4px_rgba(200,255,39,0.5)] transition-all duration-200 hover:border-[#F05BEA] hover:bg-[#d5ff57] hover:shadow-[0_0_24px_-2px_rgba(240,91,234,0.55)] whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F05BEA]"
@@ -320,11 +349,11 @@ export function Header({
             {/* Full-viewport blurred backdrop behind all menu options */}
             <motion.div
               aria-hidden="true"
-              onClick={() => setMenuOpen(false)}
+              onClick={() => handleCloseMenu(closeButtonRef.current)}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.14, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.09, ease: [0.16, 1, 0.3, 1] }}
               className="fixed inset-0 bg-[#041111]/75 backdrop-blur-xl cursor-pointer"
             />
 
@@ -335,13 +364,14 @@ export function Header({
                 <motion.button
                   ref={closeButtonRef}
                   type="button"
-                  onClick={() => setMenuOpen(false)}
+                  data-sfx="custom"
+                  onClick={(e) => handleCloseMenu(e.currentTarget)}
                   aria-label="Close menu"
                   initial={{ opacity: 0, scale: 0.96 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.96 }}
                   whileTap={{ scale: 0.96 }}
-                  transition={{ duration: 0.14, ease: [0.16, 1, 0.3, 1] }}
+                  transition={{ duration: 0.09, ease: [0.16, 1, 0.3, 1] }}
                   className="touch-press pointer-events-auto inline-flex min-h-[44px] sm:min-h-[40px] items-center gap-2 rounded-lg border border-[#F05BEA]/70 bg-[#F05BEA] px-4 py-2 text-xs font-bold text-[#071B1B] shadow-[0_0_22px_-3px_rgba(240,91,234,0.6)] transition-all duration-200 hover:border-[#C8FF27] hover:bg-[#C8FF27] hover:text-[#071B1B] whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF27]"
                 >
                   <CloseIcon className="h-4 w-4" />
@@ -354,10 +384,10 @@ export function Header({
                 <motion.nav
                   id="top-right-feature-menu"
                   aria-label="Portfolio sections menu"
-                  initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                  initial={{ opacity: 0, y: -6, scale: 0.985 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -6, scale: 0.98 }}
-                  transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
+                  exit={{ opacity: 0, y: -4, scale: 0.985 }}
+                  transition={{ duration: 0.09, ease: [0.16, 1, 0.3, 1] }}
                   className="glass-surface-strong glass-accent-pink pointer-events-auto flex max-h-[calc(100dvh-5.5rem)] w-full flex-col overflow-hidden rounded-2xl p-2.5 sm:max-w-sm"
                 >
                   <div className="shrink-0 border-b border-white/10 px-3 py-2.5">
@@ -374,16 +404,19 @@ export function Header({
                         return (
                           <motion.li
                             key={item.id}
-                            initial={{ opacity: 0, x: 8 }}
+                            initial={{ opacity: 0, x: 6 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{
-                              duration: 0.18,
-                              delay: idx * 0.018,
+                              duration: 0.08,
+                              delay: idx * 0.006,
                               ease: [0.16, 1, 0.3, 1],
                             }}
                           >
                             <button
                               type="button"
+                              data-sfx="custom"
+                              onPointerEnter={() => prefetchViewChunk(item.id)}
+                              onFocus={() => prefetchViewChunk(item.id)}
                               onClick={() => handleChooseFeature(item.id)}
                               aria-current={isActive ? 'page' : undefined}
                               className={`touch-press group relative flex min-h-[48px] sm:min-h-[44px] w-full items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF27] ${

@@ -7,6 +7,7 @@ import {
   saveConsent,
   subscribeOpenCookiePreferences,
 } from '../lib/consent';
+import { soundEffects } from '../lib/soundEffects';
 import { FeatureId } from '../types/portfolio';
 
 interface CookieConsentBannerProps {
@@ -36,10 +37,12 @@ export function CookieConsentBanner({
       setAnalyticsEnabled(latest?.analytics ?? false);
       setShowPrefs(true);
       setVisible(true);
+      soundEffects.playModalOpen();
     });
   }, []);
 
   const handleAcceptAll = () => {
+    soundEffects.playSparkle();
     const saved = saveConsent(true);
     setAnalyticsEnabled(true);
     setVisible(false);
@@ -48,6 +51,7 @@ export function CookieConsentBanner({
   };
 
   const handleRejectNonEssential = () => {
+    soundEffects.playModalClose();
     const saved = saveConsent(false);
     setAnalyticsEnabled(false);
     setVisible(false);
@@ -56,6 +60,7 @@ export function CookieConsentBanner({
   };
 
   const handleSavePreferences = () => {
+    soundEffects.playSparkle();
     const saved = saveConsent(analyticsEnabled);
     setVisible(false);
     setShowPrefs(false);
@@ -84,6 +89,7 @@ export function CookieConsentBanner({
               Essential browser storage keeps your preferences working. Optional analytics stays disabled unless you choose Accept or enable it in Preferences.{' '}
               <button
                 type="button"
+                data-sfx="custom"
                 onClick={() => onNavigateFeature('privacy')}
                 className="underline decoration-[#C8FF27]/70 underline-offset-2 text-[#C8FF27] hover:text-white cursor-pointer"
               >
@@ -130,6 +136,7 @@ export function CookieConsentBanner({
             <div className="mt-3.5 flex flex-wrap items-center gap-2">
               <button
                 type="button"
+                data-sfx="custom"
                 onClick={handleAcceptAll}
                 className="touch-press inline-flex min-h-[38px] flex-1 items-center justify-center rounded-lg bg-[#C8FF27] px-3 py-1.5 font-kalam text-xs font-bold text-[#071B1B] hover:bg-[#d5ff52] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F05BEA]"
               >
@@ -137,6 +144,7 @@ export function CookieConsentBanner({
               </button>
               <button
                 type="button"
+                data-sfx="custom"
                 onClick={handleRejectNonEssential}
                 className="touch-press inline-flex min-h-[38px] flex-1 items-center justify-center rounded-lg border border-white/20 bg-white/[0.06] px-3 py-1.5 font-kalam text-xs font-semibold text-white hover:border-[#F05BEA]/65 hover:bg-[#F05BEA]/15 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF27]"
               >
@@ -145,6 +153,7 @@ export function CookieConsentBanner({
               {showPrefs ? (
                 <button
                   type="button"
+                  data-sfx="custom"
                   onClick={handleSavePreferences}
                   className="touch-press inline-flex min-h-[38px] items-center justify-center rounded-lg border border-[#F05BEA]/55 bg-[#F05BEA]/20 px-3 py-1.5 font-kalam text-xs font-bold text-white hover:bg-[#F05BEA]/35 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF27]"
                 >

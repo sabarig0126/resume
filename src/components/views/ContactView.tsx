@@ -54,7 +54,7 @@ export function ContactView() {
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 0.09, ease: [0.16, 1, 0.3, 1] }}
         className="mt-6 flex flex-1 flex-col sm:mt-8"
       >
         <GlassCard

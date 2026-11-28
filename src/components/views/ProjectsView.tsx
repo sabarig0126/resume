@@ -3,6 +3,7 @@ import {
   ArrowRightIcon,
   KanbanBoardIcon,
 } from '../NextGenIcons';
+import { prefetchViewChunk } from '../../lib/assetPreloader';
 import { FeatureId } from '../../types/portfolio';
 import { TiltCard } from '../TiltCard';
 
@@ -25,9 +26,9 @@ export function ProjectsView({
       </div>
 
       <motion.div
-        initial={{ opacity: 0, y: 12 }}
+        initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 0.09, ease: [0.16, 1, 0.3, 1] }}
         className="mt-6 flex flex-1 flex-col sm:mt-8"
       >
         <TiltCard
@@ -51,6 +52,9 @@ export function ProjectsView({
           <div className="relative z-20 mt-8 flex flex-col items-stretch justify-center gap-3.5 sm:mt-10 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
             <button
               type="button"
+              data-sfx="custom"
+              onPointerEnter={() => prefetchViewChunk('certifications')}
+              onFocus={() => prefetchViewChunk('certifications')}
               onClick={() => onNavigateFeature('certifications')}
               className="touch-press inline-flex min-h-[48px] w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-[#C8FF27] px-6 py-3 text-sm font-bold text-[#071B1B] shadow-[0_0_24px_-6px_rgba(200,255,39,0.55)] hover:bg-[#d5ff52] hover:shadow-[0_0_28px_-4px_rgba(200,255,39,0.7)] whitespace-nowrap sm:w-auto cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F05BEA]"
             >
@@ -59,6 +63,9 @@ export function ProjectsView({
             </button>
             <button
               type="button"
+              data-sfx="custom"
+              onPointerEnter={() => prefetchViewChunk('achievements')}
+              onFocus={() => prefetchViewChunk('achievements')}
               onClick={() => onNavigateFeature('achievements')}
               className="touch-press inline-flex min-h-[48px] w-full shrink-0 items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/[0.04] px-6 py-3 text-sm font-semibold text-[#FFFFFF] hover:border-[#F05BEA]/60 hover:bg-[#F05BEA]/10 whitespace-nowrap sm:w-auto cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF27]"
             >

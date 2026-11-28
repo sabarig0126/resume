@@ -176,6 +176,23 @@ async function startServer() {
   );
 
   if (!isProduction) {
+    const publicAssetsDir = path.resolve(import.meta.dirname, 'public', 'assets');
+    app.use(
+      '/assets',
+      express.static(publicAssetsDir, {
+        etag: true,
+        lastModified: true,
+        setHeaders: (res, filePath) => {
+          if (/\.(webp|png|jpe?g|svg|ico|pdf)$/i.test(filePath)) {
+            res.setHeader(
+              'Cache-Control',
+              'public, max-age=3600, stale-while-revalidate=86400'
+            );
+          }
+        },
+      })
+    );
+
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
@@ -186,13 +203,43 @@ async function startServer() {
     const distDir = path.resolve(import.meta.dirname, 'dist');
     const indexHtmlPath = path.join(distDir, 'index.html');
 
-    app.use(express.static(distDir));
+    app.use(
+      express.static(distDir, {
+        etag: true,
+        lastModified: true,
+        setHeaders: (res, filePath) => {
+          const normalized = filePath.replace(/\\/g, '/');
+          if (normalized.endsWith('/index.html')) {
+            res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+            return;
+          }
+          if (
+            /\/assets\/[^/]+-[a-zA-Z0-9_-]{6,}\.(js|css|woff2?)$/i.test(
+              normalized
+            )
+          ) {
+            res.setHeader(
+              'Cache-Control',
+              'public, max-age=31536000, immutable'
+            );
+            return;
+          }
+          if (/\.(webp|png|jpe?g|svg|ico|pdf)$/i.test(normalized)) {
+            res.setHeader(
+              'Cache-Control',
+              'public, max-age=604800, stale-while-revalidate=2592000'
+            );
+          }
+        },
+      })
+    );
     app.use((req, res, next) => {
       if (req.method !== 'GET' || req.path.startsWith('/api/')) {
         next();
         return;
       }
       if (fs.existsSync(indexHtmlPath)) {
+        res.setHeader('Cache-Control', 'no-cache, must-revalidate');
         res.sendFile(indexHtmlPath);
       } else {
         res.status(404).send('Build output not found. Run npm run build first.');

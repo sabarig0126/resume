@@ -31,6 +31,9 @@ import {
   subscribeConsent,
 } from './lib/consent';
 import { FEATURE_PATHS, updateFeatureSeo } from './lib/seo';
+import { scheduleBackgroundPrewarm } from './lib/assetPreloader';
+import { triggerCrystalBurst, triggerGlassRipple } from './lib/glassEffects';
+import { soundEffects } from './lib/soundEffects';
 import { FeatureId, PortfolioItem } from './types/portfolio';
 
 const CHUNK_RELOAD_STORAGE_KEY = 'sabari_chunk_reload_ts';
@@ -288,10 +291,12 @@ export default function App() {
   }, []);
 
   const openAboutCard = useCallback(() => {
+    soundEffects.playModalOpen();
     setAboutCardOpen(true);
   }, []);
 
   const closeAboutCard = useCallback(() => {
+    soundEffects.playModalClose();
     setAboutCardOpen(false);
   }, []);
 
@@ -330,10 +335,11 @@ export default function App() {
     });
   }, [consentPrefs?.analytics]);
 
-  // Update SEO metadata + consent-gated analytics page view on navigation
+  // Update SEO metadata + consent-gated analytics page view on navigation & ensure background prewarm runs
   useEffect(() => {
     updateFeatureSeo(activeFeature);
     if (!showIntro) {
+      scheduleBackgroundPrewarm();
       trackConsentAwarePageView(activeFeature, Boolean(consentPrefs?.analytics));
     }
   }, [activeFeature, showIntro, consentPrefs?.analytics]);
@@ -476,10 +482,133 @@ export default function App() {
     };
   }, []);
 
+  // Website-wide synchronized glass click ripples, press feedback & futuristic sound effects
+  useEffect(() => {
+    let lastEnteredGlass: Element | null = null;
+    let pressedEl: HTMLElement | null = null;
+
+    const clearPressed = () => {
+      if (pressedEl) {
+        pressedEl.classList.remove('pearl-pressed');
+        pressedEl = null;
+      }
+    };
+
+    const handleGlobalPointerDown = (e: PointerEvent) => {
+      if (showIntroRef.current) {
+        soundEffects.unlockFromGesture();
+        return;
+      }
+
+      const target = e.target instanceof Element ? e.target : null;
+      if (!target) {
+        soundEffects.unlockFromGesture();
+        return;
+      }
+
+      const interactive = target.closest(
+        'button, a[href], [role="button"], label[for]'
+      );
+      if (interactive instanceof HTMLElement) {
+        if (
+          interactive.hasAttribute('disabled') ||
+          interactive.getAttribute('aria-disabled') === 'true'
+        ) {
+          return;
+        }
+
+        clearPressed();
+        pressedEl = interactive;
+        interactive.classList.add('pearl-pressed');
+        triggerGlassRipple(interactive, e.clientX, e.clientY);
+
+        if (!interactive.closest('[data-sfx="custom"], [data-sfx="none"]')) {
+          soundEffects.playClick();
+        } else {
+          soundEffects.unlockFromGesture();
+        }
+        return;
+      }
+
+      soundEffects.unlockFromGesture();
+      if (e.pointerType !== 'mouse') {
+        const customOrMuted = target.closest('[data-sfx="custom"], [data-sfx="none"]');
+        if (customOrMuted) return;
+        const glassEl = target.closest('.glass-interactive, [data-tilt-card="true"]');
+        if (glassEl) {
+          triggerGlassRipple(glassEl, e.clientX, e.clientY);
+          soundEffects.playGlassInteract();
+        }
+      }
+    };
+
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (showIntroRef.current || e.repeat) return;
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+
+      const target = e.target instanceof Element ? e.target : null;
+      if (!target) return;
+
+      if (
+        target.matches('input, textarea, select, [contenteditable="true"]') &&
+        e.key === ' '
+      ) {
+        return;
+      }
+
+      const interactive = target.closest('button, a[href], [role="button"]');
+      if (interactive instanceof HTMLElement) {
+        if (
+          interactive.hasAttribute('disabled') ||
+          interactive.getAttribute('aria-disabled') === 'true'
+        ) {
+          return;
+        }
+        triggerGlassRipple(interactive);
+        if (!interactive.closest('[data-sfx="custom"], [data-sfx="none"]')) {
+          soundEffects.playClick();
+        } else {
+          soundEffects.unlockFromGesture();
+        }
+      }
+    };
+
+    const handleGlobalPointerOver = (e: PointerEvent) => {
+      if (showIntroRef.current || e.pointerType !== 'mouse') return;
+      const target = e.target instanceof Element ? e.target : null;
+      const glassEl = target?.closest('.glass-interactive, [data-tilt-card="true"]') ?? null;
+      if (glassEl === lastEnteredGlass) return;
+      lastEnteredGlass = glassEl;
+      if (glassEl) {
+        soundEffects.playGlassInteract();
+      }
+    };
+
+    window.addEventListener('pointerdown', handleGlobalPointerDown, { capture: true, passive: true });
+    window.addEventListener('pointerup', clearPressed, { passive: true });
+    window.addEventListener('pointercancel', clearPressed, { passive: true });
+    window.addEventListener('blur', clearPressed);
+    window.addEventListener('keydown', handleGlobalKeyDown, { capture: true, passive: true });
+    window.addEventListener('pointerover', handleGlobalPointerOver, { passive: true });
+
+    return () => {
+      clearPressed();
+      window.removeEventListener('pointerdown', handleGlobalPointerDown, { capture: true });
+      window.removeEventListener('pointerup', clearPressed);
+      window.removeEventListener('pointercancel', clearPressed);
+      window.removeEventListener('blur', clearPressed);
+      window.removeEventListener('keydown', handleGlobalKeyDown, { capture: true });
+      window.removeEventListener('pointerover', handleGlobalPointerOver);
+    };
+  }, []);
+
   const navigateToFeature = useCallback((feature: FeatureId) => {
     setActiveFeature((current) => {
       if (current !== feature && current !== 'notFound') {
         previousFeatureRef.current = current;
+      }
+      if (current !== feature && !showIntroRef.current) {
+        soundEffects.playNavigate();
       }
       return feature;
     });
@@ -554,13 +683,7 @@ export default function App() {
               className="flex flex-1 flex-col"
             >
               <LazyErrorBoundary resetKey={activeFeature}>
-                <Suspense
-                  fallback={
-                    <div className="flex flex-1 items-center justify-center p-12 font-kalam text-sm text-[#B8C7C7]">
-                      Loading section...
-                    </div>
-                  }
-                >
+                <Suspense fallback={<div className="flex-1" aria-hidden="true" />}>
                   {activeFeature === 'overview' && (
                     <OverviewView onNavigateFeature={navigateToFeature} />
                   )}
@@ -568,7 +691,10 @@ export default function App() {
                   {activeFeature === 'achievements' && (
                     <AchievementsView
                       achievements={achievementsList}
-                      onSelectItem={(item) => setSelectedItem(item)}
+                      onSelectItem={(item) => {
+                        soundEffects.playModalOpen();
+                        setSelectedItem(item);
+                      }}
                     />
                   )}
 
@@ -614,12 +740,13 @@ export default function App() {
 
         <LazyErrorBoundary silentFallback>
           <Suspense fallback={null}>
-            {selectedItem && (
-              <ProjectLightbox
-                item={selectedItem}
-                onClose={() => setSelectedItem(null)}
-              />
-            )}
+            <ProjectLightbox
+              item={selectedItem}
+              onClose={() => {
+                soundEffects.playModalClose();
+                setSelectedItem(null);
+              }}
+            />
 
             {aboutCardOpen && (
               <AboutMeHighlightModal

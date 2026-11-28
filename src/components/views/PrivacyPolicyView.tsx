@@ -26,7 +26,7 @@ export function PrivacyPolicyView({ onNavigateFeature }: PrivacyPolicyViewProps)
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 0.09, ease: [0.16, 1, 0.3, 1] }}
         className="mt-6 space-y-6 sm:mt-8"
       >
         <GlassCard strong accent="pink" className="rounded-2xl p-6 sm:p-8 lg:p-10">
@@ -48,6 +48,7 @@ export function PrivacyPolicyView({ onNavigateFeature }: PrivacyPolicyViewProps)
                 This website does not collect, submit, or store messages through a server-side contact database. The{' '}
                 <button
                   type="button"
+                  data-sfx="custom"
                   onClick={() => onNavigateFeature('contact')}
                   className="underline decoration-[#C8FF27]/70 underline-offset-4 text-[#C8FF27] hover:text-white cursor-pointer"
                 >
@@ -86,6 +87,7 @@ export function PrivacyPolicyView({ onNavigateFeature }: PrivacyPolicyViewProps)
                 We store your essential cookie consent choice locally in browser storage (<code className="text-[#C8FF27]">localStorage</code>) so your Accept/Reject/Preferences selection is respected across visits. Non-essential analytics scripts remain completely disabled unless you explicitly opt in via the cookie banner or{' '}
                 <button
                   type="button"
+                  data-sfx="custom"
                   onClick={requestOpenCookiePreferences}
                   className="underline decoration-[#F05BEA]/70 underline-offset-4 text-[#F05BEA] hover:text-white cursor-pointer"
                 >

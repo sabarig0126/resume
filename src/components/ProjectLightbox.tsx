@@ -1,4 +1,6 @@
 import { useEffect, useRef } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
+import { triggerCrystalBurst } from '../lib/glassEffects';
 import { CloseIcon } from './NextGenIcons';
 import { PortfolioItem } from '../types/portfolio';
 import { ProjectImageReveal } from './ProjectImageReveal';
@@ -32,6 +34,7 @@ export function ProjectLightbox({ item, onClose }: ProjectLightboxProps) {
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        triggerCrystalBurst(closeButtonRef.current, 'dissolve');
         onClose();
         return;
       }
@@ -63,30 +66,45 @@ export function ProjectLightbox({ item, onClose }: ProjectLightboxProps) {
     };
   }, [item, onClose]);
 
-  if (!item) return null;
-
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="lightbox-title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#041010]/82 p-3 backdrop-blur-sm sm:p-6 md:p-10"
-      onClick={onClose}
-    >
-      <div
-        ref={dialogRef}
-        onClick={(e) => e.stopPropagation()}
-        className="glass-surface-strong glass-accent-pink relative flex max-h-[92dvh] w-full max-w-[1120px] flex-col overflow-hidden rounded-2xl text-[#FFFFFF]"
-      >
-        <button
-          ref={closeButtonRef}
-          type="button"
-          onClick={onClose}
-          aria-label="Close item viewer"
-          className="touch-press absolute right-3 top-3 z-20 inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#F05BEA]/45 bg-[#071B1B]/85 text-[#FFFFFF] transition-colors duration-200 hover:border-[#C8FF27] hover:bg-[#C8FF27] hover:text-[#071B1B] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF27] sm:right-4 sm:top-4"
+    <AnimatePresence>
+      {item && (
+        <motion.div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="lightbox-title"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.09, ease: [0.16, 1, 0.3, 1] }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#041010]/82 p-3 backdrop-blur-md sm:p-6 md:p-10"
+          onClick={() => {
+            triggerCrystalBurst(closeButtonRef.current, 'dissolve');
+            onClose();
+          }}
         >
-          <CloseIcon className="h-5 w-5" />
-        </button>
+          <motion.div
+            ref={dialogRef}
+            initial={{ opacity: 0, scale: 0.97, y: 6 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.97, y: 4 }}
+            transition={{ duration: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            onClick={(e) => e.stopPropagation()}
+            className="glass-surface-strong glass-accent-pink relative flex max-h-[92dvh] w-full max-w-[1120px] flex-col overflow-hidden rounded-2xl text-[#FFFFFF]"
+          >
+            <button
+              ref={closeButtonRef}
+              type="button"
+              data-sfx="custom"
+              onClick={(e) => {
+                triggerCrystalBurst(e.currentTarget, 'dissolve');
+                onClose();
+              }}
+              aria-label="Close item viewer"
+              className="touch-press absolute right-3 top-3 z-20 inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#F05BEA]/45 bg-[#071B1B]/85 text-[#FFFFFF] transition-colors duration-200 hover:border-[#C8FF27] hover:bg-[#C8FF27] hover:text-[#071B1B] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF27] sm:right-4 sm:top-4"
+            >
+              <CloseIcon className="h-5 w-5" />
+            </button>
 
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain touch-pan-y lg:grid lg:grid-cols-12 lg:overflow-hidden">
           {/* Left Plate: Uploaded Image OR Typographic Slide Plate */}
@@ -111,6 +129,8 @@ export function ProjectLightbox({ item, onClose }: ProjectLightboxProps) {
                         src={item.imageUrl}
                         alt={item.imageAlt ?? item.title}
                         fallbackTitle={item.title}
+                        loading="eager"
+                        fetchPriority="high"
                         className="h-full w-full object-contain"
                       />
                       <span className="pointer-events-none absolute right-3 top-3 z-20 flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/85 bg-white p-1 shadow-[0_6px_18px_rgba(0,0,0,0.55),0_0_0_2px_rgba(7,27,27,0.4)] sm:h-11 sm:w-11">
@@ -118,7 +138,7 @@ export function ProjectLightbox({ item, onClose }: ProjectLightboxProps) {
                           src={item.badgeLogoUrl}
                           alt={item.badgeLogoAlt ?? `${item.title} logo`}
                           className="h-full w-full object-contain"
-                          loading="lazy"
+                          loading="eager"
                           decoding="async"
                         />
                       </span>
@@ -129,6 +149,8 @@ export function ProjectLightbox({ item, onClose }: ProjectLightboxProps) {
                     src={item.imageUrl}
                     alt={item.imageAlt ?? item.title}
                     fallbackTitle={item.title}
+                    loading="eager"
+                    fetchPriority="high"
                     className="h-full w-full object-contain"
                   />
                 )}
@@ -251,7 +273,9 @@ export function ProjectLightbox({ item, onClose }: ProjectLightboxProps) {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

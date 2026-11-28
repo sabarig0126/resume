@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { PORTFOLIO_PDF_PATH, RESUME_PDF_PATH } from '../data/projects';
+import { scheduleBackgroundPrewarm } from './assetPreloader';
 
 interface UsePortfolioInitOptions {
   enabled: boolean;
@@ -65,29 +65,13 @@ export function usePortfolioInit({
 
     let cancelled = false;
     const timers: number[] = [];
-    const controllers = new Set<AbortController>();
 
     const startTime =
       typeof performance !== 'undefined' ? performance.now() : Date.now();
     setProgress(0);
 
-    // Warm critical assets silently in the background without altering the 2.4s timeline
-    const warmAsset = (url: string) => {
-      const controller = new AbortController();
-      controllers.add(controller);
-      fetch(url, {
-        method: 'HEAD',
-        cache: 'force-cache',
-        signal: controller.signal,
-      })
-        .catch(() => {})
-        .finally(() => {
-          controllers.delete(controller);
-        });
-    };
-
-    warmAsset(RESUME_PDF_PATH);
-    warmAsset(PORTFOLIO_PDF_PATH);
+    // Pre-warm lazy route chunks, organization logos, and achievement assets silently during intro
+    scheduleBackgroundPrewarm();
     if (document.fonts?.ready) {
       void document.fonts.ready.catch(() => {});
     }
@@ -135,8 +119,6 @@ export function usePortfolioInit({
       cancelled = true;
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       timers.forEach((id) => window.clearTimeout(id));
-      controllers.forEach((ctrl) => ctrl.abort());
-      controllers.clear();
     };
   }, [enabled]);
 

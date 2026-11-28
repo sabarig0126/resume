@@ -25,7 +25,7 @@ export function TermsView({ onNavigateFeature }: TermsViewProps) {
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 0.09, ease: [0.16, 1, 0.3, 1] }}
         className="mt-6 space-y-6 sm:mt-8"
       >
         <GlassCard strong accent="lime" className="rounded-2xl p-6 sm:p-8 lg:p-10">
@@ -79,6 +79,7 @@ export function TermsView({ onNavigateFeature }: TermsViewProps) {
                 Your use of this website is also governed by our{' '}
                 <button
                   type="button"
+                  data-sfx="custom"
                   onClick={() => onNavigateFeature('privacy')}
                   className="underline decoration-[#C8FF27]/70 underline-offset-4 text-[#C8FF27] hover:text-white cursor-pointer"
                 >

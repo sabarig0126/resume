@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
 import { ArrowUpRightIcon } from '../NextGenIcons';
+import { prefetchModalChunk, warmImage } from '../../lib/assetPreloader';
 import { PortfolioItem } from '../../types/portfolio';
 import { DomainArtwork } from '../DomainArtwork';
 import { ProjectImageReveal } from '../ProjectImageReveal';
@@ -34,11 +35,11 @@ export function AchievementsView({
           return (
             <motion.div
               key={item.id}
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{
-                duration: 0.28,
-                delay: idx * 0.05,
+                duration: 0.09,
+                delay: idx * 0.015,
                 ease: [0.16, 1, 0.3, 1],
               }}
             >
@@ -52,6 +53,19 @@ export function AchievementsView({
                 <article>
                   <button
                     type="button"
+                    data-sfx="custom"
+                    onPointerEnter={() => {
+                      prefetchModalChunk('projectLightbox');
+                      if (item.imageUrl) {
+                        warmImage(item.imageUrl, { decode: true, priority: 'high' });
+                      }
+                    }}
+                    onFocus={() => {
+                      prefetchModalChunk('projectLightbox');
+                      if (item.imageUrl) {
+                        warmImage(item.imageUrl, { decode: true, priority: 'high' });
+                      }
+                    }}
                     onClick={() => onSelectItem(item)}
                     className="touch-press flex w-full flex-col text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#C8FF27] md:flex-row md:items-stretch"
                   >
@@ -68,7 +82,7 @@ export function AchievementsView({
                       </span>
 
                       <ProjectImageReveal
-                        delayMs={idx * 50}
+                        delayMs={idx * 15}
                         className="aspect-[16/10] w-full flex-1 md:aspect-auto md:min-h-[228px]"
                       >
                         {item.imageUrl ? (
@@ -79,6 +93,8 @@ export function AchievementsView({
                                   src={item.imageUrl}
                                   alt={item.imageAlt ?? item.title}
                                   fallbackTitle={item.title}
+                                  loading="eager"
+                                  fetchPriority={isLead ? 'high' : undefined}
                                   className="h-full w-full object-contain transition-transform duration-500 ease-out group-hover:scale-[1.02]"
                                 />
                                 <div
@@ -91,7 +107,7 @@ export function AchievementsView({
                                       src={item.badgeLogoUrl}
                                       alt={item.badgeLogoAlt ?? `${item.title} logo`}
                                       className="h-full w-full object-contain"
-                                      loading="lazy"
+                                      loading="eager"
                                       decoding="async"
                                     />
                                   </span>
@@ -111,6 +127,8 @@ export function AchievementsView({
                                 src={item.imageUrl}
                                 alt={item.imageAlt ?? item.title}
                                 fallbackTitle={item.title}
+                                loading="eager"
+                                fetchPriority={isLead ? 'high' : undefined}
                                 className={`h-full w-full transition-transform duration-500 ease-out ${
                                   item.imageUrl.includes('/assets/certificates/') ||
                                   item.imageUrl.includes('/assets/organizations/')

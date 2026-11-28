@@ -1,4 +1,5 @@
 import { PROFILE } from '../data/projects';
+import { prefetchViewChunk } from '../lib/assetPreloader';
 import { requestOpenCookiePreferences } from '../lib/consent';
 import { FeatureId } from '../types/portfolio';
 
@@ -25,6 +26,9 @@ export function SiteFooter({ activeFeature, onNavigateFeature }: SiteFooterProps
         <nav aria-label="Footer navigation" className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
           <button
             type="button"
+            data-sfx="custom"
+            onPointerEnter={() => prefetchViewChunk('overview')}
+            onFocus={() => prefetchViewChunk('overview')}
             onClick={() => onNavigateFeature('overview')}
             className={linkClass('overview')}
           >
@@ -32,6 +36,9 @@ export function SiteFooter({ activeFeature, onNavigateFeature }: SiteFooterProps
           </button>
           <button
             type="button"
+            data-sfx="custom"
+            onPointerEnter={() => prefetchViewChunk('projects')}
+            onFocus={() => prefetchViewChunk('projects')}
             onClick={() => onNavigateFeature('projects')}
             className={linkClass('projects')}
           >
@@ -39,6 +46,9 @@ export function SiteFooter({ activeFeature, onNavigateFeature }: SiteFooterProps
           </button>
           <button
             type="button"
+            data-sfx="custom"
+            onPointerEnter={() => prefetchViewChunk('contact')}
+            onFocus={() => prefetchViewChunk('contact')}
             onClick={() => onNavigateFeature('contact')}
             className={linkClass('contact')}
           >
@@ -46,6 +56,9 @@ export function SiteFooter({ activeFeature, onNavigateFeature }: SiteFooterProps
           </button>
           <button
             type="button"
+            data-sfx="custom"
+            onPointerEnter={() => prefetchViewChunk('privacy')}
+            onFocus={() => prefetchViewChunk('privacy')}
             onClick={() => onNavigateFeature('privacy')}
             className={linkClass('privacy')}
           >
@@ -53,6 +66,9 @@ export function SiteFooter({ activeFeature, onNavigateFeature }: SiteFooterProps
           </button>
           <button
             type="button"
+            data-sfx="custom"
+            onPointerEnter={() => prefetchViewChunk('terms')}
+            onFocus={() => prefetchViewChunk('terms')}
             onClick={() => onNavigateFeature('terms')}
             className={linkClass('terms')}
           >
@@ -60,6 +76,7 @@ export function SiteFooter({ activeFeature, onNavigateFeature }: SiteFooterProps
           </button>
           <button
             type="button"
+            data-sfx="custom"
             onClick={requestOpenCookiePreferences}
             className="font-kalam text-xs text-[#B8C7C7] transition-colors hover:text-[#F05BEA] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF27] rounded px-1 py-0.5"
           >

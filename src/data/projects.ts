@@ -1,4 +1,3 @@
-import { CERTIFICATES } from './certificates';
 import {
   CertificationTrack,
   PortfolioItem,
@@ -8,10 +7,8 @@ import {
 export const RESUME_PDF_PATH = '/assets/aistudio/sabarivasan_resume.pdf';
 export const PORTFOLIO_PDF_PATH = '/assets/aistudio/sabarivasan_portfolio.pdf';
 
-export const VERIFIED_CERTIFICATES_COUNT = CERTIFICATES.length;
-export const VERIFIED_ISSUER_COUNT = new Set(
-  CERTIFICATES.map((cert) => cert.issuerShort)
-).size;
+export const VERIFIED_CERTIFICATES_COUNT = 36;
+export const VERIFIED_ISSUER_COUNT = 9;
 
 export const PROFILE = {
   name: 'Sabarivasan G',
@@ -91,7 +88,7 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItem[] = [
     organization: 'Sri Ramakrishna Institute of Technology',
     timeframe: 'College Level',
     location: 'Coimbatore',
-    imageUrl: '/assets/aistudio/Watercolor_Dog-Filter_Group_Selfie_a2b3ea92.png',
+    imageUrl: '/assets/aistudio/Watercolor_Dog-Filter_Group_Selfie_a2b3ea92.webp',
     imageAlt:
       'Ghibli-style group photo from Smart India Hackathon (SIH) internal round at Sri Ramakrishna Institute of Technology',
     badgeLogoUrl: '/assets/organizations/sih-logo.webp',

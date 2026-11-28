@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { PROFILE } from '../data/projects';
+import { triggerCrystalBurst } from '../lib/glassEffects';
 import {
   CloseIcon,
   CpuIcon,
@@ -80,6 +81,7 @@ export function AboutMeHighlightModal({
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        triggerCrystalBurst(closeButtonRef.current, 'dissolve');
         onClose();
         return;
       }
@@ -123,16 +125,19 @@ export function AboutMeHighlightModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-          onClick={onClose}
+          transition={{ duration: 0.09, ease: [0.16, 1, 0.3, 1] }}
+          onClick={() => {
+            triggerCrystalBurst(closeButtonRef.current, 'dissolve');
+            onClose();
+          }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-[#041010]/80 p-3 backdrop-blur-md sm:p-6"
         >
           <motion.div
             ref={dialogRef}
-            initial={{ opacity: 0, scale: 0.96, y: 10 }}
+            initial={{ opacity: 0, scale: 0.97, y: 6 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.96, y: 8 }}
-            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            exit={{ opacity: 0, scale: 0.97, y: 4 }}
+            transition={{ duration: 0.1, ease: [0.16, 1, 0.3, 1] }}
             onClick={(e) => e.stopPropagation()}
             className="glass-surface-strong glass-accent-pink relative flex max-h-[90dvh] w-full max-w-[740px] flex-col overflow-hidden rounded-2xl text-[#FFFFFF] shadow-[0_32px_80px_-18px_rgba(2,10,10,0.95),0_0_46px_-14px_rgba(240,91,234,0.34)]"
           >
@@ -157,7 +162,11 @@ export function AboutMeHighlightModal({
                 <button
                   ref={closeButtonRef}
                   type="button"
-                  onClick={onClose}
+                  data-sfx="custom"
+                  onClick={(e) => {
+                    triggerCrystalBurst(e.currentTarget, 'dissolve');
+                    onClose();
+                  }}
                   aria-label="Close About Me Highlight Card"
                   className="touch-press inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#F05BEA]/45 bg-[#071B1B]/85 text-[#FFFFFF] transition-colors duration-200 hover:border-[#C8FF27] hover:bg-[#C8FF27] hover:text-[#071B1B] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF27] sm:h-11 sm:w-11"
                 >

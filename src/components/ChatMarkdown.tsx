@@ -1,6 +1,23 @@
-import { Fragment, memo, useMemo, useState, type ReactNode } from 'react';
+import { Fragment, memo, useEffect, useMemo, useState, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react';
 import { Check, Copy } from 'lucide-react';
-import { tokenizeCode, type PrismTokenNode } from '../lib/prismSetup';
+import type { PrismTokenNode } from '../lib/prismSetup';
+import { triggerCrystalBurst } from '../lib/glassEffects';
+import { soundEffects } from '../lib/soundEffects';
+
+type PrismSetupModule = typeof import('../lib/prismSetup');
+let cachedPrismModule: PrismSetupModule | null = null;
+let prismModulePromise: Promise<PrismSetupModule> | null = null;
+
+function loadPrismSetup(): Promise<PrismSetupModule> {
+  if (cachedPrismModule) return Promise.resolve(cachedPrismModule);
+  if (!prismModulePromise) {
+    prismModulePromise = import('../lib/prismSetup').then((mod) => {
+      cachedPrismModule = mod;
+      return mod;
+    });
+  }
+  return prismModulePromise;
+}
 
 interface ChatMarkdownProps {
   content: string;
@@ -387,19 +404,37 @@ function renderPrismTokenNode(node: PrismTokenNode, key: string): ReactNode {
 
 const CodeBlock = memo(function CodeBlock({ code, lang }: { code: string; lang: string }) {
   const [copied, setCopied] = useState(false);
-  const tokens = useMemo(() => tokenizeCode(code, lang), [code, lang]);
+  const [prismMod, setPrismMod] = useState<PrismSetupModule | null>(cachedPrismModule);
+
+  useEffect(() => {
+    if (prismMod) return;
+    let active = true;
+    void loadPrismSetup().then((mod) => {
+      if (active) setPrismMod(mod);
+    });
+    return () => {
+      active = false;
+    };
+  }, [prismMod]);
+
+  const tokens = useMemo(
+    () => (prismMod ? prismMod.tokenizeCode(code, lang) : null),
+    [prismMod, code, lang]
+  );
   const displayLang = lang.trim() || 'code';
 
-  const handleCopy = async () => {
-    try {
-      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(code);
-        setCopied(true);
-        window.setTimeout(() => setCopied(false), 1600);
-      }
-    } catch {
-      // Ignore clipboard permission errors in restricted contexts
+  const handleCopy = (e: ReactMouseEvent<HTMLButtonElement>) => {
+    const buttonEl = e.currentTarget;
+    if (typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {
+      return;
     }
+    soundEffects.playCopy();
+    triggerCrystalBurst(buttonEl, 'sparkle');
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1600);
+    void navigator.clipboard.writeText(code).catch(() => {
+      // Ignore clipboard permission errors in restricted contexts
+    });
   };
 
   return (
@@ -410,6 +445,7 @@ const CodeBlock = memo(function CodeBlock({ code, lang }: { code: string; lang: 
         </span>
         <button
           type="button"
+          data-sfx="custom"
           onClick={handleCopy}
           aria-label={copied ? 'Copied code' : 'Copy code'}
           className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium text-teal-200/80 transition-colors hover:bg-white/10 hover:text-white cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-400"

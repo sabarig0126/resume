@@ -4,6 +4,7 @@ import {
   LocationBeaconIcon,
 } from '../NextGenIcons';
 import { PROFILE, PROOF_METRICS } from '../../data/projects';
+import { prefetchViewChunk } from '../../lib/assetPreloader';
 import { FeatureId } from '../../types/portfolio';
 import { AnimatedCounter } from '../AnimatedCounter';
 import { GlassCard } from '../GlassCard';
@@ -26,9 +27,9 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
         <div className="grid flex-1 grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-12 lg:items-center lg:gap-12">
           {/* Left: About Me & Career Objective */}
           <motion.div
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.1, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col justify-center lg:col-span-7"
           >
             <div>
@@ -60,9 +61,9 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
 
           {/* Right: Personal Details Card */}
           <motion.div
-            initial={{ opacity: 0, y: 14 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.06, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.1, delay: 0.02, ease: [0.16, 1, 0.3, 1] }}
             className="flex justify-start lg:col-span-5 lg:justify-end"
           >
             <TiltCard
@@ -121,6 +122,9 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
                 <div className="grid grid-cols-1 gap-2.5 sm:flex sm:flex-wrap sm:items-center">
                   <button
                     type="button"
+                    data-sfx="custom"
+                    onPointerEnter={() => prefetchViewChunk('resume')}
+                    onFocus={() => prefetchViewChunk('resume')}
                     onClick={() => onNavigateFeature('resume')}
                     className="touch-press inline-flex min-h-[46px] w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-[#C8FF27] px-4 py-2.5 text-sm font-bold text-[#071B1B] shadow-[0_0_24px_-6px_rgba(200,255,39,0.55)] hover:bg-[#d5ff52] hover:shadow-[0_0_28px_-4px_rgba(200,255,39,0.7)] whitespace-nowrap sm:w-auto sm:flex-1 cursor-pointer"
                   >
@@ -129,6 +133,9 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
                   </button>
                   <button
                     type="button"
+                    data-sfx="custom"
+                    onPointerEnter={() => prefetchViewChunk('portfolioPdf')}
+                    onFocus={() => prefetchViewChunk('portfolioPdf')}
                     onClick={() => onNavigateFeature('portfolioPdf')}
                     className="touch-press inline-flex min-h-[46px] w-full shrink-0 items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/[0.04] px-4 py-2.5 text-sm font-semibold text-[#FFFFFF] hover:border-[#F05BEA]/65 hover:bg-[#F05BEA]/10 whitespace-nowrap sm:w-auto sm:flex-1 cursor-pointer"
                   >
@@ -148,11 +155,11 @@ export function OverviewView({ onNavigateFeature }: OverviewViewProps) {
           {PROOF_METRICS.map((metric, idx) => (
             <motion.div
               key={metric.label}
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{
-                duration: 0.32,
-                delay: 0.1 + idx * 0.05,
+                duration: 0.09,
+                delay: idx * 0.015,
                 ease: [0.16, 1, 0.3, 1],
               }}
               className="h-full"

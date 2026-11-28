@@ -35,24 +35,26 @@ export function SectionReveal({
           }
         }
       },
-      { threshold: 0.08, rootMargin: '0px 0px -24px 0px' }
+      { threshold: 0.02, rootMargin: '96px 0px 96px 0px' }
     );
 
     observer.observe(node);
     return () => observer.disconnect();
   }, [visible]);
 
+  const effectiveDelayMs = Math.min(Math.max(0, delayMs), 50);
+
   return (
     <div
       ref={ref}
       style={{
         transitionProperty: 'opacity, transform, translate',
-        transitionDuration: '480ms',
+        transitionDuration: '100ms',
         transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
-        transitionDelay: `${delayMs}ms`,
+        transitionDelay: `${effectiveDelayMs}ms`,
       }}
       className={`${
-        visible ? 'opacity-100' : 'opacity-0 translate-y-3'
+        visible ? 'opacity-100' : 'opacity-0 translate-y-2'
       } ${className}`.trim()}
     >
       {children}

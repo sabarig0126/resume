@@ -35,11 +35,11 @@ export function SkillsView() {
           {TECHNICAL_SKILLS.map((group, idx) => (
             <motion.div
               key={group.category}
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{
-                duration: 0.28,
-                delay: idx * 0.05,
+                duration: 0.09,
+                delay: idx * 0.012,
                 ease: [0.16, 1, 0.3, 1],
               }}
               className="h-full"
@@ -86,11 +86,11 @@ export function SkillsView() {
           {SOFT_SKILLS.map((skill, idx) => (
             <motion.div
               key={skill}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{
-                duration: 0.24,
-                delay: 0.08 + idx * 0.03,
+                duration: 0.08,
+                delay: 0.02 + idx * 0.008,
                 ease: [0.16, 1, 0.3, 1],
               }}
               className="h-full"
@@ -112,10 +112,10 @@ export function SkillsView() {
 
       <div className="mt-8 grid grid-cols-1 gap-5 border-t border-white/10 pt-7 sm:mt-10 sm:gap-8 sm:pt-9 md:grid-cols-2">
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 6 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          viewport={{ once: true, amount: 0.05 }}
+          transition={{ duration: 0.09, ease: [0.16, 1, 0.3, 1] }}
           className="h-full"
         >
           <TiltCard
@@ -140,10 +140,10 @@ export function SkillsView() {
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 6 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.3, delay: 0.06, ease: [0.16, 1, 0.3, 1] }}
+          viewport={{ once: true, amount: 0.05 }}
+          transition={{ duration: 0.09, delay: 0.02, ease: [0.16, 1, 0.3, 1] }}
           className="h-full"
         >
           <TiltCard

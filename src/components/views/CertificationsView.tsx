@@ -1,4 +1,4 @@
-import { type FormEvent, memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { type FormEvent, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   ArrowRightIcon,
@@ -10,6 +10,13 @@ import {
 } from '../NextGenIcons';
 import { CERTIFICATES, type CertificateItem } from '../../data/certificates';
 import { PROFILE } from '../../data/projects';
+import {
+  PRIORITY_ORGANIZATION_LOGOS,
+  warmImage,
+  warmImageBatch,
+} from '../../lib/assetPreloader';
+import { triggerCrystalBurst } from '../../lib/glassEffects';
+import { soundEffects } from '../../lib/soundEffects';
 import { AnimatedCounter } from '../AnimatedCounter';
 import { GlassCard } from '../GlassCard';
 import { TiltCard } from '../TiltCard';
@@ -172,6 +179,13 @@ const OrganizationCard = memo(function OrganizationCard({
       ? `${matchingCount} of ${totalCount} matching`
       : `${totalCount} ${totalCount === 1 ? 'Certificate' : 'Certificates'}`;
 
+  const handleWarmOrgCertificates = useCallback(() => {
+    warmImageBatch(
+      group.certificates.map((cert) => cert.imageUrl),
+      { decode: true }
+    );
+  }, [group.certificates]);
+
   return (
     <TiltCard
       maxTiltDeg={2.4}
@@ -181,6 +195,9 @@ const OrganizationCard = memo(function OrganizationCard({
     >
       <button
         type="button"
+        onPointerEnter={handleWarmOrgCertificates}
+        onPointerDown={handleWarmOrgCertificates}
+        onFocus={handleWarmOrgCertificates}
         onClick={() => onSelect(group.name)}
         aria-label={`View ${totalCount} ${totalCount === 1 ? 'certificate' : 'certificates'} from ${group.name}`}
         className="group touch-press flex h-full w-full flex-col rounded-2xl p-3.5 text-left sm:p-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF27]"
@@ -265,6 +282,10 @@ const CertificateCard = memo(function CertificateCard({
   highPriority,
   onSelect,
 }: CertificateCardProps) {
+  const handleWarmCertificate = useCallback(() => {
+    warmImage(cert.imageUrl, { decode: true, priority: 'high' });
+  }, [cert.imageUrl]);
+
   return (
     <TiltCard
       maxTiltDeg={2.4}
@@ -274,6 +295,10 @@ const CertificateCard = memo(function CertificateCard({
     >
       <button
         type="button"
+        data-sfx="custom"
+        onPointerEnter={handleWarmCertificate}
+        onPointerDown={handleWarmCertificate}
+        onFocus={handleWarmCertificate}
         onClick={() => onSelect(cert)}
         aria-label={`Inspect ${cert.title} certificate issued by ${cert.issuer}`}
         className="group touch-press flex h-full w-full flex-col rounded-2xl p-3.5 text-left sm:p-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF27]"
@@ -334,6 +359,11 @@ export function CertificationsView() {
   const [filterError, setFilterError] = useState<string | null>(null);
   const [selectedOrgName, setSelectedOrgName] = useState<string | null>(null);
   const [selectedCert, setSelectedCert] = useState<CertificateItem | null>(null);
+  const closeCertButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    warmImageBatch(PRIORITY_ORGANIZATION_LOGOS, { decode: true });
+  }, []);
 
   const organizationGroups = useMemo(
     () => buildOrganizationGroups(CERTIFICATES),
@@ -389,18 +419,27 @@ export function CertificationsView() {
     return CERTIFICATES;
   }, [selectedOrgGroup, normalizedQuery, matchesQuery, filteredOrganizationEntries]);
 
+  const handleCloseCert = useCallback((burstOrigin?: Element | null) => {
+    soundEffects.playModalClose();
+    const origin = burstOrigin ?? closeCertButtonRef.current;
+    if (origin) {
+      triggerCrystalBurst(origin, 'dissolve');
+    }
+    setSelectedCert(null);
+  }, []);
+
   useEffect(() => {
     if (!selectedCert) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        setSelectedCert(null);
+        handleCloseCert(closeCertButtonRef.current);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedCert]);
+  }, [selectedCert, handleCloseCert]);
 
   useEffect(() => {
     const isModalOpen = Boolean(selectedCert);
@@ -423,18 +462,19 @@ export function CertificationsView() {
   const handleSelectOrg = useCallback((orgName: string) => {
     setSelectedOrgName(orgName);
     if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'auto' });
     }
   }, []);
 
   const handleBackToOrganizations = useCallback(() => {
     setSelectedOrgName(null);
     if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'auto' });
     }
   }, []);
 
   const handleSelectCert = useCallback((cert: CertificateItem) => {
+    soundEffects.playModalOpen();
     setSelectedCert(cert);
   }, []);
 
@@ -534,9 +574,9 @@ export function CertificationsView() {
       {selectedOrgGroup ? (
         <motion.div
           key={`org-${selectedOrgGroup.name}`}
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.09, ease: [0.16, 1, 0.3, 1] }}
           className="mt-6 flex flex-1 flex-col sm:mt-8"
         >
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3.5 sm:px-5">
@@ -628,9 +668,9 @@ export function CertificationsView() {
       ) : (
         <motion.div
           key="org-overview"
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.09, ease: [0.16, 1, 0.3, 1] }}
           className="mt-6 flex flex-1 flex-col sm:mt-8"
         >
           <div className="grid grid-cols-1 gap-5 sm:gap-6 md:grid-cols-2 xl:grid-cols-3">
@@ -643,7 +683,7 @@ export function CertificationsView() {
                   matchingCount={
                     normalizedQuery ? matchingCertificates.length : undefined
                   }
-                  eager={idx < 6}
+                  eager
                   isAccentLime={idx % 2 === 1}
                   onSelect={handleSelectOrg}
                 />
@@ -687,15 +727,15 @@ export function CertificationsView() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.18 }}
-            onClick={() => setSelectedCert(null)}
+            transition={{ duration: 0.09 }}
+            onClick={() => handleCloseCert(closeCertButtonRef.current)}
             className="fixed inset-0 z-[120] flex items-center justify-center bg-[#041010]/85 p-3 backdrop-blur-md sm:p-6"
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.96, y: 10 }}
+              initial={{ opacity: 0, scale: 0.97, y: 6 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96, y: 8 }}
-              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              exit={{ opacity: 0, scale: 0.97, y: 4 }}
+              transition={{ duration: 0.1, ease: [0.16, 1, 0.3, 1] }}
               onClick={(e) => e.stopPropagation()}
               className="glass-surface-strong glass-accent-pink relative flex max-h-[92dvh] w-full max-w-4xl flex-col overflow-y-auto rounded-2xl p-3.5 sm:p-6"
             >
@@ -724,8 +764,10 @@ export function CertificationsView() {
                 </div>
 
                 <button
+                  ref={closeCertButtonRef}
                   type="button"
-                  onClick={() => setSelectedCert(null)}
+                  data-sfx="custom"
+                  onClick={(e) => handleCloseCert(e.currentTarget)}
                   aria-label="Close certificate preview"
                   className="touch-press inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/15 bg-white/5 text-[#FFFFFF] transition-colors hover:border-[#F05BEA] hover:bg-white/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C8FF27]"
                 >
